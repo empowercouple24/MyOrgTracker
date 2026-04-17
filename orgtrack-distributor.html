@@ -444,8 +444,10 @@ td.n{font-family:'DM Mono',monospace;font-variant-numeric:tabular-nums}
         <div class="fg" style="flex:1;min-width:200px"><label>Project URL</label><input type="url" id="sbu" placeholder="https://xxxx.supabase.co"></div>
         <div class="fg" style="flex:1;min-width:200px"><label>Anon Key</label><input type="text" id="sbk" placeholder="eyJhbGc…"></div>
       </div>
-      <div style="display:flex;gap:9px;align-items:center">
+      <div style="display:flex;gap:9px;align-items:center;flex-wrap:wrap">
         <button class="btn bp" onclick="saveSB()">Save &amp; Test</button>
+        <button class="btn" onclick="syncAllSB()">Sync All Entries</button>
+        <button class="btn" onclick="pullSB(()=>toast('✓ Pulled from cloud'))">Pull from Cloud</button>
         <span id="sbst" style="font-size:12px;color:var(--text2)"></span>
       </div>
       <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--divider)">
@@ -681,6 +683,7 @@ function showApp(name){
   buildAppearanceGrid();
   updateAppearanceUI(loadTheme()?.color||'paper');
   go('dash',null);
+  if(sbCfg)pullSB();
 }
 
 function doLogout(){
@@ -799,13 +802,18 @@ function saveEdit(k){
   const[y,m,d]=k.split('-').map(Number);const r=recs.find(x=>x.year===y&&x.month===m&&x.day===d);
   if(!r)return;const v=+document.getElementById('eiv').value;
   if(!v||v<0){toast('Invalid value');return}
-  r.org_volume=v;recalcAll();editKey=null;renderAll();toast('Entry updated');
+  r.org_volume=v;recalcAll();editKey=null;renderAll();
+  if(sbCfg)pushSB(r);
+  toast('Entry updated');
 }
 function del(k){
   if(!confirm('Delete this entry?'))return;
   const[y,m,d]=k.split('-').map(Number);
+  const gone=recs.find(r=>r.year===y&&r.month===m&&r.day===d);
   recs=recs.filter(r=>!(r.year===y&&r.month===m&&r.day===d));
-  recalcAll();renderAll();toast('Entry deleted');
+  recalcAll();renderAll();
+  if(gone&&sbCfg)deleteSB(gone);
+  toast('Entry deleted');
 }
 function exportCSV(){
   const hdr=['Date','Day','Org Volume','Org Increase','DV Remaining','Avg Needed/Day','Est Org DV','Uplift/Day'];
@@ -842,7 +850,10 @@ function saveEntry(){
   const idx=recs.findIndex(r=>r.year===year&&r.month===month&&r.day===day);
   const rec={year,month,day,org_volume:vol,dv_goal:dg,pin_goal:'Mill '+pin};
   if(idx>=0){recs[idx]={...recs[idx],...rec}}else{recs.push(rec)}
-  recalcAll();active={year,month};renderAll();toast('Entry saved!');
+  recalcAll();active={year,month};renderAll();
+  const saved=recs.find(r=>r.year===year&&r.month===month&&r.day===day);
+  if(saved&&sbCfg)pushSB(saved);
+  toast('Entry saved!');
 }
 function clearEntry(){document.getElementById('ev').value='';document.getElementById('ed').value='';document.getElementById('eprev').style.display='none'}
 
@@ -888,6 +899,56 @@ function saveSB(){
   fetch(sbCfg.url+'/rest/v1/org_volume?limit=1',{headers:{'apikey':sbCfg.k,'Authorization':'Bearer '+sbCfg.k}})
     .then(r=>{st.innerHTML=r.ok?'<span style="color:var(--accent)">✓ Connected</span>':'<span style="color:var(--red)">✗ Failed ('+r.status+')</span>'})
     .catch(e=>{st.innerHTML='<span style="color:var(--red)">✗ '+e.message+'</span>'});
+}
+
+// Supabase sync helpers
+function sbHeaders(){if(!sbCfg)return null;return{'apikey':sbCfg.k,'Authorization':'Bearer '+sbCfg.k,'Content-Type':'application/json'}}
+function recToSB(r){
+  const d=r.year+'-'+String(r.month).padStart(2,'0')+'-'+String(r.day).padStart(2,'0');
+  return{entry_date:d,user_slug:userSlug,month_num:r.month,year_num:r.year,day_num:r.day,
+    org_volume:r.org_volume,org_increase:r.org_increase||0,dv_goal:r.dv_goal||DV_GOAL,
+    dv_remaining:r.dv_remaining||0,org_daily_avg:r.org_daily_avg||0,est_org_dv:r.est_org_dv||0,
+    uplift_per_day:r.uplift_per_day||0,pin_goal:r.pin_goal||'Mill 7.5'};
+}
+function pushSB(r){
+  const h=sbHeaders();if(!h)return;
+  h['Prefer']='resolution=merge-duplicates,return=minimal';
+  fetch(sbCfg.url+'/rest/v1/org_volume?on_conflict=entry_date,user_slug',{method:'POST',headers:h,body:JSON.stringify(recToSB(r))})
+    .then(r=>{if(!r.ok)r.text().then(t=>console.error('SB push '+r.status+': '+t))})
+    .catch(e=>console.error('SB push failed',e));
+}
+function deleteSB(r){
+  const h=sbHeaders();if(!h)return;
+  const d=r.year+'-'+String(r.month).padStart(2,'0')+'-'+String(r.day).padStart(2,'0');
+  fetch(sbCfg.url+'/rest/v1/org_volume?entry_date=eq.'+d+'&user_slug=eq.'+userSlug,{method:'DELETE',headers:h})
+    .catch(e=>console.error('SB delete failed',e));
+}
+function pullSB(cb){
+  const h=sbHeaders();if(!h){toast('Configure Supabase first');if(cb)cb();return}
+  fetch(sbCfg.url+'/rest/v1/org_volume?user_slug=eq.'+userSlug+'&select=*',{headers:h})
+    .then(r=>r.json())
+    .then(rows=>{
+      if(!Array.isArray(rows)){if(cb)cb();return}
+      let merged=0;
+      rows.forEach(row=>{
+        const y=+row.year_num,m=+row.month_num,d=+row.day_num;
+        const idx=recs.findIndex(x=>x.year===y&&x.month===m&&x.day===d);
+        const rec={year:y,month:m,day:d,org_volume:+row.org_volume,dv_goal:+row.dv_goal,pin_goal:row.pin_goal||'Mill 7.5'};
+        if(idx>=0){recs[idx]={...recs[idx],...rec}}else{recs.push(rec);merged++}
+      });
+      recalcAll();renderAll();
+      if(cb)cb(merged,rows.length);
+    }).catch(e=>{console.error('SB pull failed',e);if(cb)cb()});
+}
+function syncAllSB(){
+  const h=sbHeaders();if(!h){toast('Configure Supabase first');return}
+  if(!recs.length){toast('No entries to sync');return}
+  h['Prefer']='resolution=merge-duplicates,return=minimal';
+  const body=recs.map(recToSB);
+  toast('Syncing '+body.length+' entries...');
+  fetch(sbCfg.url+'/rest/v1/org_volume?on_conflict=entry_date,user_slug',{method:'POST',headers:h,body:JSON.stringify(body)})
+    .then(r=>{if(r.ok)toast('✓ Synced '+body.length+' entries');else r.text().then(t=>toast('Sync error '+r.status+': '+t.slice(0,80)))})
+    .catch(e=>toast('Sync failed: '+e.message));
 }
 
 function toast(msg,ms=2800){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('on');setTimeout(()=>t.classList.remove('on'),ms)}
