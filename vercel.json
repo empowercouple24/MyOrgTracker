@@ -1,0 +1,27 @@
+{
+  "cleanUrls": true,
+  "trailingSlash": false,
+  "redirects": [
+    {
+      "source": "/orgtrack-admin.html",
+      "destination": "/admin",
+      "permanent": true
+    },
+    {
+      "source": "/orgtrack-distributor.html",
+      "destination": "/tracker",
+      "permanent": true,
+      "has": [{"type": "query", "key": "user"}]
+    },
+    {
+      "source": "/orgtrack-distributor.html",
+      "destination": "/tracker",
+      "permanent": true
+    },
+    {
+      "source": "/orgtrack.html",
+      "destination": "/tracker",
+      "permanent": true
+    }
+  ]
+}
