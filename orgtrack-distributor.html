@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OrgTrack</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f5f3ee;--surface:#fff;--surface2:#edeae3;--surface3:#e4e1d8;
+  --text:#19190f;--text2:#6b6955;--text3:#9b9880;
+  --green:#1a6645;--green2:#e6f2ec;--green3:#c5e4d2;
+  --amber:#a0530f;--amber2:#fdf2e7;
+  --red:#b52b2b;--red2:#fde8e8;
+  --border:#dddad0;--border2:#c5c2b6;
+  --r:10px;--shadow:0 1px 3px rgba(0,0,0,.06),0 4px 16px rgba(0,0,0,.04);
+}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line-height:1.5}
+
+/* ── PIN SCREEN ── */
+#pin-screen{position:fixed;inset:0;background:var(--text);display:none;align-items:center;justify-content:center;z-index:1000;flex-direction:column}
+#pin-screen.on{display:flex}
+.ps-card{background:var(--surface);width:340px;border-radius:16px;overflow:hidden;box-shadow:0 24px 80px rgba(0,0,0,.4)}
+.ps-head{padding:28px;text-align:center;background:var(--text)}
+.ps-logo{font-family:'DM Sans',sans-serif;font-size:20px;font-weight:600;color:#fff;letter-spacing:-.3px}
+.ps-name{font-size:13px;color:rgba(255,255,255,.45);margin-top:5px;font-family:'DM Mono',monospace}
+.ps-body{padding:24px}
+.ps-label{font-size:11px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:var(--text3);margin-bottom:6px;display:block}
+.ps-input{width:100%;height:44px;border:1px solid var(--border);border-radius:8px;padding:0 14px;font-size:20px;font-family:'DM Mono',monospace;letter-spacing:6px;text-align:center;background:var(--surface2);color:var(--text);outline:none;margin-bottom:12px;transition:.15s}
+.ps-input:focus{border-color:var(--green);background:#fff}
+.ps-btn{width:100%;height:42px;background:var(--text);color:#fff;border:none;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer;transition:.15s}
+.ps-btn:hover{opacity:.85}
+.ps-err{font-size:12px;color:var(--red);text-align:center;margin-top:8px;min-height:16px}
+.ps-stay{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text2);margin-bottom:12px}
+.tog{position:relative;display:inline-block;width:32px;height:18px;flex-shrink:0}
+.tog input{opacity:0;width:0;height:0;position:absolute}
+.tog-sl{position:absolute;inset:0;background:var(--border2);border-radius:20px;cursor:pointer;transition:.2s}
+.tog-sl:before{content:'';position:absolute;width:12px;height:12px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.2s}
+.tog input:checked+.tog-sl{background:var(--green)}
+.tog input:checked+.tog-sl:before{transform:translateX(14px)}
+
+/* ── INACTIVE ── */
+#inactive-screen{position:fixed;inset:0;background:var(--text);display:none;align-items:center;justify-content:center;z-index:1000;flex-direction:column;gap:16px;text-align:center;padding:40px}
+#inactive-screen.on{display:flex}
+
+/* ── NAV ── */
+.nav{background:var(--surface);border-bottom:1px solid var(--border);padding:0 20px;display:flex;align-items:center;height:50px;gap:4px}
+.brand{font-weight:600;font-size:15px;color:var(--green);margin-right:24px;letter-spacing:-.3px}
+.brand em{color:var(--text2);font-style:normal;font-weight:400}
+.tab{height:50px;padding:0 13px;display:flex;align-items:center;font-size:13px;font-weight:500;color:var(--text2);cursor:pointer;border-bottom:2px solid transparent;transition:.12s;white-space:nowrap;user-select:none}
+.tab:hover{color:var(--text)}
+.tab.on{color:var(--green);border-bottom-color:var(--green)}
+.nav-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.nav-user{font-size:12px;color:var(--text3);font-family:'DM Mono',monospace}
+.nav-logout{font-size:12px;color:var(--text3);cursor:pointer;padding:3px 9px;border:1px solid var(--border);border-radius:6px;transition:.12s}
+.nav-logout:hover{color:var(--text);border-color:var(--border2)}
+
+/* ── PAGES ── */
+.pg{display:none;padding:22px;max-width:1080px;margin:0 auto}
+.pg.on{display:block}
+.ph{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px;gap:12px;flex-wrap:wrap}
+.ph-title{font-size:20px;font-weight:600;color:var(--text);letter-spacing:-.3px}
+.ph-sub{font-size:13px;color:var(--text3);margin-top:2px}
+
+/* ── CARDS ── */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:18px;box-shadow:var(--shadow)}
+.ct{font-size:11px;font-weight:600;letter-spacing:.55px;text-transform:uppercase;color:var(--text3);margin-bottom:13px}
+
+/* ── METRICS ── */
+.mstrip{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px}
+.met{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;box-shadow:var(--shadow)}
+.met-l{font-size:11px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:var(--text3);margin-bottom:5px}
+.met-v{font-size:24px;font-weight:600;letter-spacing:-.5px;font-family:'DM Mono',monospace}
+.met-s{font-size:11px;color:var(--text3);margin-top:3px}
+
+/* ── GRID ── */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px}
+.full{margin-bottom:18px}
+.ch{position:relative;width:100%;height:210px}
+
+/* ── PILLS ── */
+.pills{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px}
+.pill{padding:4px 13px;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer;border:1px solid var(--border);background:var(--surface);color:var(--text2);transition:.12s;user-select:none}
+.pill:hover{border-color:var(--border2);color:var(--text)}
+.pill.on{background:var(--green);color:#fff;border-color:var(--green)}
+
+/* ── PROGRESS ── */
+.pb{margin-bottom:11px}
+.pb-top{display:flex;justify-content:space-between;font-size:11px;color:var(--text2);margin-bottom:5px}
+.pb-track{height:7px;background:var(--surface2);border-radius:4px;overflow:hidden}
+.pb-fill{height:100%;border-radius:4px;transition:.4s}
+
+/* ── TABLE ── */
+.tw{overflow-x:auto;max-height:400px;overflow-y:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{font-size:11px;font-weight:600;letter-spacing:.4px;text-transform:uppercase;color:var(--text3);padding:8px 11px;text-align:left;position:sticky;top:0;background:var(--surface);border-bottom:1px solid var(--border)}
+td{padding:8px 11px;border-bottom:1px solid var(--border)}
+tr:hover td{background:var(--surface2)}
+.n{font-family:'DM Mono',monospace}
+.badge{display:inline-flex;align-items:center;font-size:11px;font-weight:500;padding:2px 8px;border-radius:20px}
+.bg{background:var(--green2);color:var(--green)}
+.br{background:var(--red2);color:var(--red)}
+
+/* ── FORM ── */
+.frow{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;margin-bottom:12px}
+.fg{display:flex;flex-direction:column;gap:5px}
+.fg label{font-size:11px;font-weight:600;letter-spacing:.4px;text-transform:uppercase;color:var(--text2)}
+.fg input,.fg select{height:36px;padding:0 11px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-family:'DM Sans',sans-serif;color:var(--text);background:var(--surface);outline:none;transition:.12s;min-width:100px}
+.fg input:focus,.fg select:focus{border-color:var(--green)}
+.fg input[type=number]{font-family:'DM Mono',monospace}
+.btn{height:36px;padding:0 15px;border-radius:8px;font-size:13px;font-weight:500;font-family:'DM Sans',sans-serif;cursor:pointer;transition:.12s;border:1px solid transparent;white-space:nowrap}
+.bp{background:var(--green);color:#fff;border-color:var(--green)}
+.bp:hover{background:#145537}
+.bo{background:var(--surface);color:var(--text);border-color:var(--border2)}
+.bo:hover{background:var(--surface2)}
+.bdng{background:var(--red2);color:var(--red);border-color:#f0b8b8}
+.bsm{height:28px;padding:0 10px;font-size:12px}
+
+/* ── PREVIEW ── */
+.preview{background:var(--green2);border:1px solid var(--green3);border-radius:var(--r);padding:14px;margin-bottom:14px;display:none}
+.pgrid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:8px}
+.plbl{font-size:11px;color:var(--text2);margin-bottom:2px}
+.pval{font-size:18px;font-weight:600;font-family:'DM Mono',monospace;color:var(--green)}
+
+/* ── DROP ── */
+.drop{border:2px dashed var(--border2);border-radius:var(--r);padding:36px;text-align:center;cursor:pointer;transition:.15s;background:var(--surface2)}
+.drop:hover,.drop.drag{border-color:var(--green);background:var(--green2)}
+.drop p{color:var(--text2);font-size:13px;line-height:1.65;margin-top:6px}
+.drop strong{color:var(--text)}
+.ei{height:26px;padding:0 8px;border:1px solid var(--green);border-radius:6px;font-size:12px;font-family:'DM Mono',monospace;width:105px;outline:none}
+.code{background:#15150d;color:#a0d8b3;font-family:'DM Mono',monospace;font-size:12px;padding:14px;border-radius:8px;overflow-x:auto;white-space:pre;line-height:1.75;margin:8px 0}
+.step{display:flex;align-items:flex-start;gap:8px;margin-bottom:12px;font-size:13px;color:var(--text2);line-height:1.6}
+.sn{flex-shrink:0;width:20px;height:20px;border-radius:50%;background:var(--green);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center}
+.toast{position:fixed;bottom:18px;right:18px;background:#15150d;color:#e8e5d8;padding:11px 18px;border-radius:10px;font-size:13px;font-weight:500;z-index:1000;transform:translateY(50px);opacity:0;transition:.22s;pointer-events:none}
+.toast.on{transform:translateY(0);opacity:1}
+.empty{text-align:center;padding:44px;color:var(--text3)}
+.empty p{font-size:13px;line-height:1.7;margin-top:8px}
+@media(max-width:680px){.mstrip{grid-template-columns:1fr 1fr}.g2{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<!-- ── PIN SCREEN ── -->
+<div id="pin-screen">
+  <div class="ps-card">
+    <div class="ps-head">
+      <div class="ps-logo">OrgTrack</div>
+      <div class="ps-name" id="ps-username">Loading…</div>
+    </div>
+    <div class="ps-body">
+      <label class="ps-label">Your Access PIN</label>
+      <input class="ps-input" type="password" id="pin-input" maxlength="6" placeholder="••••••" onkeydown="if(event.key==='Enter')submitPin()">
+      <div class="ps-stay">
+        <label class="tog"><input type="checkbox" id="stay-in"><span class="tog-sl"></span></label>
+        Stay logged in on this device
+      </div>
+      <button class="ps-btn" onclick="submitPin()">Access My Tracker</button>
+      <div class="ps-err" id="pin-err"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── INACTIVE SCREEN ── -->
+<div id="inactive-screen">
+  <div style="font-size:40px">🔒</div>
+  <div style="font-size:18px;font-weight:600;color:#fff">Account Inactive</div>
+  <div style="font-size:14px;color:rgba(255,255,255,.45);max-width:280px;line-height:1.65">This account has been deactivated. Please contact your admin to restore access.</div>
+</div>
+
+<!-- ── NAV ── -->
+<nav class="nav" id="main-nav" style="display:none">
+  <div class="brand">OrgTrack <em id="nav-name"></em></div>
+  <div class="tab on" onclick="go('dash')">Dashboard</div>
+  <div class="tab" onclick="go('data')">Data</div>
+  <div class="tab" onclick="go('entry')">Log Entry</div>
+  <div class="tab" onclick="go('import')">Import</div>
+  <div class="tab" onclick="go('setup')">Supabase</div>
+  <div class="nav-right">
+    <span class="nav-logout" onclick="doLogout()">Log out</span>
+  </div>
+</nav>
+
+<!-- ── DASHBOARD ── -->
+<div id="pg-dash" class="pg">
+  <div id="mpills" class="pills"></div>
+  <div class="mstrip">
+    <div class="met"><div class="met-l">Org Volume</div><div class="met-v" id="mv">—</div><div class="met-s">Cumulative MTD</div></div>
+    <div class="met"><div class="met-l">Daily Avg Inc.</div><div class="met-v" id="ma">—</div><div class="met-s">Avg daily delta</div></div>
+    <div class="met"><div class="met-l">Best Day</div><div class="met-v" id="mb">—</div><div class="met-s" id="mbd">—</div></div>
+    <div class="met"><div class="met-l">Goal Progress</div><div class="met-v" id="mp">—</div><div class="met-s" id="mps">—</div></div>
+  </div>
+  <div class="full card">
+    <div class="ct">Org Volume — Cumulative Growth</div>
+    <div class="ch"><canvas id="cv"></canvas></div>
+  </div>
+  <div class="g2">
+    <div class="card"><div class="ct">Daily Increases</div><div class="ch"><canvas id="ci"></canvas></div></div>
+    <div class="card"><div class="ct">Monthly DV Goal Progress</div><div id="gp"></div></div>
+  </div>
+</div>
+
+<!-- ── DATA ── -->
+<div id="pg-data" class="pg">
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+      <div class="ct" style="margin:0">All Entries</div>
+      <div style="display:flex;gap:8px">
+        <select id="fmonth" style="height:30px;padding:0 10px;font-size:12px;border:1px solid var(--border);border-radius:7px;background:var(--surface)" onchange="renderTable()"><option value="">All months</option></select>
+        <button class="btn bo bsm" onclick="exportCSV()">Export CSV</button>
+      </div>
+    </div>
+    <div class="tw"><table><thead><tr><th>Date</th><th>Day</th><th>Org Volume</th><th>Increase</th><th>DV Rem.</th><th>Avg Needed/Day</th><th>Est. Org DV</th><th>Uplift/Day</th><th></th></tr></thead><tbody id="tbody"></tbody></table></div>
+  </div>
+</div>
+
+<!-- ── ENTRY ── -->
+<div id="pg-entry" class="pg">
+  <div style="max-width:620px">
+    <div class="card">
+      <div class="ct">Log Daily Org Volume</div>
+      <p style="font-size:13px;color:var(--text2);margin-bottom:18px;line-height:1.65">Enter today's cumulative <strong>Org Volume</strong>. All other values are calculated automatically.</p>
+      <div class="frow">
+        <div class="fg"><label>Month</label><select id="em"><option value="1">January</option><option value="2">February</option><option value="3">March</option><option value="4">April</option><option value="5">May</option><option value="6">June</option><option value="7">July</option><option value="8">August</option><option value="9">September</option><option value="10">October</option><option value="11">November</option><option value="12">December</option></select></div>
+        <div class="fg"><label>Year</label><input type="number" id="ey" value="2026" style="width:85px"></div>
+        <div class="fg"><label>Day</label><input type="number" id="ed" min="1" max="31" style="width:75px"></div>
+        <div class="fg"><label>Org Volume</label><input type="number" id="ev" placeholder="e.g. 45000" style="width:145px"></div>
+      </div>
+      <div class="frow">
+        <div class="fg"><label>PIN Goal</label>
+          <select id="epin" onchange="onPinChange()" style="min-width:200px">
+            <option value="7.5">Mill 7.5 — 113,636 DV</option>
+            <option value="5">Mill 5 — 75,757 DV</option>
+            <option value="3">Mill 3 — 45,454 DV</option>
+            <option value="1">Millionaire — 15,151 DV</option>
+            <option value="custom">Custom goal</option>
+          </select>
+        </div>
+        <div class="fg" id="cdvw" style="display:none"><label>Custom DV Goal</label><input type="number" id="edv" placeholder="e.g. 90000" style="width:130px"></div>
+      </div>
+      <div class="preview" id="eprev">
+        <div class="ct" style="color:var(--green)">Calculated Values</div>
+        <div class="pgrid">
+          <div><div class="plbl">Org Increase</div><div class="pval" id="pi">—</div></div>
+          <div><div class="plbl">DV Remaining</div><div class="pval" id="pd" style="color:var(--text)">—</div></div>
+          <div><div class="plbl">Need Per Day</div><div class="pval" id="pn" style="color:var(--text)">—</div></div>
+        </div>
+      </div>
+      <div style="display:flex;gap:9px">
+        <button class="btn bp" onclick="saveEntry()">Save Entry</button>
+        <button class="btn bo" onclick="clearEntry()">Clear</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── IMPORT ── -->
+<div id="pg-import" class="pg">
+  <div style="max-width:680px">
+    <div class="card">
+      <div class="ct">Import from Google Sheets</div>
+      <p style="font-size:13px;color:var(--text2);margin-bottom:18px;line-height:1.65">Export each monthly tab as CSV (File → Download → CSV). The importer reads <strong>Date</strong> and <strong>Org Volume</strong> columns and recalculates everything else.</p>
+      <div class="drop" id="dz" onclick="document.getElementById('fi').click()" ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')" ondrop="handleDrop(event)">
+        <div style="font-size:30px">📥</div>
+        <p><strong>Click or drag & drop CSV files here</strong><br>Export each monthly tab as a separate CSV. Multiple files accepted.</p>
+      </div>
+      <input type="file" id="fi" accept=".csv" multiple style="display:none" onchange="handleFiles(this.files)">
+      <div id="ilog" style="margin-top:14px"></div>
+      <div style="margin-top:18px;padding-top:16px;border-top:1px solid var(--border)">
+        <div class="ct">Expected CSV format</div>
+        <div class="code">March,,,,,,
+PIN GOAL,Mill 7.5,,DV GOAL,ORG DAILY AVG,EST. ORG DV,UPLIFT
+Date,Org Volume,Org Increase,Mill 7.5,Need Per Day,Pres,Needed Per Day
+1,2022,,111614,3600,151515,4888
+2,5778,,107858,3719,145737,5025</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── SUPABASE ── -->
+<div id="pg-setup" class="pg">
+  <div style="max-width:680px">
+    <div class="card" style="margin-bottom:14px">
+      <div class="ct">Connect Supabase</div>
+      <p style="font-size:13px;color:var(--text2);margin-bottom:18px;line-height:1.65">Connect to persist data across devices. Until connected, data lives in your browser.</p>
+      <div style="display:flex;flex-direction:column;gap:11px;max-width:460px;margin-bottom:14px">
+        <div class="fg" style="width:100%"><label>Project URL</label><input type="url" id="sbu" placeholder="https://xxxx.supabase.co" style="width:100%"></div>
+        <div class="fg" style="width:100%"><label>Anon Key</label><input type="text" id="sbk" placeholder="eyJhbGci..." style="width:100%"></div>
+      </div>
+      <div style="display:flex;gap:9px;align-items:center">
+        <button class="btn bp" onclick="saveSB()">Save & Test</button>
+        <span id="sbst" style="font-size:12px"></span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ct">SQL Schema</div>
+      <div class="code">create table org_volume (
+  id              bigserial primary key,
+  entry_date      date not null,
+  user_slug       text not null,
+  month_num       int,  year_num int,  day_num int,
+  org_volume      numeric,
+  org_increase    numeric,
+  dv_goal         numeric default 113636,
+  dv_remaining    numeric,
+  org_daily_avg   numeric,
+  est_org_dv      numeric,
+  uplift_per_day  numeric,
+  pin_goal        text,
+  unique(entry_date, user_slug)
+);</div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const DV_GOAL=113636,UPLIFT=1.32;
+const PIN_MAP={'7.5':113636,'5':75757,'3':45454,'1':15151};
+const MO=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const fmt=n=>n==null?'—':Math.round(n).toLocaleString();
+
+// ── DETERMINE USER FROM URL ──────────────
+const urlParams = new URLSearchParams(window.location.search);
+const userSlug  = urlParams.get('user') || 'default';
+
+// ── LOAD / SAVE per user ─────────────────
+const STORE_KEY = 'ot_user_' + userSlug;
+const ADMIN_KEY = 'ot_admin';
+
+function loadAdminState() {
+  return JSON.parse(localStorage.getItem(ADMIN_KEY) || 'null');
+}
+function getDistributor() {
+  const admin = loadAdminState();
+  if (!admin) return null;
+  return admin.distributors.find(d => d.slug === userSlug) || null;
+}
+function isAdminOverride() {
+  // Check if admin is viewing this page (set by admin panel)
+  return sessionStorage.getItem('admin_viewing') === userSlug;
+}
+
+let recs = JSON.parse(localStorage.getItem(STORE_KEY) || '[]');
+let active = null, cVol=null, cInc=null, editKey=null;
+let sbCfg  = JSON.parse(localStorage.getItem('ot_sb_'+userSlug) || 'null');
+let currentDist = null;
+
+function saveRecs() {
+  localStorage.setItem(STORE_KEY, JSON.stringify(recs));
+  // Also sync back into admin state if applicable
+  const admin = loadAdminState();
+  if (admin) {
+    const di = admin.distributors.findIndex(d=>d.slug===userSlug);
+    if (di>=0) { admin.distributors[di].records = recs; localStorage.setItem(ADMIN_KEY, JSON.stringify(admin)); }
+  }
+}
+
+const key  = r => r.year+'-'+String(r.month).padStart(2,'0')+'-'+String(r.day).padStart(2,'0');
+const mk   = k => { const[y,m]=k.split('-'); return {year:+y,month:+m}; };
+
+function calcDerived(r, all) {
+  const prev = all.filter(x=>x.month===r.month&&x.year===r.year&&x.day<r.day).sort((a,b)=>b.day-a.day)[0];
+  r.org_increase   = prev ? r.org_volume-prev.org_volume : r.org_volume;
+  const dims       = new Date(r.year,r.month,0).getDate();
+  const left       = dims-r.day;
+  const dg         = r.dv_goal||DV_GOAL;
+  r.est_org_dv     = Math.round(r.org_volume*UPLIFT);
+  r.dv_remaining   = Math.max(0,Math.round(dg-r.est_org_dv));
+  r.org_daily_avg  = left>0?Math.round(r.dv_remaining/left):0;
+  r.uplift_per_day = left>0?Math.round(r.dv_remaining/left/UPLIFT):0;
+}
+function recalcAll() {
+  recs.sort((a,b)=>key(a)<key(b)?-1:1);
+  recs.forEach(r=>calcDerived(r,recs));
+  saveRecs();
+}
+
+// ── AUTH ─────────────────────────────────
+function initAuth() {
+  const dist = getDistributor();
+  if (!dist) {
+    // No admin state — could be standalone (original app) or ?user not found
+    if (userSlug === 'default') { showApp('Default User'); return; }
+    document.getElementById('inactive-screen').classList.add('on');
+    return;
+  }
+  currentDist = dist;
+  // Sync records from admin state
+  if (dist.records && dist.records.length > 0) { recs = dist.records; saveRecs(); }
+
+  if (!dist.active) { document.getElementById('inactive-screen').classList.add('on'); return; }
+
+  // Check session
+  const session = sessionStorage.getItem('ot_session_'+userSlug);
+  const persisted = localStorage.getItem('ot_persist_'+userSlug);
+  if (session==='ok' || persisted==='ok' || !dist.requirePin) {
+    showApp(dist.name);
+  } else {
+    document.getElementById('ps-username').textContent = dist.name;
+    document.getElementById('pin-screen').classList.add('on');
+  }
+}
+
+function submitPin() {
+  const val = document.getElementById('pin-input').value.trim();
+  const dist = getDistributor();
+  if (!dist || val !== dist.pin) {
+    document.getElementById('pin-err').textContent = 'Incorrect PIN. Try again.';
+    return;
+  }
+  const stay = document.getElementById('stay-in').checked;
+  sessionStorage.setItem('ot_session_'+userSlug, 'ok');
+  if (stay) localStorage.setItem('ot_persist_'+userSlug, 'ok');
+  document.getElementById('pin-screen').classList.remove('on');
+  showApp(dist.name);
+}
+
+function showApp(name) {
+  document.getElementById('main-nav').style.display = 'flex';
+  document.getElementById('nav-name').textContent = name ? '/ '+name : '';
+  go('dash');
+}
+
+function doLogout() {
+  sessionStorage.removeItem('ot_session_'+userSlug);
+  localStorage.removeItem('ot_persist_'+userSlug);
+  document.getElementById('main-nav').style.display = 'none';
+  document.getElementById('pin-screen').classList.add('on');
+  document.getElementById('pin-input').value = '';
+  document.getElementById('pin-err').textContent = '';
+}
+
+// ── NAV ───────────────────────────────────
+function go(name) {
+  document.querySelectorAll('.pg').forEach(p=>p.classList.remove('on'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+  document.getElementById('pg-'+name).classList.add('on');
+  event.currentTarget && event.currentTarget.classList.add('on');
+  if (name==='data')  { buildFilter(); renderTable(); }
+  if (name==='dash')  { buildPills();  renderDash(); }
+}
+
+// ── MONTHS ────────────────────────────────
+function monthKeys() {
+  return [...new Set(recs.map(r=>r.year+'-'+String(r.month).padStart(2,'0')))].sort();
+}
+function buildPills() {
+  const keys=monthKeys();
+  const c=document.getElementById('mpills');
+  c.innerHTML='';
+  if (!keys.length) { c.innerHTML='<span style="font-size:13px;color:var(--text3)">No data yet — log an entry or import your CSV.</span>'; return; }
+  if (!active||!keys.includes(active.year+'-'+String(active.month).padStart(2,'0'))) active=mk(keys[keys.length-1]);
+  keys.forEach(k=>{
+    const {year,month}=mk(k);
+    const on=active&&active.year===year&&active.month===month;
+    const p=document.createElement('div');
+    p.className='pill'+(on?' on':'');
+    p.textContent=MO[month-1]+' '+year;
+    p.onclick=()=>{ active={year,month}; buildPills(); renderDash(); };
+    c.appendChild(p);
+  });
+}
+
+// ── DASHBOARD ─────────────────────────────
+function renderDash() {
+  if (!active) { buildPills(); return; }
+  const {year,month}=active;
+  const ms=recs.filter(r=>r.year===year&&r.month===month).sort((a,b)=>a.day-b.day);
+  if (!ms.length) { renderCharts([],[],[]); return; }
+  const last=ms[ms.length-1];
+  const incs=ms.map(r=>r.org_increase||0).filter(x=>x>0);
+  const avg=incs.length?Math.round(incs.reduce((a,b)=>a+b,0)/incs.length):0;
+  const best=ms.reduce((a,b)=>(b.org_increase||0)>(a.org_increase||0)?b:a,ms[0]);
+  const dg=last.dv_goal||DV_GOAL;
+  const pct=Math.min(100,Math.round((last.est_org_dv||0)/dg*100));
+  document.getElementById('mv').textContent=fmt(last.org_volume);
+  document.getElementById('ma').textContent=fmt(avg);
+  document.getElementById('mb').textContent=fmt(best.org_increase);
+  document.getElementById('mbd').textContent='Day '+best.day+' · '+MO[month-1];
+  document.getElementById('mp').textContent=pct+'%';
+  document.getElementById('mps').textContent='Est. DV: '+fmt(last.est_org_dv)+' / '+fmt(dg);
+  renderCharts(ms.map(r=>r.day),ms.map(r=>r.org_volume),ms.map(r=>r.org_increase||0));
+  renderGoalBars();
+}
+function renderCharts(labels,vols,incs) {
+  if (cVol){cVol.destroy();cVol=null} if (cInc){cInc.destroy();cInc=null}
+  if (!labels.length) return;
+  cVol=new Chart(document.getElementById('cv'),{type:'line',data:{labels,datasets:[{data:vols,borderColor:'#1a6645',backgroundColor:'rgba(26,102,69,.1)',fill:true,tension:.38,pointRadius:2.5,pointHoverRadius:5,borderWidth:2}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{color:'rgba(0,0,0,.04)'},ticks:{font:{size:11}}},y:{grid:{color:'rgba(0,0,0,.04)'},ticks:{font:{size:11},callback:v=>v>=1000?(v/1000).toFixed(0)+'k':v}}}}});
+  cInc=new Chart(document.getElementById('ci'),{type:'bar',data:{labels,datasets:[{data:incs,backgroundColor:incs.map(v=>v>=0?'#1a6645':'#b52b2b'),borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false},ticks:{font:{size:11}}},y:{grid:{color:'rgba(0,0,0,.04)'},ticks:{font:{size:11},callback:v=>v>=1000?(v/1000).toFixed(0)+'k':v}}}}});
+}
+function renderGoalBars() {
+  const c=document.getElementById('gp');
+  const keys=monthKeys().slice(-6);
+  if (!keys.length){c.innerHTML='<div class="empty"><p>No data</p></div>';return}
+  c.innerHTML=keys.map(k=>{
+    const {year,month}=mk(k);
+    const ms=recs.filter(r=>r.year===year&&r.month===month);
+    if(!ms.length)return'';
+    const last=ms.reduce((a,b)=>b.day>a.day?b:a,ms[0]);
+    const dg=last.dv_goal||DV_GOAL;
+    const est=last.est_org_dv||Math.round(last.org_volume*UPLIFT);
+    const pct=Math.min(100,Math.round(est/dg*100));
+    const col=pct>=100?'#1a6645':pct>=70?'#2a7a55':'#a0530f';
+    return`<div class="pb"><div class="pb-top"><span>${MO[month-1]} ${year}</span><span>${pct}% · ${fmt(est)} / ${fmt(dg)}</span></div><div class="pb-track"><div class="pb-fill" style="width:${pct}%;background:${col}"></div></div></div>`;
+  }).join('');
+}
+
+// ── TABLE ─────────────────────────────────
+function buildFilter(){
+  const sel=document.getElementById('fmonth');const cur=sel.value;
+  sel.innerHTML='<option value="">All months</option>'+monthKeys().map(k=>{const{year,month}=mk(k);return`<option value="${k}"${k===cur?' selected':''}>${MO[month-1]} ${year}</option>`;}).join('');
+}
+function renderTable(){
+  const sel=document.getElementById('fmonth').value;
+  let rows=[...recs].sort((a,b)=>key(b)<key(a)?-1:1);
+  if(sel){const{year,month}=mk(sel);rows=rows.filter(r=>r.year===year&&r.month===month)}
+  const body=document.getElementById('tbody');
+  if(!rows.length){body.innerHTML=`<tr><td colspan="9"><div class="empty"><p>No data yet.</p></div></td></tr>`;return}
+  body.innerHTML=rows.map(r=>{
+    const dk=key(r),editing=editKey===dk,sign=(r.org_increase||0)>=0?'+':'';
+    return`<tr><td>${MO[r.month-1]} ${r.day}, ${r.year}</td><td class="n">${r.day}</td><td class="n">${editing?`<input class="ei" id="eiv" value="${r.org_volume}" type="number">`:fmt(r.org_volume)}</td><td><span class="badge ${(r.org_increase||0)>=0?'bg':'br'}">${sign}${fmt(r.org_increase)}</span></td><td class="n">${fmt(r.dv_remaining)}</td><td class="n">${fmt(r.org_daily_avg)}</td><td class="n">${fmt(r.est_org_dv)}</td><td class="n">${fmt(r.uplift_per_day)}</td><td style="white-space:nowrap">${editing?`<button class="btn bp bsm" onclick="saveEdit('${dk}')">Save</button> <button class="btn bo bsm" onclick="cancelEdit()">×</button>`:`<button class="btn bo bsm" onclick="startEdit('${dk}')">Edit</button> <button class="btn bdng bsm" onclick="del('${dk}')">Del</button>`}</td></tr>`;
+  }).join('');
+}
+function startEdit(k){editKey=k;renderTable()}
+function cancelEdit(){editKey=null;renderTable()}
+function saveEdit(k){
+  const[y,m,d]=k.split('-').map(Number);const r=recs.find(x=>x.year===y&&x.month===m&&x.day===d);
+  if(!r)return;const v=+document.getElementById('eiv').value;
+  if(!v||v<0){toast('Invalid value');return}
+  r.org_volume=v;recalcAll();editKey=null;renderAll();toast('Entry updated');
+}
+function del(k){
+  if(!confirm('Delete this entry?'))return;
+  const[y,m,d]=k.split('-').map(Number);
+  recs=recs.filter(r=>!(r.year===y&&r.month===m&&r.day===d));
+  recalcAll();renderAll();toast('Entry deleted');
+}
+function exportCSV(){
+  const hdr=['Date','Day','Org Volume','Org Increase','DV Remaining','Avg Needed/Day','Est Org DV','Uplift/Day'];
+  const rows=[...recs].sort((a,b)=>key(a)<key(b)?-1:1).map(r=>[MO[r.month-1]+' '+r.day+' '+r.year,r.day,r.org_volume,r.org_increase,r.dv_remaining,r.org_daily_avg,r.est_org_dv,r.uplift_per_day].join(','));
+  const csv=[hdr.join(','),...rows].join('\n');
+  const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);a.download='orgtrack_'+userSlug+'_export.csv';a.click();
+}
+
+// ── ENTRY ─────────────────────────────────
+function onPinChange(){document.getElementById('cdvw').style.display=document.getElementById('epin').value==='custom'?'flex':'none';previewEntry()}
+function previewEntry(){
+  const vol=+document.getElementById('ev').value,month=+document.getElementById('em').value,year=+document.getElementById('ey').value,day=+document.getElementById('ed').value;
+  if(!vol||!day){document.getElementById('eprev').style.display='none';return}
+  const prev=recs.filter(r=>r.month===month&&r.year===year&&r.day<day).sort((a,b)=>b.day-a.day)[0];
+  const inc=prev?vol-prev.org_volume:vol;
+  const dims=new Date(year,month,0).getDate(),left=dims-day;
+  const pin=document.getElementById('epin').value;
+  const dg=pin==='custom'?(+document.getElementById('edv').value||DV_GOAL):PIN_MAP[pin]||DV_GOAL;
+  const dvRem=Math.max(0,dg-vol*UPLIFT);
+  const need=left>0?Math.round(dvRem/left):0;
+  document.getElementById('pi').textContent=(inc>=0?'+':'')+fmt(inc);
+  document.getElementById('pd').textContent=fmt(dvRem);
+  document.getElementById('pn').textContent=fmt(need)+'/day';
+  document.getElementById('eprev').style.display='block';
+}
+['ev','ed','em','ey'].forEach(id=>{
+  document.getElementById(id).addEventListener('input',previewEntry);
+  document.getElementById(id).addEventListener('change',previewEntry);
+});
+function saveEntry(){
+  const month=+document.getElementById('em').value,year=+document.getElementById('ey').value,day=+document.getElementById('ed').value,vol=+document.getElementById('ev').value;
+  const pin=document.getElementById('epin').value,dg=pin==='custom'?(+document.getElementById('edv').value||DV_GOAL):PIN_MAP[pin]||DV_GOAL;
+  if(!day||!vol){toast('Please fill in day and org volume');return}
+  const idx=recs.findIndex(r=>r.year===year&&r.month===month&&r.day===day);
+  const rec={year,month,day,org_volume:vol,dv_goal:dg,pin_goal:'Mill '+pin};
+  if(idx>=0){recs[idx]={...recs[idx],...rec}}else{recs.push(rec)}
+  recalcAll();active={year,month};renderAll();toast('Entry saved!');
+}
+function clearEntry(){document.getElementById('ev').value='';document.getElementById('ed').value='';document.getElementById('eprev').style.display='none'}
+
+// ── IMPORT ────────────────────────────────
+function handleDrop(e){e.preventDefault();document.getElementById('dz').classList.remove('drag');handleFiles(e.dataTransfer.files)}
+function handleFiles(files){
+  const log=document.getElementById('ilog');log.innerHTML='';
+  Array.from(files).forEach(file=>{
+    const reader=new FileReader();
+    reader.onload=e=>{
+      try{const res=parseCSV(e.target.result,file.name);recalcAll();active=monthKeys().length?mk(monthKeys()[monthKeys().length-1]):null;renderAll();log.innerHTML+=`<div style="font-size:13px;color:var(--green);margin-bottom:6px">✓ ${file.name}: ${res.added} entries imported</div>`;toast('Imported '+res.added+' entries')}
+      catch(err){log.innerHTML+=`<div style="font-size:13px;color:var(--red);margin-bottom:6px">✗ ${file.name}: ${err.message}</div>`}
+    };reader.readAsText(file);
+  });
+}
+function parseCSV(text,filename){
+  const lines=text.split('\n').map(l=>l.trim()).filter(Boolean);
+  const mmap={january:1,february:2,march:3,april:4,may:5,june:6,july:7,august:8,september:9,october:10,november:11,december:12};
+  let month=null,year=new Date().getFullYear();
+  const fc=(lines[0]||'').split(',')[0].toLowerCase().trim();
+  if(mmap[fc])month=mmap[fc];
+  if(!month)Object.entries(mmap).forEach(([n,v])=>{if(filename.toLowerCase().includes(n))month=v});
+  const ym=filename.match(/20\d\d/);if(ym)year=+ym[0];
+  if(!month)throw new Error('Could not detect month — name file by month or put month name in cell A1');
+  let added=0;
+  lines.forEach(line=>{
+    const cols=line.split(',');const day=parseInt(cols[0]);const vol=parseFloat((cols[1]||'').replace(/[^0-9.]/g,''));
+    if(!isNaN(day)&&day>=1&&day<=31&&!isNaN(vol)&&vol>0){
+      const idx=recs.findIndex(r=>r.year===year&&r.month===month&&r.day===day);
+      const rec={year,month,day,org_volume:vol,dv_goal:DV_GOAL,pin_goal:'Mill 7.5'};
+      if(idx>=0){recs[idx]={...recs[idx],...rec}}else{recs.push(rec);added++}
+    }
+  });
+  return{added};
+}
+
+// ── SUPABASE ──────────────────────────────
+function saveSB(){
+  const url=document.getElementById('sbu').value.trim(),k=document.getElementById('sbk').value.trim();
+  if(!url||!k){toast('Enter URL and key');return}
+  sbCfg={url,k};localStorage.setItem('ot_sb_'+userSlug,JSON.stringify(sbCfg));
+  const st=document.getElementById('sbst');st.textContent='Testing...';
+  fetch(sbCfg.url+'/rest/v1/org_volume?limit=1',{headers:{'apikey':sbCfg.k,'Authorization':'Bearer '+sbCfg.k}})
+    .then(r=>{st.innerHTML=r.ok?'<span style="color:var(--green)">✓ Connected</span>':'<span style="color:var(--red)">✗ Failed ('+r.status+')</span>'})
+    .catch(e=>{st.innerHTML='<span style="color:var(--red)">✗ '+e.message+'</span>'});
+}
+
+// ── TOAST + RENDER ALL ────────────────────
+function toast(msg,ms=2800){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('on');setTimeout(()=>t.classList.remove('on'),ms)}
+function renderAll(){buildPills();renderDash();buildFilter();renderTable()}
+
+// ── INIT ──────────────────────────────────
+const now=new Date();
+document.getElementById('em').value=now.getMonth()+1;
+document.getElementById('ey').value=now.getFullYear();
+document.getElementById('ed').value=now.getDate();
+if(sbCfg){document.getElementById('sbu').value=sbCfg.url||'';document.getElementById('sbk').value=sbCfg.k||''}
+initAuth();
+</script>
+</body>
+</html>

@@ -1,0 +1,1029 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>OrgTrack Admin</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --ink:#0f0f0a;--ink2:#3a3a30;--ink3:#7a7a6a;--ink4:#b0b09a;
+  --paper:#f8f6f0;--paper2:#efefea;--paper3:#e5e4dc;
+  --gold:#8a6c1a;--gold2:#f5edcc;--gold3:#e8d89a;
+  --green:#1a5c3a;--green2:#e4f0e8;--green3:#b8ddc4;
+  --red:#8a1a1a;--red2:#f5e4e4;
+  --blue:#1a3a6c;--blue2:#e4eaf5;
+  --border:#dddbd0;--border2:#c8c6ba;
+  --r:10px;--shadow:0 2px 8px rgba(0,0,0,.07),0 1px 2px rgba(0,0,0,.05);
+}
+body{font-family:'DM Sans',sans-serif;background:var(--paper);color:var(--ink);min-height:100vh;font-size:14px}
+
+/* ── LOGIN ── */
+#login-screen{position:fixed;inset:0;background:var(--ink);display:flex;align-items:center;justify-content:center;z-index:1000;flex-direction:column;gap:0}
+.ls-card{background:var(--paper);width:360px;border-radius:16px;overflow:hidden;box-shadow:0 24px 80px rgba(0,0,0,.4)}
+.ls-head{background:var(--ink);padding:32px;text-align:center}
+.ls-logo{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:#fff;letter-spacing:-.5px}
+.ls-logo span{color:var(--gold3)}
+.ls-sub{font-size:12px;color:var(--ink3);margin-top:4px;font-family:'DM Mono',monospace;letter-spacing:.5px}
+.ls-body{padding:28px}
+.ls-label{font-size:11px;font-weight:500;letter-spacing:.6px;text-transform:uppercase;color:var(--ink3);margin-bottom:6px;display:block}
+.ls-input{width:100%;height:44px;border:1px solid var(--border);border-radius:8px;padding:0 14px;font-size:15px;font-family:'DM Mono',monospace;letter-spacing:4px;text-align:center;background:var(--paper2);color:var(--ink);outline:none;margin-bottom:14px;transition:.15s}
+.ls-input:focus{border-color:var(--gold);background:#fff}
+.ls-btn{width:100%;height:44px;background:var(--ink);color:#fff;border:none;border-radius:8px;font-family:'Syne',sans-serif;font-size:14px;font-weight:600;cursor:pointer;letter-spacing:.3px;transition:.15s}
+.ls-btn:hover{background:var(--ink2)}
+.ls-err{font-size:12px;color:var(--red);text-align:center;margin-top:10px;min-height:16px}
+
+/* ── TOP NAV ── */
+.topnav{background:var(--ink);height:54px;display:flex;align-items:center;padding:0 24px;gap:0;position:sticky;top:0;z-index:100}
+.tn-logo{font-family:'Syne',sans-serif;font-size:17px;font-weight:800;color:#fff;letter-spacing:-.4px;margin-right:32px}
+.tn-logo span{color:var(--gold3)}
+.tn-badge{font-size:10px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;background:var(--gold);color:#fff;padding:2px 8px;border-radius:20px;margin-right:auto}
+.tn-tab{height:54px;padding:0 14px;display:flex;align-items:center;font-size:13px;font-weight:500;color:rgba(255,255,255,.5);cursor:pointer;border-bottom:2px solid transparent;transition:.12s;white-space:nowrap;user-select:none;font-family:'DM Sans',sans-serif}
+.tn-tab:hover{color:rgba(255,255,255,.8)}
+.tn-tab.on{color:#fff;border-bottom-color:var(--gold3)}
+.tn-right{margin-left:auto;display:flex;align-items:center;gap:12px}
+.tn-user{font-size:12px;color:rgba(255,255,255,.45);font-family:'DM Mono',monospace}
+.tn-logout{font-size:12px;color:rgba(255,255,255,.4);cursor:pointer;padding:4px 10px;border:1px solid rgba(255,255,255,.15);border-radius:6px;transition:.12s}
+.tn-logout:hover{color:#fff;border-color:rgba(255,255,255,.4)}
+
+/* ── PAGES ── */
+.pg{display:none;padding:24px;max-width:1160px;margin:0 auto}
+.pg.on{display:block}
+
+/* ── PAGE HEADER ── */
+.ph{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:22px;gap:16px;flex-wrap:wrap}
+.ph-title{font-family:'Syne',sans-serif;font-size:22px;font-weight:700;color:var(--ink);letter-spacing:-.4px}
+.ph-sub{font-size:13px;color:var(--ink3);margin-top:3px}
+
+/* ── CARDS ── */
+.card{background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:20px;box-shadow:var(--shadow)}
+.ct{font-size:11px;font-weight:600;letter-spacing:.6px;text-transform:uppercase;color:var(--ink4);margin-bottom:14px}
+
+/* ── METRICS ── */
+.mstrip{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px}
+.met{background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;box-shadow:var(--shadow)}
+.met-l{font-size:11px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:var(--ink4);margin-bottom:5px}
+.met-v{font-size:24px;font-weight:600;letter-spacing:-.5px;font-family:'DM Mono',monospace;color:var(--ink)}
+.met-s{font-size:11px;color:var(--ink4);margin-top:3px}
+
+/* ── DISTRIBUTOR GRID ── */
+.dgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;margin-bottom:20px}
+.dcard{background:#fff;border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--shadow);overflow:hidden;transition:.15s;cursor:pointer}
+.dcard:hover{box-shadow:0 4px 20px rgba(0,0,0,.1);transform:translateY(-1px)}
+.dcard.inactive{opacity:.55}
+.dc-head{padding:16px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px}
+.dc-av{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:700;font-size:14px;flex-shrink:0}
+.dc-name{font-family:'Syne',sans-serif;font-weight:600;font-size:14px;letter-spacing:-.2px}
+.dc-slug{font-size:11px;color:var(--ink3);font-family:'DM Mono',monospace;margin-top:2px}
+.dc-body{padding:14px 18px}
+.dc-row{display:flex;justify-content:space-between;font-size:12px;margin-bottom:6px}
+.dc-row span:first-child{color:var(--ink3)}
+.dc-row span:last-child{font-family:'DM Mono',monospace;font-weight:500}
+.dc-foot{padding:10px 18px;background:var(--paper2);display:flex;gap:7px;border-top:1px solid var(--border)}
+.badge{display:inline-flex;align-items:center;font-size:10px;font-weight:600;padding:2px 8px;border-radius:20px;letter-spacing:.3px;white-space:nowrap}
+.b-admin{background:var(--gold2);color:var(--gold)}
+.b-active{background:var(--green2);color:var(--green)}
+.b-inactive{background:var(--paper3);color:var(--ink3)}
+.b-pin{background:var(--blue2);color:var(--blue)}
+
+/* ── BUTTONS ── */
+.btn{height:34px;padding:0 14px;border-radius:8px;font-size:12px;font-weight:500;font-family:'DM Sans',sans-serif;cursor:pointer;transition:.12s;border:1px solid transparent;white-space:nowrap;display:inline-flex;align-items:center;gap:5px}
+.bp{background:var(--ink);color:#fff;border-color:var(--ink)}
+.bp:hover{background:var(--ink2)}
+.bo{background:#fff;color:var(--ink);border-color:var(--border2)}
+.bo:hover{background:var(--paper2)}
+.bg_{background:var(--green2);color:var(--green);border-color:var(--green3)}
+.bg_:hover{background:var(--green3)}
+.br_{background:var(--red2);color:var(--red);border-color:#e8b8b8}
+.br_:hover{background:#f0cccc}
+.bgo{background:var(--gold2);color:var(--gold);border-color:var(--gold3)}
+.bgo:hover{background:var(--gold3)}
+.btn-sm{height:28px;padding:0 10px;font-size:11px}
+
+/* ── FORM ── */
+.fg{display:flex;flex-direction:column;gap:5px}
+.fg label{font-size:11px;font-weight:600;letter-spacing:.4px;text-transform:uppercase;color:var(--ink3)}
+.fg input,.fg select,.fg textarea{height:36px;padding:0 11px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-family:'DM Sans',sans-serif;color:var(--ink);background:#fff;outline:none;transition:.12s}
+.fg input:focus,.fg select:focus{border-color:var(--gold)}
+.fg input[type=number]{font-family:'DM Mono',monospace}
+.fg textarea{height:auto;padding:9px 11px;resize:vertical}
+.frow{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;margin-bottom:12px}
+
+/* ── MODAL ── */
+.modal-bg{position:fixed;inset:0;background:rgba(15,15,10,.6);z-index:500;display:none;align-items:center;justify-content:center;padding:20px}
+.modal-bg.on{display:flex}
+.modal{background:#fff;border-radius:14px;width:100%;max-width:500px;box-shadow:0 24px 80px rgba(0,0,0,.25);overflow:hidden}
+.mh{background:var(--ink);padding:20px 24px;display:flex;align-items:center;justify-content:space-between}
+.mh-title{font-family:'Syne',sans-serif;font-size:16px;font-weight:700;color:#fff;letter-spacing:-.2px}
+.mh-close{color:rgba(255,255,255,.4);cursor:pointer;font-size:18px;line-height:1;padding:4px;transition:.12s}
+.mh-close:hover{color:#fff}
+.mb{padding:22px 24px}
+.mf{padding:16px 24px;background:var(--paper2);display:flex;gap:9px;justify-content:flex-end;border-top:1px solid var(--border)}
+
+/* ── TABLE ── */
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{font-size:11px;font-weight:600;letter-spacing:.4px;text-transform:uppercase;color:var(--ink4);padding:8px 12px;text-align:left;border-bottom:1px solid var(--border);background:#fff;white-space:nowrap}
+td{padding:9px 12px;border-bottom:1px solid var(--border);vertical-align:middle}
+tr:hover td{background:var(--paper2)}
+.n{font-family:'DM Mono',monospace;font-size:12px}
+
+/* ── DISTRIBUTOR VIEW ── */
+.dv-header{background:var(--ink);border-radius:var(--r);padding:20px 24px;margin-bottom:18px;display:flex;align-items:center;gap:16px}
+.dv-av{width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;font-size:18px;flex-shrink:0}
+.dv-name{font-family:'Syne',sans-serif;font-size:20px;font-weight:700;color:#fff;letter-spacing:-.4px}
+.dv-meta{font-size:12px;color:rgba(255,255,255,.45);font-family:'DM Mono',monospace;margin-top:3px}
+.dv-actions{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
+
+/* ── PIN DISPLAY ── */
+.pin-display{font-family:'DM Mono',monospace;font-size:20px;font-weight:500;letter-spacing:6px;background:var(--paper2);border:1px solid var(--border);border-radius:8px;padding:10px 16px;display:inline-block}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:18px;right:18px;background:var(--ink);color:var(--paper);padding:11px 18px;border-radius:10px;font-size:13px;font-weight:500;z-index:999;transform:translateY(50px);opacity:0;transition:.22s;pointer-events:none;font-family:'DM Sans',sans-serif}
+.toast.on{transform:translateY(0);opacity:1}
+
+/* ── TOGGLE ── */
+.tog{position:relative;display:inline-block;width:36px;height:20px;flex-shrink:0}
+.tog input{opacity:0;width:0;height:0;position:absolute}
+.tog-sl{position:absolute;inset:0;background:var(--border2);border-radius:20px;cursor:pointer;transition:.2s}
+.tog-sl:before{content:'';position:absolute;width:14px;height:14px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.2s}
+.tog input:checked + .tog-sl{background:var(--green)}
+.tog input:checked + .tog-sl:before{transform:translateX(16px)}
+
+/* ── URL PILL ── */
+.url-pill{font-family:'DM Mono',monospace;font-size:11px;background:var(--paper2);border:1px solid var(--border);border-radius:6px;padding:4px 9px;color:var(--ink2);cursor:pointer;transition:.12s;white-space:nowrap}
+.url-pill:hover{background:var(--paper3)}
+
+/* ── MONTH TEMPLATE ── */
+.mt-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;margin-top:10px}
+.mt-btn{padding:10px;border:1px solid var(--border);border-radius:8px;text-align:center;cursor:pointer;font-size:12px;font-weight:500;background:#fff;color:var(--ink2);transition:.12s}
+.mt-btn:hover{background:var(--paper2);border-color:var(--border2)}
+.mt-btn.has-data{background:var(--green2);border-color:var(--green3);color:var(--green)}
+
+/* ── EMPTY ── */
+.empty{text-align:center;padding:44px;color:var(--ink4)}
+.empty p{font-size:13px;margin-top:8px;line-height:1.65}
+
+/* ── CHART ── */
+.ch{position:relative;width:100%;height:200px}
+
+/* ── PROGRESS ── */
+.pb{margin-bottom:10px}
+.pb-top{display:flex;justify-content:space-between;font-size:11px;color:var(--ink3);margin-bottom:4px}
+.pb-track{height:6px;background:var(--paper3);border-radius:3px;overflow:hidden}
+.pb-fill{height:100%;border-radius:3px;transition:.4s}
+
+/* ── SECTION DIVIDER ── */
+.divider{height:1px;background:var(--border);margin:20px 0}
+
+@media(max-width:700px){
+  .mstrip{grid-template-columns:1fr 1fr}
+  .dgrid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- ─── ADMIN LOGIN ─────────────────────────── -->
+<div id="login-screen">
+  <div class="ls-card">
+    <div class="ls-head">
+      <div class="ls-logo">Org<span>Track</span></div>
+      <div class="ls-sub" style="color:rgba(255,255,255,.35)">ADMIN PORTAL</div>
+    </div>
+    <div class="ls-body">
+      <label class="ls-label">Admin PIN</label>
+      <input class="ls-input" type="password" id="admin-pin-input" maxlength="8" placeholder="••••••" onkeydown="if(event.key==='Enter')doAdminLogin()">
+      <button class="ls-btn" onclick="doAdminLogin()">Access Admin Dashboard</button>
+      <div class="ls-err" id="login-err"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── TOP NAV ────────────────────────────── -->
+<nav class="topnav" id="topnav" style="display:none">
+  <div class="tn-logo">Org<span>Track</span></div>
+  <div class="tn-badge">ADMIN</div>
+  <div class="tn-tab on" onclick="goPage('overview')">Overview</div>
+  <div class="tn-tab" onclick="goPage('distributors')">Distributors</div>
+  <div class="tn-tab" onclick="goPage('settings')">Settings</div>
+  <div class="tn-right">
+    <span class="tn-user" id="admin-user-label"></span>
+    <span class="tn-logout" onclick="adminLogout()">Log out</span>
+  </div>
+</nav>
+
+<!-- ─── OVERVIEW ───────────────────────────── -->
+<div id="pg-overview" class="pg">
+  <div class="ph">
+    <div>
+      <div class="ph-title">Dashboard Overview</div>
+      <div class="ph-sub">All distributor organizations at a glance</div>
+    </div>
+    <button class="btn bp" onclick="openCreateModal()">＋ New Distributor</button>
+  </div>
+  <div class="mstrip" id="ov-metrics"></div>
+  <div class="card" style="margin-bottom:18px">
+    <div class="ct">All Distributors — Current Month Progress</div>
+    <div id="ov-progress"></div>
+  </div>
+  <div class="card">
+    <div class="ct">Recent Activity</div>
+    <div id="ov-activity"></div>
+  </div>
+</div>
+
+<!-- ─── DISTRIBUTORS ───────────────────────── -->
+<div id="pg-distributors" class="pg">
+  <div class="ph">
+    <div>
+      <div class="ph-title">Distributors</div>
+      <div class="ph-sub">Manage accounts, access, and monthly templates</div>
+    </div>
+    <button class="btn bp" onclick="openCreateModal()">＋ New Distributor</button>
+  </div>
+  <div class="dgrid" id="dist-grid"></div>
+</div>
+
+<!-- ─── DISTRIBUTOR DETAIL ─────────────────── -->
+<div id="pg-dist-detail" class="pg">
+  <button class="btn bo" style="margin-bottom:16px" onclick="goPage('distributors')">← Back to Distributors</button>
+  <div id="dd-content"></div>
+</div>
+
+<!-- ─── SETTINGS ──────────────────────────── -->
+<div id="pg-settings" class="pg">
+  <div class="ph">
+    <div class="ph-title">Admin Settings</div>
+    <div class="ph-sub">Platform configuration and admin access</div>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;max-width:800px">
+    <div class="card">
+      <div class="ct">Admin PIN</div>
+      <p style="font-size:13px;color:var(--ink3);margin-bottom:14px;line-height:1.6">Change your admin login PIN. This applies to the admin portal only.</p>
+      <div class="fg" style="margin-bottom:10px"><label>Current PIN</label><input type="password" id="old-pin" placeholder="••••••"></div>
+      <div class="fg" style="margin-bottom:10px"><label>New PIN</label><input type="password" id="new-pin" placeholder="••••••"></div>
+      <div class="fg" style="margin-bottom:14px"><label>Confirm New PIN</label><input type="password" id="new-pin2" placeholder="••••••"></div>
+      <button class="btn bp" onclick="changeAdminPin()">Update PIN</button>
+      <div id="pin-change-msg" style="font-size:12px;margin-top:8px;min-height:16px"></div>
+    </div>
+    <div class="card">
+      <div class="ct">Supabase Connection</div>
+      <p style="font-size:13px;color:var(--ink3);margin-bottom:14px;line-height:1.6">Configure backend persistence. Without Supabase, data lives in localStorage only.</p>
+      <div class="fg" style="margin-bottom:10px"><label>Project URL</label><input type="url" id="sb-url" placeholder="https://xxxx.supabase.co"></div>
+      <div class="fg" style="margin-bottom:14px"><label>Anon Key</label><input type="text" id="sb-key" placeholder="eyJhbGci..."></div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <button class="btn bp" onclick="saveSB()">Save & Test</button>
+        <span id="sb-status" style="font-size:12px"></span>
+      </div>
+    </div>
+    <div class="card" style="grid-column:1/-1">
+      <div class="ct">Admin Access — Colleagues</div>
+      <p style="font-size:13px;color:var(--ink3);margin-bottom:14px;line-height:1.6">Grant admin-level access to a trusted colleague. They get their own PIN and see everything you see.</p>
+      <div id="admin-list" style="margin-bottom:14px"></div>
+      <button class="btn bgo" onclick="openAddAdminModal()">＋ Add Admin Colleague</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── MODAL: CREATE DISTRIBUTOR ─────────── -->
+<div class="modal-bg" id="modal-create">
+  <div class="modal">
+    <div class="mh">
+      <div class="mh-title">New Distributor</div>
+      <div class="mh-close" onclick="closeModal('modal-create')">✕</div>
+    </div>
+    <div class="mb">
+      <div class="frow">
+        <div class="fg" style="flex:1"><label>Full Name</label><input type="text" id="nc-name" placeholder="e.g. Maria Jones" oninput="autoSlug()"></div>
+      </div>
+      <div class="frow">
+        <div class="fg" style="flex:1">
+          <label>URL Slug <span style="font-weight:400;text-transform:none;font-size:10px">(used in their link)</span></label>
+          <input type="text" id="nc-slug" placeholder="e.g. maria-jones">
+        </div>
+      </div>
+      <div style="background:var(--paper2);border:1px solid var(--border);border-radius:8px;padding:11px 14px;margin-bottom:14px;font-size:12px;color:var(--ink3)">
+        Their link will be: <span id="nc-url-preview" style="font-family:'DM Mono',monospace;color:var(--ink2)">orgtrack.html?user=</span>
+      </div>
+      <div class="frow">
+        <div class="fg" style="flex:1">
+          <label>PIN Goal</label>
+          <select id="nc-pin-goal">
+            <option value="7.5">Mill 7.5 — 113,636 DV</option>
+            <option value="5">Mill 5 — 75,757 DV</option>
+            <option value="3">Mill 3 — 45,454 DV</option>
+            <option value="1">Millionaire — 15,151 DV</option>
+          </select>
+        </div>
+        <div class="fg">
+          <label>Access PIN</label>
+          <div style="display:flex;gap:6px;align-items:center">
+            <input type="text" id="nc-access-pin" placeholder="Auto" style="width:90px;font-family:'DM Mono',monospace;letter-spacing:2px" maxlength="6" readonly>
+            <button class="btn bo btn-sm" onclick="genPin()">Generate</button>
+          </div>
+        </div>
+      </div>
+      <div class="frow" style="align-items:center;gap:14px">
+        <div style="display:flex;align-items:center;gap:8px;font-size:13px">
+          <label class="tog"><input type="checkbox" id="nc-require-pin" checked><span class="tog-sl"></span></label>
+          Require PIN on every visit
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;font-size:13px">
+          <label class="tog"><input type="checkbox" id="nc-is-admin"><span class="tog-sl"></span></label>
+          Admin access
+        </div>
+      </div>
+    </div>
+    <div class="mf">
+      <button class="btn bo" onclick="closeModal('modal-create')">Cancel</button>
+      <button class="btn bp" onclick="createDistributor()">Create Account</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── MODAL: RESET PIN ───────────────────── -->
+<div class="modal-bg" id="modal-reset-pin">
+  <div class="modal">
+    <div class="mh">
+      <div class="mh-title">Reset Access PIN</div>
+      <div class="mh-close" onclick="closeModal('modal-reset-pin')">✕</div>
+    </div>
+    <div class="mb">
+      <p style="font-size:13px;color:var(--ink3);margin-bottom:18px;line-height:1.6">Generate a new PIN for <strong id="rp-name"></strong>. Share the new PIN with them directly.</p>
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
+        <div class="pin-display" id="rp-pin">——————</div>
+        <button class="btn bo" onclick="genResetPin()">Generate New</button>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;font-size:13px">
+        <label class="tog"><input type="checkbox" id="rp-require" checked><span class="tog-sl"></span></label>
+        Require PIN on every visit
+      </div>
+    </div>
+    <div class="mf">
+      <button class="btn bo" onclick="closeModal('modal-reset-pin')">Cancel</button>
+      <button class="btn bp" onclick="saveResetPin()">Save New PIN</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── MODAL: ADD ADMIN ───────────────────── -->
+<div class="modal-bg" id="modal-add-admin">
+  <div class="modal">
+    <div class="mh">
+      <div class="mh-title">Add Admin Colleague</div>
+      <div class="mh-close" onclick="closeModal('modal-add-admin')">✕</div>
+    </div>
+    <div class="mb">
+      <div class="frow"><div class="fg" style="flex:1"><label>Name</label><input type="text" id="aa-name" placeholder="e.g. Sarah Chen"></div></div>
+      <div class="frow">
+        <div class="fg">
+          <label>Admin PIN</label>
+          <div style="display:flex;gap:6px;align-items:center">
+            <input type="text" id="aa-pin" placeholder="Auto" style="width:90px;font-family:'DM Mono',monospace;letter-spacing:2px" maxlength="6" readonly>
+            <button class="btn bo btn-sm" onclick="genAdminPin()">Generate</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="mf">
+      <button class="btn bo" onclick="closeModal('modal-add-admin')">Cancel</button>
+      <button class="btn bgo" onclick="saveAdminColleague()">Grant Admin Access</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── MODAL: LOG ENTRY (for a distributor) ─ -->
+<div class="modal-bg" id="modal-log-entry">
+  <div class="modal">
+    <div class="mh">
+      <div class="mh-title" id="le-title">Log Entry</div>
+      <div class="mh-close" onclick="closeModal('modal-log-entry')">✕</div>
+    </div>
+    <div class="mb">
+      <div class="frow">
+        <div class="fg"><label>Month</label>
+          <select id="le-month">
+            <option value="1">January</option><option value="2">February</option><option value="3">March</option>
+            <option value="4">April</option><option value="5">May</option><option value="6">June</option>
+            <option value="7">July</option><option value="8">August</option><option value="9">September</option>
+            <option value="10">October</option><option value="11">November</option><option value="12">December</option>
+          </select>
+        </div>
+        <div class="fg"><label>Year</label><input type="number" id="le-year" value="2026" style="width:85px"></div>
+        <div class="fg"><label>Day</label><input type="number" id="le-day" min="1" max="31" style="width:75px"></div>
+      </div>
+      <div class="frow">
+        <div class="fg" style="flex:1"><label>Org Volume</label><input type="number" id="le-vol" placeholder="e.g. 45000"></div>
+      </div>
+    </div>
+    <div class="mf">
+      <button class="btn bo" onclick="closeModal('modal-log-entry')">Cancel</button>
+      <button class="btn bp" onclick="saveLogEntry()">Save Entry</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ══════════════════════════════════════════
+//  CONSTANTS
+// ══════════════════════════════════════════
+const DV_GOAL = 113636;
+const UPLIFT  = 1.32;
+const PIN_MAP  = {'7.5':113636,'5':75757,'3':45454,'1':15151};
+const MO = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const MONTH_FULL = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+const COLORS = ['#1a5c3a','#1a3a6c','#6c1a3a','#3a1a6c','#6c3a1a','#1a6c5c','#5c1a6c','#3a6c1a'];
+
+// ══════════════════════════════════════════
+//  STATE
+// ══════════════════════════════════════════
+let state = JSON.parse(localStorage.getItem('ot_admin') || 'null') || {
+  adminPin: '000000',
+  admins: [{id:'root',name:'You (Primary Admin)',pin:'000000',isRoot:true}],
+  distributors: [],
+  sbUrl: '', sbKey: ''
+};
+let currentUser = null; // which admin is logged in
+let viewingDist = null; // slug of distributor being viewed
+let resetPinTarget = null;
+let detailChart = null;
+
+function saveState() { localStorage.setItem('ot_admin', JSON.stringify(state)); }
+const fmt = n => n==null?'—':Math.round(n).toLocaleString();
+const genPinStr = () => String(Math.floor(100000 + Math.random()*900000));
+const initials = name => name.trim().split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+const colorFor = slug => COLORS[Math.abs(slug.split('').reduce((a,c)=>a+c.charCodeAt(0),0)) % COLORS.length];
+
+// ══════════════════════════════════════════
+//  AUTH
+// ══════════════════════════════════════════
+function doAdminLogin() {
+  const pin = document.getElementById('admin-pin-input').value.trim();
+  const err = document.getElementById('login-err');
+  // Check root admin
+  const admin = state.admins.find(a => a.pin === pin);
+  if (!admin) { err.textContent = 'Incorrect PIN. Try again.'; return; }
+  currentUser = admin;
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('topnav').style.display = 'flex';
+  document.getElementById('admin-user-label').textContent = admin.name;
+  goPage('overview');
+}
+function adminLogout() {
+  currentUser = null;
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('topnav').style.display = 'none';
+  document.getElementById('admin-pin-input').value = '';
+  document.getElementById('login-err').textContent = '';
+}
+function changeAdminPin() {
+  const old = document.getElementById('old-pin').value;
+  const n1  = document.getElementById('new-pin').value;
+  const n2  = document.getElementById('new-pin2').value;
+  const msg = document.getElementById('pin-change-msg');
+  if (old !== state.adminPin) { msg.style.color='var(--red)'; msg.textContent='Current PIN incorrect'; return; }
+  if (n1.length < 4) { msg.style.color='var(--red)'; msg.textContent='PIN must be at least 4 digits'; return; }
+  if (n1 !== n2) { msg.style.color='var(--red)'; msg.textContent='New PINs do not match'; return; }
+  state.adminPin = n1;
+  state.admins.find(a=>a.isRoot).pin = n1;
+  currentUser.pin = n1;
+  saveState();
+  msg.style.color='var(--green)'; msg.textContent='PIN updated successfully';
+}
+
+// ══════════════════════════════════════════
+//  PAGE NAV
+// ══════════════════════════════════════════
+function goPage(name) {
+  document.querySelectorAll('.pg').forEach(p=>p.classList.remove('on'));
+  document.querySelectorAll('.tn-tab').forEach(t=>t.classList.remove('on'));
+  document.getElementById('pg-'+name).classList.add('on');
+  const tabMap = {overview:0,distributors:1,settings:2};
+  if (tabMap[name]!=null) document.querySelectorAll('.tn-tab')[tabMap[name]].classList.add('on');
+  if (name==='overview') renderOverview();
+  if (name==='distributors') renderDistGrid();
+  if (name==='settings') renderSettings();
+}
+
+// ══════════════════════════════════════════
+//  OVERVIEW
+// ══════════════════════════════════════════
+function renderOverview() {
+  const dists = state.distributors;
+  const active = dists.filter(d=>d.active).length;
+  const now = new Date(); const cm = now.getMonth()+1; const cy = now.getFullYear();
+  let totalVol = 0, totalEntries = 0;
+  dists.forEach(d => {
+    const mr = (d.records||[]).filter(r=>r.month===cm&&r.year===cy);
+    if (mr.length) { totalVol += mr[mr.length-1].org_volume||0; totalEntries += mr.length; }
+  });
+  document.getElementById('ov-metrics').innerHTML = `
+    <div class="met"><div class="met-l">Total Distributors</div><div class="met-v">${dists.length}</div><div class="met-s">${active} active</div></div>
+    <div class="met"><div class="met-l">Active This Month</div><div class="met-v">${dists.filter(d=>{const mr=(d.records||[]).filter(r=>r.month===cm&&r.year===cy);return mr.length>0;}).length}</div><div class="met-s">${MO[cm-1]} ${cy}</div></div>
+    <div class="met"><div class="met-l">Combined Org Vol</div><div class="met-v">${fmt(totalVol)}</div><div class="met-s">All orgs this month</div></div>
+    <div class="met"><div class="met-l">Total Entries</div><div class="met-v">${totalEntries}</div><div class="met-s">Logged this month</div></div>
+  `;
+  // Progress bars
+  const pc = document.getElementById('ov-progress');
+  if (!dists.length) { pc.innerHTML='<div class="empty"><p>No distributors yet. Create one to get started.</p></div>'; }
+  else {
+    pc.innerHTML = dists.map(d=>{
+      const mr = (d.records||[]).filter(r=>r.month===cm&&r.year===cy).sort((a,b)=>a.day-b.day);
+      const last = mr[mr.length-1];
+      const dg = PIN_MAP[d.pinGoal]||DV_GOAL;
+      const est = last ? Math.round((last.org_volume||0)*UPLIFT) : 0;
+      const pct = Math.min(100,Math.round(est/dg*100));
+      const col = colorFor(d.slug);
+      return `<div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;cursor:pointer" onclick="viewDist('${d.slug}')">
+        <div style="width:32px;height:32px;border-radius:50%;background:${col};display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:700;font-size:11px;color:#fff;flex-shrink:0">${initials(d.name)}</div>
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px">
+            <span style="font-weight:500">${d.name}</span>
+            <span style="font-family:'DM Mono',monospace;color:var(--ink3)">${pct}% · ${fmt(est)} DV</span>
+          </div>
+          <div class="pb-track"><div class="pb-fill" style="width:${pct}%;background:${col}"></div></div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+  // Activity
+  const ac = document.getElementById('ov-activity');
+  const allEntries = [];
+  dists.forEach(d=>(d.records||[]).forEach(r=>allEntries.push({...r,distName:d.name,distSlug:d.slug})));
+  allEntries.sort((a,b)=>(b.year*10000+b.month*100+b.day)-(a.year*10000+a.month*100+a.day));
+  if (!allEntries.length) { ac.innerHTML='<div class="empty"><p>No entries yet</p></div>'; return; }
+  ac.innerHTML=`<div class="tw"><table><thead><tr><th>Distributor</th><th>Date</th><th>Org Volume</th><th>Increase</th><th></th></tr></thead><tbody>${
+    allEntries.slice(0,12).map(r=>`<tr>
+      <td><span style="font-weight:500">${r.distName}</span></td>
+      <td>${MO[r.month-1]} ${r.day}, ${r.year}</td>
+      <td class="n">${fmt(r.org_volume)}</td>
+      <td><span class="badge ${(r.org_increase||0)>=0?'b-active':'br_'}">${(r.org_increase||0)>=0?'+':''}${fmt(r.org_increase)}</span></td>
+      <td><button class="btn bo btn-sm" onclick="viewDist('${r.distSlug}')">View</button></td>
+    </tr>`).join('')
+  }</tbody></table></div>`;
+}
+
+// ══════════════════════════════════════════
+//  DISTRIBUTOR GRID
+// ══════════════════════════════════════════
+function renderDistGrid() {
+  const c = document.getElementById('dist-grid');
+  if (!state.distributors.length) {
+    c.innerHTML=`<div class="empty" style="grid-column:1/-1"><div style="font-size:32px">👥</div><p>No distributors yet.<br>Create one to get started.</p></div>`;
+    return;
+  }
+  c.innerHTML = state.distributors.map(d => {
+    const col = colorFor(d.slug);
+    const now = new Date(); const cm=now.getMonth()+1; const cy=now.getFullYear();
+    const mr = (d.records||[]).filter(r=>r.month===cm&&r.year===cy).sort((a,b)=>a.day-b.day);
+    const last = mr[mr.length-1];
+    const dg = PIN_MAP[d.pinGoal]||DV_GOAL;
+    const est = last ? Math.round((last.org_volume||0)*UPLIFT) : 0;
+    const pct = last ? Math.min(100,Math.round(est/dg*100)) : 0;
+    return `<div class="dcard ${d.active?'':'inactive'}" onclick="viewDist('${d.slug}')">
+      <div class="dc-head">
+        <div class="dc-av" style="background:${col};color:#fff">${initials(d.name)}</div>
+        <div>
+          <div class="dc-name">${d.name}</div>
+          <div class="dc-slug">?user=${d.slug}</div>
+        </div>
+        <div style="margin-left:auto;display:flex;flex-direction:column;align-items:flex-end;gap:4px">
+          ${d.isAdmin?'<span class="badge b-admin">ADMIN</span>':''}
+          <span class="badge ${d.active?'b-active':'b-inactive'}">${d.active?'Active':'Inactive'}</span>
+          ${d.requirePin?'<span class="badge b-pin">PIN</span>':''}
+        </div>
+      </div>
+      <div class="dc-body">
+        <div class="dc-row"><span>PIN Goal</span><span>Mill ${d.pinGoal}</span></div>
+        <div class="dc-row"><span>This month</span><span>${fmt(last?.org_volume||0)} vol</span></div>
+        <div class="dc-row"><span>Goal progress</span><span>${pct}%</span></div>
+        <div style="margin-top:8px"><div class="pb-track"><div class="pb-fill" style="width:${pct}%;background:${col}"></div></div></div>
+      </div>
+      <div class="dc-foot" onclick="event.stopPropagation()">
+        <button class="btn bo btn-sm" onclick="viewDist('${d.slug}')">View</button>
+        <button class="btn bo btn-sm" onclick="openResetPin('${d.slug}')">Reset PIN</button>
+        <button class="btn ${d.active?'br_':'bg_'} btn-sm" onclick="toggleActive('${d.slug}')">${d.active?'Deactivate':'Activate'}</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════════
+//  DISTRIBUTOR DETAIL VIEW
+// ══════════════════════════════════════════
+function viewDist(slug) {
+  viewingDist = slug;
+  const d = state.distributors.find(x=>x.slug===slug);
+  if (!d) return;
+  goPage('dist-detail');
+  document.querySelectorAll('.tn-tab').forEach(t=>t.classList.remove('on'));
+  renderDistDetail(d);
+}
+
+function renderDistDetail(d) {
+  const col = colorFor(d.slug);
+  const now = new Date(); const cm=now.getMonth()+1; const cy=now.getFullYear();
+  const mr = (d.records||[]).filter(r=>r.month===cm&&r.year===cy).sort((a,b)=>a.day-b.day);
+  const last = mr[mr.length-1];
+  const dg = PIN_MAP[d.pinGoal]||DV_GOAL;
+  const allMonths = [...new Set((d.records||[]).map(r=>r.year+'-'+String(r.month).padStart(2,'0')))].sort();
+
+  const c = document.getElementById('dd-content');
+  c.innerHTML = `
+    <div class="dv-header">
+      <div class="dv-av" style="background:${col};color:#fff">${initials(d.name)}</div>
+      <div>
+        <div class="dv-name">${d.name}</div>
+        <div class="dv-meta">?user=${d.slug} · Mill ${d.pinGoal} · ${d.active?'Active':'Inactive'}</div>
+      </div>
+      <div class="dv-actions">
+        <button class="btn bo" onclick="openLogEntry('${d.slug}')">＋ Log Entry</button>
+        <button class="btn bo" onclick="openResetPin('${d.slug}')">Reset PIN</button>
+        <button class="btn bgo" onclick="openCreateTemplate('${d.slug}')">＋ Month Template</button>
+        <button class="btn bo" onclick="openEditDist('${d.slug}')">Edit Settings</button>
+        <button class="btn ${d.active?'br_':'bg_'}" onclick="toggleActive('${d.slug}');renderDistDetail(state.distributors.find(x=>x.slug==='${d.slug}'))">${d.active?'Deactivate':'Activate'}</button>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px">
+      <div class="met"><div class="met-l">Current Vol</div><div class="met-v">${fmt(last?.org_volume)}</div><div class="met-s">${MO[cm-1]} ${cy}</div></div>
+      <div class="met"><div class="met-l">Est. DV</div><div class="met-v">${fmt(last?Math.round(last.org_volume*UPLIFT):null)}</div><div class="met-s">×${UPLIFT} uplift</div></div>
+      <div class="met"><div class="met-l">DV Remaining</div><div class="met-v">${fmt(last?.dv_remaining)}</div><div class="met-s">To ${fmt(dg)} goal</div></div>
+      <div class="met"><div class="met-l">Days Logged</div><div class="met-v">${mr.length}</div><div class="met-s">This month</div></div>
+    </div>
+    <div style="display:grid;grid-template-columns:2fr 1fr;gap:14px;margin-bottom:18px">
+      <div class="card">
+        <div class="ct">Volume Growth — ${MO[cm-1]} ${cy}</div>
+        <div class="ch"><canvas id="dd-chart"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="ct">Month Selector</div>
+        <div style="font-size:12px;color:var(--ink3);margin-bottom:10px">Click a month to view that period's data below</div>
+        ${allMonths.length ? allMonths.map(mk=>{
+          const [y,m]=mk.split('-').map(Number);
+          const mrs=(d.records||[]).filter(r=>r.month===m&&r.year===y);
+          const isCur=m===cm&&y===cy;
+          return `<div style="display:flex;align-items:center;justify-content:space-between;padding:7px 10px;border-radius:7px;margin-bottom:5px;cursor:pointer;${isCur?'background:var(--green2);':'background:var(--paper2);'}" onclick="filterDetailMonth('${d.slug}','${mk}')">
+            <span style="font-size:13px;font-weight:${isCur?'500':'400'};color:${isCur?'var(--green)':'var(--ink2)'}">${MO[m-1]} ${y}</span>
+            <span style="font-size:11px;font-family:'DM Mono',monospace;color:var(--ink3)">${mrs.length}d</span>
+          </div>`;
+        }).join('') : '<div style="font-size:13px;color:var(--ink4)">No data yet</div>'}
+      </div>
+    </div>
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+        <div class="ct" style="margin:0">Entry Log</div>
+        <div style="display:flex;gap:8px">
+          <select id="dd-month-filter" style="height:28px;padding:0 9px;font-size:12px;border:1px solid var(--border);border-radius:7px;background:#fff" onchange="renderDetailTable('${d.slug}')">
+            <option value="">All months</option>
+            ${allMonths.map(mk=>{const[y,m]=mk.split('-').map(Number);return`<option value="${mk}">${MO[m-1]} ${y}</option>`;}).join('')}
+          </select>
+        </div>
+      </div>
+      <div id="dd-table" class="tw"></div>
+    </div>
+    <div class="card" style="margin-top:14px">
+      <div class="ct">Account Details</div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;font-size:13px">
+        <div><div style="color:var(--ink3);font-size:11px;margin-bottom:4px">URL SLUG</div><div class="url-pill" onclick="copyUrl('${d.slug}')" title="Click to copy">orgtrack.html?user=${d.slug}</div></div>
+        <div><div style="color:var(--ink3);font-size:11px;margin-bottom:4px">ACCESS PIN</div><div class="pin-display">${d.pin||'—'}</div></div>
+        <div><div style="color:var(--ink3);font-size:11px;margin-bottom:4px">SETTINGS</div>
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <div style="display:flex;align-items:center;gap:8px">
+              <label class="tog"><input type="checkbox" ${d.requirePin?'checked':''} onchange="toggleRequirePin('${d.slug}',this.checked)"><span class="tog-sl"></span></label>
+              <span>Require PIN every visit</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <label class="tog"><input type="checkbox" ${d.isAdmin?'checked':''} onchange="toggleDistAdmin('${d.slug}',this.checked)"><span class="tog-sl"></span></label>
+              <span>Admin access</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+  // Draw chart
+  setTimeout(()=>drawDetailChart(d, cm, cy), 50);
+  renderDetailTable(d.slug);
+}
+
+function drawDetailChart(d, cm, cy) {
+  if (detailChart) { detailChart.destroy(); detailChart=null; }
+  const mr = (d.records||[]).filter(r=>r.month===cm&&r.year===cy).sort((a,b)=>a.day-b.day);
+  const col = colorFor(d.slug);
+  const cv = document.getElementById('dd-chart');
+  if (!cv||!mr.length) return;
+  detailChart = new Chart(cv,{
+    type:'line',
+    data:{labels:mr.map(r=>r.day),datasets:[{data:mr.map(r=>r.org_volume),borderColor:col,backgroundColor:col+'22',fill:true,tension:.35,pointRadius:2,borderWidth:2}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{color:'rgba(0,0,0,.04)'},ticks:{font:{size:11}}},y:{grid:{color:'rgba(0,0,0,.04)'},ticks:{font:{size:11},callback:v=>v>=1000?(v/1000).toFixed(0)+'k':v}}}}
+  });
+}
+
+function filterDetailMonth(slug, mk) {
+  const sel = document.getElementById('dd-month-filter');
+  if (sel) sel.value = mk;
+  renderDetailTable(slug, mk);
+}
+
+function renderDetailTable(slug, mk) {
+  const d = state.distributors.find(x=>x.slug===slug);
+  if (!d) return;
+  const sel = mk || (document.getElementById('dd-month-filter')||{}).value || '';
+  let rows = [...(d.records||[])].sort((a,b)=>(b.year*10000+b.month*100+b.day)-(a.year*10000+a.month*100+a.day));
+  if (sel) { const[y,m]=sel.split('-').map(Number); rows=rows.filter(r=>r.year===y&&r.month===m); }
+  const c = document.getElementById('dd-table');
+  if (!c) return;
+  if (!rows.length) { c.innerHTML='<div class="empty"><p>No entries for this period</p></div>'; return; }
+  c.innerHTML=`<table><thead><tr><th>Date</th><th>Day</th><th>Org Volume</th><th>Increase</th><th>DV Rem.</th><th>Need/Day</th><th>Est DV</th><th>Uplift/Day</th><th></th></tr></thead><tbody>${
+    rows.map(r=>`<tr>
+      <td>${MO[r.month-1]} ${r.day}, ${r.year}</td>
+      <td class="n">${r.day}</td>
+      <td class="n">${fmt(r.org_volume)}</td>
+      <td><span class="badge ${(r.org_increase||0)>=0?'b-active':'br_'}">${(r.org_increase||0)>=0?'+':''}${fmt(r.org_increase)}</span></td>
+      <td class="n">${fmt(r.dv_remaining)}</td>
+      <td class="n">${fmt(r.org_daily_avg)}</td>
+      <td class="n">${fmt(r.est_org_dv)}</td>
+      <td class="n">${fmt(r.uplift_per_day)}</td>
+      <td><button class="btn br_ btn-sm" onclick="deleteDistEntry('${slug}',${r.year},${r.month},${r.day})">Del</button></td>
+    </tr>`).join('')
+  }</tbody></table>`;
+}
+
+function deleteDistEntry(slug,y,m,day) {
+  if (!confirm('Delete this entry?')) return;
+  const d = state.distributors.find(x=>x.slug===slug);
+  if (!d) return;
+  d.records = (d.records||[]).filter(r=>!(r.year===y&&r.month===m&&r.day===day));
+  recalcDist(d);
+  saveState();
+  renderDistDetail(d);
+  toast('Entry deleted');
+}
+
+// ══════════════════════════════════════════
+//  CREATE DISTRIBUTOR
+// ══════════════════════════════════════════
+function openCreateModal() {
+  document.getElementById('nc-name').value='';
+  document.getElementById('nc-slug').value='';
+  document.getElementById('nc-url-preview').textContent='orgtrack.html?user=';
+  document.getElementById('nc-is-admin').checked=false;
+  document.getElementById('nc-require-pin').checked=true;
+  genPin();
+  openModal('modal-create');
+}
+function autoSlug() {
+  const name = document.getElementById('nc-name').value;
+  const slug = name.toLowerCase().trim().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+  document.getElementById('nc-slug').value = slug;
+  document.getElementById('nc-url-preview').textContent = 'orgtrack.html?user=' + slug;
+}
+document.getElementById('nc-slug').addEventListener('input', function(){
+  document.getElementById('nc-url-preview').textContent = 'orgtrack.html?user=' + this.value;
+});
+function genPin() {
+  document.getElementById('nc-access-pin').value = genPinStr();
+}
+function createDistributor() {
+  const name = document.getElementById('nc-name').value.trim();
+  const slug = document.getElementById('nc-slug').value.trim();
+  const pin  = document.getElementById('nc-access-pin').value.trim();
+  const pg   = document.getElementById('nc-pin-goal').value;
+  const rp   = document.getElementById('nc-require-pin').checked;
+  const ia   = document.getElementById('nc-is-admin').checked;
+  if (!name||!slug||!pin) { toast('Please fill in all fields'); return; }
+  if (state.distributors.find(d=>d.slug===slug)) { toast('URL slug already in use'); return; }
+  const dist = {id:Date.now().toString(),name,slug,pin,pinGoal:pg,requirePin:rp,isAdmin:ia,active:true,records:[],createdAt:new Date().toISOString()};
+  state.distributors.push(dist);
+  saveState();
+  closeModal('modal-create');
+  renderDistGrid();
+  renderOverview();
+  toast('Distributor created: ' + name);
+}
+
+// ══════════════════════════════════════════
+//  RESET PIN
+// ══════════════════════════════════════════
+function openResetPin(slug) {
+  resetPinTarget = slug;
+  const d = state.distributors.find(x=>x.slug===slug);
+  document.getElementById('rp-name').textContent = d.name;
+  document.getElementById('rp-pin').textContent = d.pin || genPinStr();
+  document.getElementById('rp-require').checked = d.requirePin;
+  openModal('modal-reset-pin');
+}
+function genResetPin() {
+  document.getElementById('rp-pin').textContent = genPinStr();
+}
+function saveResetPin() {
+  const d = state.distributors.find(x=>x.slug===resetPinTarget);
+  if (!d) return;
+  d.pin = document.getElementById('rp-pin').textContent;
+  d.requirePin = document.getElementById('rp-require').checked;
+  saveState();
+  closeModal('modal-reset-pin');
+  toast('PIN reset for ' + d.name);
+  if (viewingDist === d.slug) renderDistDetail(d);
+  else renderDistGrid();
+}
+
+// ══════════════════════════════════════════
+//  LOG ENTRY (admin adding for a distributor)
+// ══════════════════════════════════════════
+function openLogEntry(slug) {
+  const d = state.distributors.find(x=>x.slug===slug);
+  document.getElementById('le-title').textContent = 'Log Entry — ' + d.name;
+  const now = new Date();
+  document.getElementById('le-month').value = now.getMonth()+1;
+  document.getElementById('le-year').value  = now.getFullYear();
+  document.getElementById('le-day').value   = now.getDate();
+  document.getElementById('le-vol').value   = '';
+  openModal('modal-log-entry');
+}
+function saveLogEntry() {
+  const d = state.distributors.find(x=>x.slug===viewingDist);
+  if (!d) return;
+  const month = +document.getElementById('le-month').value;
+  const year  = +document.getElementById('le-year').value;
+  const day   = +document.getElementById('le-day').value;
+  const vol   = +document.getElementById('le-vol').value;
+  if (!day||!vol) { toast('Fill in all fields'); return; }
+  const idx = (d.records||[]).findIndex(r=>r.year===year&&r.month===month&&r.day===day);
+  const rec = {year,month,day,org_volume:vol,dv_goal:PIN_MAP[d.pinGoal]||DV_GOAL,pin_goal:'Mill '+d.pinGoal};
+  if (idx>=0) { d.records[idx]={...d.records[idx],...rec}; } else { d.records.push(rec); }
+  recalcDist(d);
+  saveState();
+  closeModal('modal-log-entry');
+  renderDistDetail(d);
+  toast('Entry saved');
+}
+
+// ══════════════════════════════════════════
+//  MONTH TEMPLATE
+// ══════════════════════════════════════════
+function openCreateTemplate(slug) {
+  const d = state.distributors.find(x=>x.slug===slug);
+  const now = new Date();
+  const existing = [...new Set((d.records||[]).map(r=>r.year+'-'+String(r.month).padStart(2,'0')))];
+  // Show a quick confirm for next month
+  const nextM = now.getMonth()+2 > 12 ? 1 : now.getMonth()+2;
+  const nextY = now.getMonth()+2 > 12 ? now.getFullYear()+1 : now.getFullYear();
+  const label = MONTH_FULL[nextM-1] + ' ' + nextY;
+  const mk = nextY+'-'+String(nextM).padStart(2,'0');
+  if (existing.includes(mk)) { toast(label + ' template already exists'); return; }
+  if (confirm('Create a blank ' + label + ' template for ' + d.name + '?\n\nThis marks the month as active so they can start logging entries.')) {
+    // We don't pre-fill entries — just ensure the month is "opened"
+    // Add a note marker record at day 0 (won't show in table)
+    d.templateMonths = d.templateMonths || [];
+    if (!d.templateMonths.includes(mk)) d.templateMonths.push(mk);
+    saveState();
+    toast(label + ' template created for ' + d.name);
+    renderDistDetail(d);
+  }
+}
+
+// ══════════════════════════════════════════
+//  TOGGLE HELPERS
+// ══════════════════════════════════════════
+function toggleActive(slug) {
+  const d = state.distributors.find(x=>x.slug===slug);
+  if (!d) return;
+  d.active = !d.active;
+  saveState();
+  renderDistGrid();
+  toast(d.name + ' ' + (d.active ? 'activated' : 'deactivated'));
+}
+function toggleRequirePin(slug, val) {
+  const d = state.distributors.find(x=>x.slug===slug);
+  if (!d) return;
+  d.requirePin = val;
+  saveState();
+  toast('PIN requirement ' + (val?'enabled':'disabled') + ' for ' + d.name);
+}
+function toggleDistAdmin(slug, val) {
+  const d = state.distributors.find(x=>x.slug===slug);
+  if (!d) return;
+  d.isAdmin = val;
+  saveState();
+  toast('Admin access ' + (val?'granted':'revoked') + ' for ' + d.name);
+}
+function copyUrl(slug) {
+  const url = window.location.href.replace('orgtrack-admin.html','orgtrack.html') + '?user=' + slug;
+  navigator.clipboard.writeText(url).then(()=>toast('URL copied to clipboard'));
+}
+
+// ══════════════════════════════════════════
+//  ADMIN COLLEAGUES
+// ══════════════════════════════════════════
+function renderSettings() {
+  const sc = document.getElementById('sb-url');
+  const sk = document.getElementById('sb-key');
+  if (sc) sc.value = state.sbUrl||'';
+  if (sk) sk.value = state.sbKey||'';
+  renderAdminList();
+}
+function renderAdminList() {
+  const c = document.getElementById('admin-list');
+  const admins = state.admins.filter(a=>!a.isRoot);
+  if (!admins.length) { c.innerHTML='<div style="font-size:13px;color:var(--ink3)">No admin colleagues yet.</div>'; return; }
+  c.innerHTML=`<div class="tw"><table><thead><tr><th>Name</th><th>PIN</th><th></th></tr></thead><tbody>${
+    admins.map(a=>`<tr>
+      <td style="font-weight:500">${a.name}</td>
+      <td class="n">${a.pin}</td>
+      <td><button class="btn br_ btn-sm" onclick="removeAdmin('${a.id}')">Remove</button></td>
+    </tr>`).join('')
+  }</tbody></table></div>`;
+}
+function openAddAdminModal() { genAdminPin(); document.getElementById('aa-name').value=''; openModal('modal-add-admin'); }
+function genAdminPin() { document.getElementById('aa-pin').value = genPinStr(); }
+function saveAdminColleague() {
+  const name = document.getElementById('aa-name').value.trim();
+  const pin  = document.getElementById('aa-pin').value.trim();
+  if (!name||!pin) { toast('Fill in all fields'); return; }
+  state.admins.push({id:Date.now().toString(),name,pin,isRoot:false});
+  saveState();
+  closeModal('modal-add-admin');
+  renderAdminList();
+  toast('Admin access granted to ' + name);
+}
+function removeAdmin(id) {
+  if (!confirm('Remove this admin?')) return;
+  state.admins = state.admins.filter(a=>a.id!==id);
+  saveState();
+  renderAdminList();
+  toast('Admin access removed');
+}
+
+// ══════════════════════════════════════════
+//  SUPABASE
+// ══════════════════════════════════════════
+function saveSB() {
+  state.sbUrl = document.getElementById('sb-url').value.trim();
+  state.sbKey = document.getElementById('sb-key').value.trim();
+  saveState();
+  const st = document.getElementById('sb-status');
+  st.textContent='Testing...';
+  fetch(state.sbUrl+'/rest/v1/org_volume?limit=1',{headers:{'apikey':state.sbKey,'Authorization':'Bearer '+state.sbKey}})
+    .then(r=>{ st.innerHTML=r.ok?'<span style="color:var(--green)">✓ Connected</span>':'<span style="color:var(--red)">✗ Failed ('+r.status+')</span>'; })
+    .catch(e=>{ st.innerHTML='<span style="color:var(--red)">✗ '+e.message+'</span>'; });
+}
+
+// ══════════════════════════════════════════
+//  CALC
+// ══════════════════════════════════════════
+function recalcDist(d) {
+  const recs = (d.records||[]).sort((a,b)=>(a.year*10000+a.month*100+a.day)-(b.year*10000+b.month*100+b.day));
+  recs.forEach(r => {
+    const prev = recs.filter(x=>x.month===r.month&&x.year===r.year&&x.day<r.day).sort((a,b)=>b.day-a.day)[0];
+    r.org_increase = prev ? r.org_volume-prev.org_volume : r.org_volume;
+    const dims = new Date(r.year,r.month,0).getDate();
+    const left = dims-r.day;
+    const dg   = r.dv_goal || PIN_MAP[d.pinGoal]||DV_GOAL;
+    r.est_org_dv     = Math.round(r.org_volume*UPLIFT);
+    r.dv_remaining   = Math.max(0,Math.round(dg-r.est_org_dv));
+    r.org_daily_avg  = left>0?Math.round(r.dv_remaining/left):0;
+    r.uplift_per_day = left>0?Math.round(r.dv_remaining/left/UPLIFT):0;
+  });
+}
+
+// ══════════════════════════════════════════
+//  MODAL HELPERS
+// ══════════════════════════════════════════
+function openModal(id) { document.getElementById(id).classList.add('on'); }
+function closeModal(id) { document.getElementById(id).classList.remove('on'); }
+document.querySelectorAll('.modal-bg').forEach(m=>m.addEventListener('click',function(e){if(e.target===this)this.classList.remove('on');}));
+
+// ══════════════════════════════════════════
+//  TOAST
+// ══════════════════════════════════════════
+function toast(msg,ms=2800){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('on');setTimeout(()=>t.classList.remove('on'),ms);}
+
+// ══════════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════════
+// Seed demo distributors if empty
+if (!state.distributors.length) {
+  const demos = [
+    {name:'Maria Gonzalez',slug:'maria-gonzalez',pinGoal:'5'},
+    {name:'James Chen',slug:'james-chen',pinGoal:'3'},
+    {name:'Priya Sharma',slug:'priya-sharma',pinGoal:'7.5'},
+  ];
+  demos.forEach(({name,slug,pinGoal}) => {
+    const d = {id:Date.now().toString()+Math.random(),name,slug,pin:genPinStr(),pinGoal,requirePin:true,isAdmin:false,active:true,records:[],createdAt:new Date().toISOString()};
+    // Seed some march data
+    const vols = [2100,4800,7300,10200,13500,16800,19200,22400,25100,28600];
+    vols.forEach((v,i)=>d.records.push({year:2026,month:3,day:i+1,org_volume:v,dv_goal:PIN_MAP[pinGoal]||DV_GOAL,pin_goal:'Mill '+pinGoal}));
+    recalcDist(d);
+    state.distributors.push(d);
+  });
+  saveState();
+}
+</script>
+</body>
+</html>
