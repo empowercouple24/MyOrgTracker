@@ -7,7 +7,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Manrope:wght@300;400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 
@@ -30,7 +30,31 @@ body[data-color="rose"]{--bg:#fbf0f0;--surface:#fff7f7;--surface2:#f0dcde;--surf
 body[data-color="lilac"]{--bg:#f4effa;--surface:#faf7fd;--surface2:#e5dbf0;--surface3:#d3c5e4;--accent:#7a5cb0;--accent-soft:#e5dbf0;--accent-softer:#efe8f7;--text:#2e1f42;--text2:#4a3a62;--text3:#8579a0;--border:rgba(46,31,66,0.1);--border2:rgba(46,31,66,0.18);--divider:rgba(46,31,66,0.08);}
 body[data-color="coral"]{--bg:#fdf0ea;--surface:#fff8f3;--surface2:#f2dcd0;--surface3:#e4c7b4;--accent:#d96a57;--accent-soft:#f5dcd1;--accent-softer:#fae6dd;--text:#3d1a0f;--text2:#5d3420;--text3:#9a7a6a;--border:rgba(61,26,15,0.1);--border2:rgba(61,26,15,0.18);--divider:rgba(61,26,15,0.08);}
 
-body{font-family:'Geist',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line-height:1.5;transition:background 0.2s}
+/* ═══ WARM STYLE ═══ */
+body[data-style="warm"]{font-family:'Manrope',system-ui,sans-serif}
+body[data-style="warm"] .card{border-radius:20px;box-shadow:0 2px 24px rgba(0,0,0,0.04),0 1px 3px rgba(0,0,0,0.03)}
+body[data-style="warm"] .btn{border-radius:12px;font-family:'Manrope',sans-serif;font-weight:600}
+body[data-style="warm"] .fg input,body[data-style="warm"] .fg select{border-radius:11px;font-family:'Manrope',sans-serif}
+body[data-style="warm"] .tab{font-weight:600}
+body[data-style="warm"] .pill{border-radius:999px;font-weight:600}
+body[data-style="warm"] .preview{border-radius:14px}
+body[data-style="warm"] .drop{border-radius:14px}
+body[data-style="warm"] .app-card{border-radius:18px}
+body[data-style="warm"] .onb-welcome{border-radius:28px}
+body[data-style="warm"] .onb-ccard{border-radius:18px}
+body[data-style="warm"] .onb-cta,body[data-style="warm"] .onb-enter{font-family:'Manrope',sans-serif;font-weight:600}
+
+body[data-style="warm"][data-color="sunrise"]{--bg:linear-gradient(135deg,#ffe5d4 0%,#ffcdc2 50%,#ffb5b0 100%);--surface:#fff8f5;--surface2:#ffe5da;--surface3:#ffd4c4;--accent:#e85a4f;--accent-soft:#fdd0c7;--accent-softer:#feeae4;--text:#4d1a10;--text2:#7a3020;--text3:#b56a50;--border:rgba(77,26,16,0.1);--border2:rgba(77,26,16,0.2);--divider:rgba(77,26,16,0.07);}
+body[data-style="warm"][data-color="dusk"]{--bg:linear-gradient(135deg,#e8d7f0 0%,#e0c7e8 50%,#f5c7dc 100%);--surface:#faf5fc;--surface2:#ebdcf0;--surface3:#dccae3;--accent:#9333ea;--accent-soft:#e5d0f5;--accent-softer:#f0e3f8;--text:#2e1441;--text2:#4a2668;--text3:#7a5899;--border:rgba(46,20,65,0.1);--border2:rgba(46,20,65,0.2);--divider:rgba(46,20,65,0.07);}
+body[data-style="warm"][data-color="meadow"]{--bg:linear-gradient(135deg,#d9e6cb 0%,#e8e6b9 50%,#f0dfa8 100%);--surface:#f8faf0;--surface2:#e5e8d5;--surface3:#d5dbc2;--accent:#5a8a3a;--accent-soft:#d5e3c4;--accent-softer:#e6eed8;--text:#1d3312;--text2:#345024;--text3:#5d7c4a;--border:rgba(29,51,18,0.1);--border2:rgba(29,51,18,0.2);--divider:rgba(29,51,18,0.07);}
+body[data-style="warm"][data-color="seafoam"]{--bg:linear-gradient(135deg,#cfe9e0 0%,#b5dfd3 50%,#9cd5c6 100%);--surface:#f2faf7;--surface2:#d7e8e0;--surface3:#bcd5ca;--accent:#2d8a7b;--accent-soft:#c8e5dc;--accent-softer:#dbece5;--text:#0f3d33;--text2:#225c4e;--text3:#518375;--border:rgba(15,61,51,0.1);--border2:rgba(15,61,51,0.2);--divider:rgba(15,61,51,0.07);}
+body[data-style="warm"][data-color="rosewater"]{--bg:linear-gradient(135deg,#f5ccd4 0%,#f0c3c0 50%,#f0c7a8 100%);--surface:#fcf4f5;--surface2:#f0dadb;--surface3:#e0c2c4;--accent:#d64a6a;--accent-soft:#f5cdd6;--accent-softer:#f9e3e8;--text:#4d1325;--text2:#752540;--text3:#a85a6c;--border:rgba(77,19,37,0.1);--border2:rgba(77,19,37,0.2);--divider:rgba(77,19,37,0.07);}
+body[data-style="warm"][data-color="citrus"]{--bg:linear-gradient(135deg,#fde8b0 0%,#fcd49a 50%,#fcb982 100%);--surface:#fffaeb;--surface2:#f5e4bf;--surface3:#ead0a3;--accent:#e8861f;--accent-soft:#f8dcbe;--accent-softer:#faebd5;--text:#4d2a00;--text2:#75420c;--text3:#a87a42;--border:rgba(77,42,0,0.1);--border2:rgba(77,42,0,0.2);--divider:rgba(77,42,0,0.07);}
+body[data-style="warm"][data-color="horizon"]{--bg:linear-gradient(135deg,#c8dcef 0%,#d7d8ea 50%,#f0d0bf 100%);--surface:#f5f9fc;--surface2:#dde4eb;--surface3:#c3cdd8;--accent:#4a8acb;--accent-soft:#cbdbee;--accent-softer:#e1e9f4;--text:#0f2a45;--text2:#234666;--text3:#587594;--border:rgba(15,42,69,0.1);--border2:rgba(15,42,69,0.2);--divider:rgba(15,42,69,0.07);}
+body[data-style="warm"][data-color="bloom"]{--bg:linear-gradient(135deg,#f5c5d9 0%,#f0b5c7 50%,#ec9fb7 100%);--surface:#fcf3f7;--surface2:#ebd5dd;--surface3:#dbbbc6;--accent:#c43d7a;--accent-soft:#f0ccdb;--accent-softer:#f8e2eb;--text:#4d0d2a;--text2:#751c45;--text3:#a05b75;--border:rgba(77,13,42,0.1);--border2:rgba(77,13,42,0.2);--divider:rgba(77,13,42,0.07);}
+body[data-style="warm"][data-color="forest"]{--bg:linear-gradient(135deg,#d0e8d4 0%,#b5ddbf 50%,#9acfa9 100%);--surface:#f3faf4;--surface2:#d5e5d7;--surface3:#bbd0bd;--accent:#2d7a5c;--accent-soft:#c5dfcd;--accent-softer:#d9ebde;--text:#0c3625;--text2:#1e5239;--text3:#497d61;--border:rgba(12,54,37,0.1);--border2:rgba(12,54,37,0.2);--divider:rgba(12,54,37,0.07);}
+
+body{font-family:'Geist',system-ui,sans-serif;background:var(--bg);background-attachment:fixed;color:var(--text);min-height:100vh;font-size:14px;line-height:1.5;transition:background 0.2s}
 
 /* ── PIN SCREEN ── */
 #pin-screen{position:fixed;inset:0;background:#18181b;display:none;align-items:center;justify-content:center;z-index:1000;flex-direction:column;padding:20px}
@@ -93,6 +117,18 @@ body{font-family:'Geist',system-ui,sans-serif;background:var(--bg);color:var(--t
 .onb-sub{margin-top:12px;font-size:12px;color:var(--text3)}
 
 .onb-colorgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.onb-stylegrid{display:grid;grid-template-columns:1fr;gap:14px;max-width:440px;margin:0 auto}
+@media(min-width:540px){.onb-stylegrid{grid-template-columns:1fr 1fr}}
+.onb-scard{background:var(--surface);border-radius:20px;padding:22px 18px;border:2px solid transparent;cursor:pointer;transition:.18s;text-align:left;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:14px;position:relative;overflow:hidden}
+.onb-scard:hover{transform:translateY(-2px);box-shadow:0 10px 20px rgba(0,0,0,.08)}
+.onb-scard.on{border-color:var(--accent)}
+.onb-scard h3{font-size:18px;font-weight:600;letter-spacing:-0.015em;color:var(--text)}
+.onb-scard p{font-size:13px;color:var(--text2);line-height:1.5}
+.onb-scard .sprev{aspect-ratio:16/9;border-radius:12px;padding:14px;display:flex;flex-direction:column;justify-content:flex-end;font-weight:500}
+.onb-scard .sprev.min-p{background:#fafaf8;color:#18181b;font-family:'Geist',sans-serif}
+.onb-scard .sprev.warm-p{background:linear-gradient(135deg,#ffe5d4 0%,#ffcdc2 50%,#ffb5b0 100%);color:#4d1a10;font-family:'Manrope',sans-serif}
+.onb-scard .sprev .sp-hn{font-size:22px;font-weight:300;letter-spacing:-0.03em;line-height:1}
+.onb-scard .sprev .sp-lbl{font-size:8px;letter-spacing:0.1em;text-transform:uppercase;font-weight:700;opacity:.7;margin-bottom:3px}
 @media(min-width:540px){.onb-colorgrid{grid-template-columns:repeat(3,1fr);gap:12px}}
 .onb-ccard{background:var(--surface);border-radius:14px;overflow:hidden;border:2px solid transparent;transition:.18s;text-align:left;width:100%;box-shadow:var(--shadow);display:flex;flex-direction:column;cursor:pointer}
 .onb-ccard:hover{transform:translateY(-2px);box-shadow:0 10px 20px rgba(0,0,0,.1)}
@@ -114,6 +150,16 @@ body{font-family:'Geist',system-ui,sans-serif;background:var(--bg);color:var(--t
 .cp-rose{background:#fbf0f0;color:#3d1a24} .cp-rose .mb{background:rgba(61,26,36,0.12)} .cp-rose .mb::after{background:#b84a5e}
 .cp-lilac{background:#f4effa;color:#2e1f42} .cp-lilac .mb{background:rgba(46,31,66,0.12)} .cp-lilac .mb::after{background:#7a5cb0}
 .cp-coral{background:#fdf0ea;color:#3d1a0f} .cp-coral .mb{background:rgba(61,26,15,0.12)} .cp-coral .mb::after{background:#d96a57}
+
+.cp-sunrise{background:linear-gradient(135deg,#ffe5d4,#ffb5b0);color:#4d1a10} .cp-sunrise .mb{background:rgba(77,26,16,0.12)} .cp-sunrise .mb::after{background:#e85a4f}
+.cp-dusk{background:linear-gradient(135deg,#e8d7f0,#f5c7dc);color:#2e1441} .cp-dusk .mb{background:rgba(46,20,65,0.12)} .cp-dusk .mb::after{background:#9333ea}
+.cp-meadow{background:linear-gradient(135deg,#d9e6cb,#f0dfa8);color:#1d3312} .cp-meadow .mb{background:rgba(29,51,18,0.12)} .cp-meadow .mb::after{background:#5a8a3a}
+.cp-seafoam{background:linear-gradient(135deg,#cfe9e0,#9cd5c6);color:#0f3d33} .cp-seafoam .mb{background:rgba(15,61,51,0.12)} .cp-seafoam .mb::after{background:#2d8a7b}
+.cp-rosewater{background:linear-gradient(135deg,#f5ccd4,#f0c7a8);color:#4d1325} .cp-rosewater .mb{background:rgba(77,19,37,0.12)} .cp-rosewater .mb::after{background:#d64a6a}
+.cp-citrus{background:linear-gradient(135deg,#fde8b0,#fcb982);color:#4d2a00} .cp-citrus .mb{background:rgba(77,42,0,0.12)} .cp-citrus .mb::after{background:#e8861f}
+.cp-horizon{background:linear-gradient(135deg,#c8dcef,#f0d0bf);color:#0f2a45} .cp-horizon .mb{background:rgba(15,42,69,0.12)} .cp-horizon .mb::after{background:#4a8acb}
+.cp-bloom{background:linear-gradient(135deg,#f5c5d9,#ec9fb7);color:#4d0d2a} .cp-bloom .mb{background:rgba(77,13,42,0.12)} .cp-bloom .mb::after{background:#c43d7a}
+.cp-forest{background:linear-gradient(135deg,#d0e8d4,#9acfa9);color:#0c3625} .cp-forest .mb{background:rgba(12,54,37,0.12)} .cp-forest .mb::after{background:#2d7a5c}
 
 .onb-hint{display:flex;align-items:center;justify-content:center;gap:6px;margin-top:20px;font-size:12px;color:var(--text3)}
 .onb-done{background:var(--surface);border-radius:18px;padding:28px 24px;width:100%;max-width:400px;margin:20px auto 0;text-align:center;box-shadow:var(--shadow)}
@@ -209,6 +255,10 @@ td.n{font-family:'DM Mono',monospace;font-variant-numeric:tabular-nums}
 .app-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px}
 .app-current{display:inline-flex;align-items:center;gap:8px;padding:6px 12px;background:var(--surface2);border-radius:8px;font-size:12px;font-weight:500;color:var(--text)}
 .app-current .dot{width:11px;height:11px;border-radius:50%;background:var(--accent);border:1px solid var(--border)}
+.style-toggle{display:inline-flex;padding:3px;background:var(--surface2);border-radius:10px;margin-bottom:16px;gap:2px}
+.style-toggle button{flex:1;padding:8px 18px;font-size:13px;font-weight:500;border:none;background:transparent;color:var(--text2);border-radius:8px;cursor:pointer;transition:.15s;font-family:inherit;min-width:90px}
+.style-toggle button.on{background:var(--surface);color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,0.06);font-weight:600}
+.style-toggle button:hover:not(.on){color:var(--text)}
 .app-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
 @media(max-width:680px){.app-grid{grid-template-columns:repeat(2,1fr)}}
 .app-card{border:2px solid transparent;border-radius:10px;overflow:hidden;cursor:pointer;transition:.15s;background:var(--surface);box-shadow:var(--shadow);display:flex;flex-direction:column;text-align:left}
@@ -260,6 +310,7 @@ td.n{font-family:'DM Mono',monospace;font-variant-numeric:tabular-nums}
       <div class="onb-dots" id="onb-dots">
         <div class="onb-dot" id="onb-d1"></div>
         <div class="onb-dot" id="onb-d2"></div>
+        <div class="onb-dot" id="onb-d3"></div>
       </div>
       <div style="width:60px"></div>
     </div>
@@ -268,24 +319,38 @@ td.n{font-family:'DM Mono',monospace;font-variant-numeric:tabular-nums}
       <div class="onb-welcome">
         <div class="onb-logo">M</div>
         <h2>Welcome to <span>MyOrgTracker</span>, <span id="onb-name">there</span>.</h2>
-        <p class="lead">Let's make it feel like yours. Pick a color you love — takes about 10 seconds.</p>
+        <p class="lead">Let's make it feel like yours. Two quick choices and you're in.</p>
         <div class="onb-checklist">
           <h4>Here's what you'll do</h4>
           <ul>
-            <li>Pick your favorite <b>color theme</b></li>
-            <li>Preview &amp; confirm</li>
+            <li>Pick your <b>style</b> — Minimal or Warm</li>
+            <li>Pick your favorite <b>color</b></li>
+            <li>Confirm &amp; go</li>
           </ul>
         </div>
         <button class="onb-cta" onclick="onbGo(1)">Let's go <span>→</span></button>
-        <div class="onb-sub">You can change it anytime in Settings → Appearance.</div>
+        <div class="onb-sub">You can change everything anytime in Settings → Appearance.</div>
       </div>
     </div>
 
     <div class="onb-step" id="onb-1">
       <div class="onb-head">
-        <div class="onb-label">Step 1 of 1</div>
+        <div class="onb-label">Step 1 of 2</div>
+        <h1>Pick your style</h1>
+        <p>Two distinct feels — both beautiful, pick what suits you.</p>
+      </div>
+      <div class="onb-stylegrid" id="onb-styles"></div>
+      <div class="onb-hint">
+        <span style="font-size:14px">⚙</span>
+        Available anytime in Settings → Appearance
+      </div>
+    </div>
+
+    <div class="onb-step" id="onb-2">
+      <div class="onb-head">
+        <div class="onb-label">Step 2 of 2</div>
         <h1>Pick your color</h1>
-        <p>Nine colors to choose from — all clean and easy to read. Tap one to continue.</p>
+        <p>Nine colors in your chosen style. Tap one to continue.</p>
       </div>
       <div class="onb-colorgrid" id="onb-colors"></div>
       <div class="onb-hint">
@@ -294,7 +359,7 @@ td.n{font-family:'DM Mono',monospace;font-variant-numeric:tabular-nums}
       </div>
     </div>
 
-    <div class="onb-step" id="onb-2">
+    <div class="onb-step" id="onb-3">
       <div class="onb-head">
         <div class="onb-label">All set</div>
       </div>
@@ -307,7 +372,7 @@ td.n{font-family:'DM Mono',monospace;font-variant-numeric:tabular-nums}
           <span id="onb-done-label">Paper</span>
         </div>
         <div class="onb-note">
-          <b>Don't love it?</b> Change your theme anytime — pick from all 9 colors — under <b>Settings → Appearance</b>.
+          <b>Don't love it?</b> Change your style or color anytime — all 18 themes — under <b>Settings → Appearance</b>.
         </div>
         <button class="onb-enter" onclick="onbFinish()">Enter MyOrgTracker <span>→</span></button>
       </div>
@@ -433,7 +498,11 @@ td.n{font-family:'DM Mono',monospace;font-variant-numeric:tabular-nums}
           <span id="app-current-label">Paper</span>
         </div>
       </div>
-      <p style="font-size:13px;color:var(--text2);margin-bottom:14px;line-height:1.6">Tap any color to apply it instantly. More styles coming soon.</p>
+      <p style="font-size:13px;color:var(--text2);margin-bottom:14px;line-height:1.6">Pick a style and color. Changes apply instantly.</p>
+      <div class="style-toggle" id="style-toggle">
+        <button data-style="minimal" onclick="pickStyle('minimal')">Minimal</button>
+        <button data-style="warm" onclick="pickStyle('warm')">Warm</button>
+      </div>
       <div class="app-grid" id="app-grid"></div>
     </div>
 
@@ -484,7 +553,7 @@ const PIN_MAP={'7.5':113636,'5':75757,'3':45454,'1':15151};
 const MO=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 const fmt=n=>n==null?'—':Math.round(n).toLocaleString();
 
-const COLORS=[
+const MINIMAL_COLORS=[
   {id:'paper', label:'Paper', sw:['#fafaf8','#18181b']},
   {id:'sage',  label:'Sage',  sw:['#f3f1e9','#6b7f58']},
   {id:'sky',   label:'Sky',   sw:['#eef3f8','#4a7ba8']},
@@ -495,6 +564,23 @@ const COLORS=[
   {id:'lilac', label:'Lilac', sw:['#f4effa','#7a5cb0']},
   {id:'coral', label:'Coral', sw:['#fdf0ea','#d96a57']},
 ];
+const WARM_COLORS=[
+  {id:'sunrise',  label:'Sunrise',  sw:['#ffe5d4','#e85a4f']},
+  {id:'dusk',     label:'Dusk',     sw:['#e8d7f0','#9333ea']},
+  {id:'meadow',   label:'Meadow',   sw:['#d9e6cb','#5a8a3a']},
+  {id:'seafoam',  label:'Seafoam',  sw:['#cfe9e0','#2d8a7b']},
+  {id:'rosewater',label:'Rosewater',sw:['#f5ccd4','#d64a6a']},
+  {id:'citrus',   label:'Citrus',   sw:['#fde8b0','#e8861f']},
+  {id:'horizon',  label:'Horizon',  sw:['#c8dcef','#4a8acb']},
+  {id:'bloom',    label:'Bloom',    sw:['#f5c5d9','#c43d7a']},
+  {id:'forest',   label:'Forest',   sw:['#d0e8d4','#2d7a5c']},
+];
+const STYLES=[
+  {id:'minimal',label:'Minimal',desc:'Clean, refined, easy on the eyes. Solid backgrounds, classic typography.'},
+  {id:'warm',   label:'Warm',   desc:'Inviting, organic, expressive. Soft gradients, rounded corners.'}
+];
+function colorsFor(style){return style==='warm'?WARM_COLORS:MINIMAL_COLORS}
+function defaultColorFor(style){return style==='warm'?'sunrise':'paper'}
 
 const urlParams=new URLSearchParams(window.location.search);
 const userSlug=urlParams.get('user')||'default';
@@ -535,21 +621,39 @@ function recalcAll(){recs.sort((a,b)=>key(a)<key(b)?-1:1);recs.forEach(r=>calcDe
 // ═══════════════════ THEME SYSTEM ═══════════════════
 function loadTheme(){return JSON.parse(localStorage.getItem(THEME_KEY)||'null')}
 function saveTheme(t){localStorage.setItem(THEME_KEY,JSON.stringify(t))}
-function applyTheme(color){
+function applyTheme(style,color){
+  document.body.setAttribute('data-style',style||'minimal');
   document.body.setAttribute('data-color',color);
   if(active)renderDash();
-  updateAppearanceUI(color);
+  updateAppearanceUI(style||'minimal',color);
 }
+function currentStyle(){return document.body.getAttribute('data-style')||'minimal'}
+function currentColor(){return document.body.getAttribute('data-color')||'paper'}
+function allColorsFlat(){return [...MINIMAL_COLORS,...WARM_COLORS]}
+function findColor(id){return allColorsFlat().find(c=>c.id===id)}
 function accentColor(){return getComputedStyle(document.body).getPropertyValue('--accent').trim()||'#18181b'}
 function redColor(){return getComputedStyle(document.body).getPropertyValue('--red').trim()||'#b52b2b'}
 function amberColor(){return getComputedStyle(document.body).getPropertyValue('--amber').trim()||'#a0530f'}
 
 // ═══════════════════ ONBOARDING ═══════════════════
-let onbSelected=null;
 
-function buildOnbColors(){
+function buildOnbStyles(){
+  const grid=document.getElementById('onb-styles');
+  grid.innerHTML=STYLES.map(s=>`
+    <button class="onb-scard" data-style="${s.id}" onclick="onbPickStyle('${s.id}')">
+      <div class="sprev ${s.id==='minimal'?'min-p':'warm-p'}">
+        <div class="sp-lbl">Org Volume</div>
+        <div class="sp-hn">48,620</div>
+      </div>
+      <div>
+        <h3>${s.label}</h3>
+        <p>${s.desc}</p>
+      </div>
+    </button>`).join('');
+}
+function buildOnbColors(style){
   const grid=document.getElementById('onb-colors');
-  grid.innerHTML=COLORS.map(c=>`
+  grid.innerHTML=colorsFor(style).map(c=>`
     <button class="onb-ccard" data-color="${c.id}" onclick="onbPickColor('${c.id}')">
       <div class="onb-cp cp-${c.id}">
         <div class="ml">Org Volume</div>
@@ -564,49 +668,62 @@ function buildOnbColors(){
       </div>
     </button>`).join('');
 }
+let onbStyle=null,onbSelected=null;
+function onbPickStyle(style){
+  onbStyle=style;
+  document.querySelectorAll('.onb-scard').forEach(el=>el.classList.toggle('on',el.dataset.style===style));
+  applyTheme(style,defaultColorFor(style));
+  buildOnbColors(style);
+  onbGo(2);
+}
 function onbPickColor(color){
   onbSelected=color;
-  const c=COLORS.find(x=>x.id===color);
-  document.getElementById('onb-done-label').textContent=c.label;
+  const c=findColor(color);
+  document.getElementById('onb-done-label').textContent=(onbStyle==='warm'?'Warm · ':'Minimal · ')+c.label;
   document.getElementById('onb-done-dot').style.background=c.sw[c.sw.length-1];
-  applyTheme(color);
-  onbGo(2);
+  applyTheme(onbStyle||'minimal',color);
+  onbGo(3);
 }
 function onbGo(step){
   document.querySelectorAll('.onb-step').forEach(s=>s.classList.remove('on'));
   document.getElementById('onb-'+step).classList.add('on');
   const back=document.getElementById('onb-back');
   const dots=document.getElementById('onb-dots');
-  back.classList.toggle('on',step===1);
-  dots.classList.toggle('on',step===1||step===2);
+  back.classList.toggle('on',step===1||step===2);
+  dots.classList.toggle('on',step>=1);
   document.getElementById('onb-d1').classList.toggle('filled',step>=1);
-  document.getElementById('onb-d2').classList.toggle('filled',step===2);
+  document.getElementById('onb-d2').classList.toggle('filled',step>=2);
+  document.getElementById('onb-d3').classList.toggle('filled',step>=3);
   window.scrollTo({top:0,behavior:'smooth'});
 }
 function onbBack(){
   const current=document.querySelector('.onb-step.on').id;
   if(current==='onb-1')onbGo(0);
+  else if(current==='onb-2')onbGo(1);
 }
 function onbFinish(){
-  if(!onbSelected)onbSelected='paper';
-  saveTheme({style:'minimal',color:onbSelected});
+  const style=onbStyle||'minimal';
+  const color=onbSelected||defaultColorFor(style);
+  saveTheme({style,color});
   document.getElementById('onb').classList.remove('on');
   if(currentDist)showApp(currentDist.name);
   else showApp('Default User');
 }
 function startOnboarding(userName){
   document.getElementById('onb-name').textContent=userName||'there';
-  buildOnbColors();
+  onbStyle=null;onbSelected=null;
+  buildOnbStyles();
   onbGo(0);
   document.getElementById('onb').classList.add('on');
 }
 
 // ═══════════════════ APPEARANCE ═══════════════════
+let appStyleView='minimal';
 function buildAppearanceGrid(){
   const grid=document.getElementById('app-grid');
-  const current=loadTheme()?.color||'paper';
-  grid.innerHTML=COLORS.map(c=>`
-    <button class="app-card${c.id===current?' on':''}" data-color="${c.id}" onclick="pickAppearance('${c.id}')">
+  const theme=loadTheme()||{style:'minimal',color:'paper'};
+  grid.innerHTML=colorsFor(appStyleView).map(c=>`
+    <button class="app-card${(c.id===theme.color&&appStyleView===theme.style)?' on':''}" data-color="${c.id}" onclick="pickColor('${c.id}')">
       <div class="cp cp-${c.id}">
         <div class="ml">Preview</div>
         <div class="hn">48,620</div>
@@ -619,19 +736,32 @@ function buildAppearanceGrid(){
       </div>
     </button>`).join('');
 }
-function pickAppearance(color){
-  const theme={style:'minimal',color};
+function pickStyle(style){
+  appStyleView=style;
+  document.querySelectorAll('.style-toggle button').forEach(b=>b.classList.toggle('on',b.dataset.style===style));
+  const existing=loadTheme();
+  const color=(existing&&existing.style===style)?existing.color:defaultColorFor(style);
+  const theme={style,color};
   saveTheme(theme);
-  applyTheme(color);
-  toast('Theme: '+(COLORS.find(c=>c.id===color)?.label||color));
+  applyTheme(style,color);
+  buildAppearanceGrid();
+  toast('Style: '+(style==='warm'?'Warm':'Minimal'));
 }
-function updateAppearanceUI(color){
-  const c=COLORS.find(x=>x.id===color);
+function pickColor(color){
+  const theme={style:appStyleView,color};
+  saveTheme(theme);
+  applyTheme(appStyleView,color);
+  buildAppearanceGrid();
+  toast('Theme: '+(findColor(color)?.label||color));
+}
+function updateAppearanceUI(style,color){
+  const c=findColor(color);
   const lbl=document.getElementById('app-current-label');
   const dot=document.getElementById('app-current-dot');
-  if(lbl&&c){lbl.textContent=c.label;if(dot)dot.style.background=c.sw[c.sw.length-1]}
+  if(lbl&&c){lbl.textContent=(style==='warm'?'Warm · ':'Minimal · ')+c.label;if(dot)dot.style.background=c.sw[c.sw.length-1]}
+  document.querySelectorAll('.style-toggle button').forEach(b=>b.classList.toggle('on',b.dataset.style===style));
   document.querySelectorAll('.app-card').forEach(card=>{
-    card.classList.toggle('on',card.dataset.color===color);
+    card.classList.toggle('on',card.dataset.color===color&&appStyleView===style);
   });
 }
 
@@ -659,7 +789,7 @@ function initAuth(){
 function afterAuth(name){
   const theme=loadTheme();
   if(theme&&theme.color){
-    applyTheme(theme.color);
+    applyTheme(theme.style||'minimal',theme.color);
     showApp(name);
   }else{
     startOnboarding(name?name.split(' ')[0]:null);
@@ -680,8 +810,10 @@ function submitPin(){
 function showApp(name){
   document.getElementById('main-nav').style.display='flex';
   document.getElementById('nav-name').textContent=name?'/ '+name:'';
+  const theme=loadTheme()||{style:'minimal',color:'paper'};
+  appStyleView=theme.style||'minimal';
   buildAppearanceGrid();
-  updateAppearanceUI(loadTheme()?.color||'paper');
+  updateAppearanceUI(theme.style||'minimal',theme.color||'paper');
   go('dash',null);
   if(sbCfg)pullSB();
 }
