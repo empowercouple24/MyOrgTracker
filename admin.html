@@ -7,6 +7,7 @@
 <title>MyOrgTracker Admin</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%2318181b'/%3E%3Ctext x='16' y='23' text-anchor='middle' font-family='EB Garamond,serif' font-weight='600' font-size='20' fill='%23fbbf24' letter-spacing='-.03em'%3EO%3C/text%3E%3C/svg%3E">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Geist:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
 *{box-sizing:border-box;margin:0;padding:0}
@@ -620,16 +621,17 @@ const SB_URL='https://nclvgzirfzddrbsnzryo.supabase.co';
 const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5jbHZnemlyZnpkZHJic256cnlvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY0Mzc0NTgsImV4cCI6MjA5MjAxMzQ1OH0.y7paxIa6Zd2ubwO8w_YwEHVNiKA5D6L5vHKxz7P6gC0';
 let sbClient = null;
 
-async function initSupabase(){
-  const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2.45.4');
-  sbClient = createClient(SB_URL, SB_KEY, {auth:{persistSession:true,autoRefreshToken:true}});
+function initSupabase(){
+  if(sbClient)return sbClient; // already initialised
+  // supabase global loaded via <script> tag — no async import needed
+  sbClient = supabase.createClient(SB_URL, SB_KEY, {auth:{persistSession:true,autoRefreshToken:true}});
   _setupTokenRefresh();
   return sbClient;
 }
 
 async function checkAdminSession(){
   try{
-    const sb = await initSupabase();
+    const sb = initSupabase();
     const { data:{ session } } = await sb.auth.getSession();
     if(!session){
       window.location.href = '/';
@@ -670,7 +672,7 @@ async function _setupTokenRefresh(){
 }
 
 async function adminLogout(){
-  if(sbClient) await sbClient.auth.signOut();
+  try{if(sbClient)await sbClient.auth.signOut();}catch(e){}
   window.location.href = '/';
 }
 
@@ -1023,7 +1025,8 @@ async function sendInvite(){
     });
     // 2. Send magic link invite
     const redirectTo=window.location.origin+'/signup?slug='+inviteSlug;
-    const {error} = await sbClient.auth.signInWithOtp({
+    const sbInv=sbClient||initSupabase();
+    const {error} = await sbInv.auth.signInWithOtp({
       email,
       options:{shouldCreateUser:true,emailRedirectTo:redirectTo}
     });
