@@ -2,51 +2,51 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#f4ede1">
 <title>MyOrgTracker Admin</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%2318181b'/%3E%3Ctext x='16' y='23' text-anchor='middle' font-family='EB Garamond,serif' font-weight='600' font-size='20' fill='%23fbbf24' letter-spacing='-.03em'%3EO%3C/text%3E%3C/svg%3E">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Geist:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --ink:#0f0f0a;--ink2:#3a3a30;--ink3:#7a7a6a;--ink4:#b0b09a;
-  --paper:#f8f6f0;--paper2:#efefea;--paper3:#e5e4dc;
-  --gold:#8a6c1a;--gold2:#f5edcc;--gold3:#e8d89a;
-  --green:#1a5c3a;--green2:#e4f0e8;--green3:#b8ddc4;
-  --red:#8a1a1a;--red2:#f5e4e4;
-  --blue:#1a3a6c;--blue2:#e4eaf5;
-  --border:#dddbd0;--border2:#c8c6ba;
-  --r:10px;--shadow:0 2px 8px rgba(0,0,0,.07),0 1px 2px rgba(0,0,0,.05);
+  --ink:#18181b;--ink2:#3d3a34;--ink3:#5d5a52;--ink4:#a89f8d;
+  --paper:#f4ede1;--paper2:#ede5d4;--paper3:#e3d9c4;
+  --surface:#fbf6ec;--surface2:#f5ede0;
+  --gold:#7c5a3a;--gold2:#f0e4cc;--gold3:#c49a58;
+  --green:#2d6b42;--green2:#e8f2eb;--green3:#b5d9bf;
+  --red:#b84a5e;--red2:#fbf0f0;
+  --blue:#3a5c8a;--blue2:#e8eef6;
+  --border:rgba(61,46,31,0.12);--border2:rgba(61,46,31,0.22);
+  --r:12px;--shadow:0 1px 2px rgba(61,46,31,0.04),0 6px 20px rgba(61,46,31,0.05);
 }
-body{font-family:'DM Sans',sans-serif;background:var(--paper);color:var(--ink);min-height:100vh;font-size:14px}
+body{font-family:'Geist',system-ui,sans-serif;background:var(--paper);color:var(--ink);min-height:100vh;font-size:14px;-webkit-font-smoothing:antialiased}
 
-/* ── LOGIN ── */
-#login-screen{position:fixed;inset:0;background:var(--ink);display:flex;align-items:center;justify-content:center;z-index:1000;flex-direction:column;gap:0}
-.ls-card{background:var(--paper);width:360px;border-radius:16px;overflow:hidden;box-shadow:0 24px 80px rgba(0,0,0,.4)}
-.ls-head{background:var(--ink);padding:32px;text-align:center}
-.ls-logo{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:#fff;letter-spacing:-.5px}
-.ls-logo span{color:var(--gold3)}
-.ls-sub{font-size:12px;color:var(--ink3);margin-top:4px;font-family:'DM Mono',monospace;letter-spacing:.5px}
-.ls-body{padding:28px}
-.ls-label{font-size:11px;font-weight:500;letter-spacing:.6px;text-transform:uppercase;color:var(--ink3);margin-bottom:6px;display:block}
-.ls-input{width:100%;height:44px;border:1px solid var(--border);border-radius:8px;padding:0 14px;font-size:15px;font-family:'DM Mono',monospace;letter-spacing:4px;text-align:center;background:var(--paper2);color:var(--ink);outline:none;margin-bottom:14px;transition:.15s}
-.ls-input:focus{border-color:var(--gold);background:#fff}
-.ls-btn{width:100%;height:44px;background:var(--ink);color:#fff;border:none;border-radius:8px;font-family:'Syne',sans-serif;font-size:14px;font-weight:600;cursor:pointer;letter-spacing:.3px;transition:.15s}
-.ls-btn:hover{background:var(--ink2)}
-.ls-err{font-size:12px;color:var(--red);text-align:center;margin-top:10px;min-height:16px}
+/* ── AUTH GATE (checking session) ── */
+#auth-gate{position:fixed;inset:0;background:var(--paper);display:flex;align-items:center;justify-content:center;z-index:1000;flex-direction:column;gap:16px}
+.ag-wm{font-family:'EB Garamond',serif;line-height:0.95;letter-spacing:-0.015em;color:var(--ink);display:inline-flex;align-items:baseline;margin-bottom:8px}
+.ag-wm .my{font-style:italic;font-weight:400}
+.ag-wm .org{font-weight:600}
+.ag-wm .tracker{font-weight:400;color:var(--ink3);margin-left:0.04em}
+.ag-spin{width:20px;height:20px;border:2px solid var(--border2);border-top-color:var(--ink);border-radius:50%;animation:spin .75s linear infinite}
+.ag-txt{font-size:13px;color:var(--ink3);font-family:'DM Mono',monospace;letter-spacing:0.1em}
+@keyframes spin{to{transform:rotate(360deg)}}
 
 /* ── TOP NAV ── */
-.topnav{background:var(--ink);height:54px;display:flex;align-items:center;padding:0 24px;gap:0;position:sticky;top:0;z-index:100}
-.tn-logo{font-family:'Syne',sans-serif;font-size:17px;font-weight:800;color:#fff;letter-spacing:-.4px;margin-right:32px}
-.tn-logo span{color:var(--gold3)}
-.tn-badge{font-size:10px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;background:var(--gold);color:#fff;padding:2px 8px;border-radius:20px;margin-right:auto}
-.tn-tab{height:54px;padding:0 14px;display:flex;align-items:center;font-size:13px;font-weight:500;color:rgba(255,255,255,.5);cursor:pointer;border-bottom:2px solid transparent;transition:.12s;white-space:nowrap;user-select:none;font-family:'DM Sans',sans-serif}
-.tn-tab:hover{color:rgba(255,255,255,.8)}
-.tn-tab.on{color:#fff;border-bottom-color:var(--gold3)}
-.tn-right{margin-left:auto;display:flex;align-items:center;gap:12px}
-.tn-user{font-size:12px;color:rgba(255,255,255,.45);font-family:'DM Mono',monospace}
-.tn-logout{font-size:12px;color:rgba(255,255,255,.4);cursor:pointer;padding:4px 10px;border:1px solid rgba(255,255,255,.15);border-radius:6px;transition:.12s}
-.tn-logout:hover{color:#fff;border-color:rgba(255,255,255,.4)}
+.topnav{background:var(--paper);border-bottom:1px solid var(--border);height:54px;display:flex;align-items:center;padding:0 20px;gap:0;position:sticky;top:0;z-index:100;box-shadow:0 1px 3px rgba(61,46,31,0.04)}
+.tn-logo{font-family:'EB Garamond',serif;font-size:18px;line-height:0.95;letter-spacing:-0.015em;color:var(--ink);margin-right:28px;display:inline-flex;align-items:baseline;flex-shrink:0}
+.tn-logo .my{font-style:italic;font-weight:400}
+.tn-logo .org{font-weight:600}
+.tn-logo .tracker{font-weight:400;color:var(--ink3);margin-left:0.04em}
+.tn-badge{font-size:9px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;background:var(--ink);color:var(--paper);padding:3px 8px;border-radius:20px;margin-right:auto;font-family:'DM Mono',monospace}
+.tn-tab{height:54px;padding:0 13px;display:flex;align-items:center;font-size:13px;font-weight:500;color:var(--ink3);cursor:pointer;border-bottom:2px solid transparent;transition:.12s;white-space:nowrap;user-select:none;font-family:'Geist',sans-serif}
+.tn-tab:hover{color:var(--ink)}
+.tn-tab.on{color:var(--ink);border-bottom-color:var(--ink)}
+.tn-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.tn-user{font-size:11px;color:var(--ink3);font-family:'DM Mono',monospace;letter-spacing:0.06em}
+.tn-logout{font-size:12px;color:var(--ink3);cursor:pointer;padding:5px 10px;border:1px solid var(--border2);border-radius:7px;transition:.12s;font-weight:500;background:transparent}
+.tn-logout:hover{color:var(--ink);border-color:var(--ink);background:var(--paper3)}
 
 /* ── PAGES ── */
 .pg{display:none;padding:24px;max-width:1160px;margin:0 auto}
@@ -54,34 +54,34 @@ body{font-family:'DM Sans',sans-serif;background:var(--paper);color:var(--ink);m
 
 /* ── PAGE HEADER ── */
 .ph{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:22px;gap:16px;flex-wrap:wrap}
-.ph-title{font-family:'Syne',sans-serif;font-size:22px;font-weight:700;color:var(--ink);letter-spacing:-.4px}
+.ph-title{font-family:'EB Garamond',serif;font-size:26px;font-weight:500;color:var(--ink);letter-spacing:-0.02em}
 .ph-sub{font-size:13px;color:var(--ink3);margin-top:3px}
 
 /* ── CARDS ── */
-.card{background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:20px;box-shadow:var(--shadow)}
-.ct{font-size:11px;font-weight:600;letter-spacing:.6px;text-transform:uppercase;color:var(--ink4);margin-bottom:14px}
+.card{background:var(--paper2);border:1px solid var(--border);border-radius:var(--r);padding:20px;box-shadow:var(--shadow)}
+.ct{font-family:'DM Mono',monospace;font-size:10px;font-weight:500;letter-spacing:.18em;text-transform:uppercase;color:var(--ink4);margin-bottom:14px}
 
 /* ── METRICS ── */
 .mstrip{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px}
-.met{background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;box-shadow:var(--shadow)}
-.met-l{font-size:11px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:var(--ink4);margin-bottom:5px}
+.met{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;box-shadow:var(--shadow)}
+.met-l{font-family:'DM Mono',monospace;font-size:10px;font-weight:500;letter-spacing:.15em;text-transform:uppercase;color:var(--ink4);margin-bottom:5px}
 .met-v{font-size:24px;font-weight:600;letter-spacing:-.5px;font-family:'DM Mono',monospace;color:var(--ink)}
 .met-s{font-size:11px;color:var(--ink4);margin-top:3px}
 
 /* ── DISTRIBUTOR GRID ── */
 .dgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;margin-bottom:20px}
-.dcard{background:#fff;border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--shadow);overflow:hidden;transition:.15s;cursor:pointer}
-.dcard:hover{box-shadow:0 4px 20px rgba(0,0,0,.1);transform:translateY(-1px)}
+.dcard{background:var(--paper2);border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--shadow);overflow:hidden;transition:.15s;cursor:pointer}
+.dcard:hover{box-shadow:0 4px 20px rgba(61,46,31,0.1);transform:translateY(-1px)}
 .dcard.inactive{opacity:.55}
 .dc-head{padding:16px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px}
-.dc-av{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:700;font-size:14px;flex-shrink:0}
-.dc-name{font-family:'Syne',sans-serif;font-weight:600;font-size:14px;letter-spacing:-.2px}
+.dc-av{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Geist',sans-serif;font-weight:700;font-size:13px;flex-shrink:0}
+.dc-name{font-family:'Geist',sans-serif;font-weight:600;font-size:14px;letter-spacing:-.2px}
 .dc-slug{font-size:11px;color:var(--ink3);font-family:'DM Mono',monospace;margin-top:2px}
 .dc-body{padding:14px 18px}
 .dc-row{display:flex;justify-content:space-between;font-size:12px;margin-bottom:6px}
 .dc-row span:first-child{color:var(--ink3)}
 .dc-row span:last-child{font-family:'DM Mono',monospace;font-weight:500}
-.dc-foot{padding:10px 18px;background:var(--paper2);display:flex;gap:7px;border-top:1px solid var(--border)}
+.dc-foot{padding:10px 18px;background:var(--paper2);display:flex;gap:7px;border-top:1px solid var(--border);flex-wrap:wrap}
 .badge{display:inline-flex;align-items:center;font-size:10px;font-weight:600;padding:2px 8px;border-radius:20px;letter-spacing:.3px;white-space:nowrap}
 .b-admin{background:var(--gold2);color:var(--gold)}
 .b-active{background:var(--green2);color:var(--green)}
@@ -89,10 +89,10 @@ body{font-family:'DM Sans',sans-serif;background:var(--paper);color:var(--ink);m
 .b-pin{background:var(--blue2);color:var(--blue)}
 
 /* ── BUTTONS ── */
-.btn{height:34px;padding:0 14px;border-radius:8px;font-size:12px;font-weight:500;font-family:'DM Sans',sans-serif;cursor:pointer;transition:.12s;border:1px solid transparent;white-space:nowrap;display:inline-flex;align-items:center;gap:5px}
-.bp{background:var(--ink);color:#fff;border-color:var(--ink)}
+.btn{height:36px;padding:0 14px;border-radius:9px;font-size:12px;font-weight:500;font-family:'Geist',sans-serif;cursor:pointer;transition:.12s;border:1px solid transparent;white-space:nowrap;display:inline-flex;align-items:center;gap:5px}
+.bp{background:var(--ink);color:var(--paper);border-color:var(--ink)}
 .bp:hover{background:var(--ink2)}
-.bo{background:#fff;color:var(--ink);border-color:var(--border2)}
+.bo{background:var(--surface);color:var(--ink);border-color:var(--border2)}
 .bo:hover{background:var(--paper2)}
 .bg_{background:var(--green2);color:var(--green);border-color:var(--green3)}
 .bg_:hover{background:var(--green3)}
@@ -104,9 +104,9 @@ body{font-family:'DM Sans',sans-serif;background:var(--paper);color:var(--ink);m
 
 /* ── FORM ── */
 .fg{display:flex;flex-direction:column;gap:5px}
-.fg label{font-size:11px;font-weight:600;letter-spacing:.4px;text-transform:uppercase;color:var(--ink3)}
-.fg input,.fg select,.fg textarea{height:36px;padding:0 11px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-family:'DM Sans',sans-serif;color:var(--ink);background:#fff;outline:none;transition:.12s}
-.fg input:focus,.fg select:focus{border-color:var(--gold)}
+.fg label{font-family:'DM Mono',monospace;font-size:10px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--ink3)}
+.fg input,.fg select,.fg textarea{height:38px;padding:0 11px;border:1px solid var(--border);border-radius:9px;font-size:13px;font-family:'Geist',sans-serif;color:var(--ink);background:var(--paper);outline:none;transition:.12s}
+.fg input:focus,.fg select:focus{border-color:var(--ink)}
 .fg input[type=number]{font-family:'DM Mono',monospace}
 .fg textarea{height:auto;padding:9px 11px;resize:vertical}
 .frow{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;margin-bottom:12px}
@@ -114,41 +114,41 @@ body{font-family:'DM Sans',sans-serif;background:var(--paper);color:var(--ink);m
 /* ── MODAL ── */
 .modal-bg{position:fixed;inset:0;background:rgba(15,15,10,.6);z-index:500;display:none;align-items:center;justify-content:center;padding:20px}
 .modal-bg.on{display:flex}
-.modal{background:#fff;border-radius:14px;width:100%;max-width:500px;box-shadow:0 24px 80px rgba(0,0,0,.25);overflow:hidden}
-.mh{background:var(--ink);padding:20px 24px;display:flex;align-items:center;justify-content:space-between}
-.mh-title{font-family:'Syne',sans-serif;font-size:16px;font-weight:700;color:#fff;letter-spacing:-.2px}
-.mh-close{color:rgba(255,255,255,.4);cursor:pointer;font-size:18px;line-height:1;padding:4px;transition:.12s}
-.mh-close:hover{color:#fff}
-.mb{padding:22px 24px}
-.mf{padding:16px 24px;background:var(--paper2);display:flex;gap:9px;justify-content:flex-end;border-top:1px solid var(--border)}
+.modal{background:var(--paper2);border-radius:16px;width:100%;max-width:500px;box-shadow:0 24px 80px rgba(61,46,31,0.18);overflow:hidden;border:1px solid var(--border)}
+.mh{background:var(--paper);border-bottom:1px solid var(--border);padding:18px 22px;display:flex;align-items:center;justify-content:space-between}
+.mh-title{font-family:'EB Garamond',serif;font-size:20px;font-weight:500;color:var(--ink);letter-spacing:-0.01em}
+.mh-close{color:var(--ink3);cursor:pointer;font-size:18px;line-height:1;padding:4px;transition:.12s}
+.mh-close:hover{color:var(--ink)}
+.mb{padding:22px 24px;background:var(--surface)}
+.mf{padding:14px 24px;background:var(--paper);display:flex;gap:9px;justify-content:flex-end;border-top:1px solid var(--border)}
 
 /* ── TABLE ── */
 .tw{overflow-x:auto}
 table{width:100%;border-collapse:collapse;font-size:13px}
-th{font-size:11px;font-weight:600;letter-spacing:.4px;text-transform:uppercase;color:var(--ink4);padding:8px 12px;text-align:left;border-bottom:1px solid var(--border);background:#fff;white-space:nowrap}
+th{font-family:'DM Mono',monospace;font-size:10px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--ink4);padding:8px 12px;text-align:left;border-bottom:1px solid var(--border);background:var(--surface);white-space:nowrap}
 td{padding:9px 12px;border-bottom:1px solid var(--border);vertical-align:middle}
-tr:hover td{background:var(--paper2)}
+tr:hover td{background:var(--paper2);transition:background .1s}
 .n{font-family:'DM Mono',monospace;font-size:12px}
 
 /* ── DISTRIBUTOR VIEW ── */
-.dv-header{background:var(--ink);border-radius:var(--r);padding:20px 24px;margin-bottom:18px;display:flex;align-items:center;gap:16px}
-.dv-av{width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;font-size:18px;flex-shrink:0}
-.dv-name{font-family:'Syne',sans-serif;font-size:20px;font-weight:700;color:#fff;letter-spacing:-.4px}
-.dv-meta{font-size:12px;color:rgba(255,255,255,.45);font-family:'DM Mono',monospace;margin-top:3px}
+.dv-header{background:var(--paper2);border:1px solid var(--border);border-radius:var(--r);padding:20px 24px;margin-bottom:18px;display:flex;align-items:center;gap:16px;box-shadow:var(--shadow)}
+.dv-av{width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Geist',sans-serif;font-weight:800;font-size:18px;flex-shrink:0}
+.dv-name{font-family:'EB Garamond',serif;font-size:22px;font-weight:500;color:var(--ink);letter-spacing:-0.02em}
+.dv-meta{font-size:12px;color:var(--ink3);font-family:'DM Mono',monospace;margin-top:3px}
 .dv-actions{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
 
 /* ── PIN DISPLAY ── */
 .pin-display{font-family:'DM Mono',monospace;font-size:20px;font-weight:500;letter-spacing:6px;background:var(--paper2);border:1px solid var(--border);border-radius:8px;padding:10px 16px;display:inline-block}
 
 /* ── TOAST ── */
-.toast{position:fixed;bottom:18px;right:18px;background:var(--ink);color:var(--paper);padding:11px 18px;border-radius:10px;font-size:13px;font-weight:500;z-index:999;transform:translateY(50px);opacity:0;transition:.22s;pointer-events:none;font-family:'DM Sans',sans-serif}
+.toast{position:fixed;bottom:18px;right:18px;background:var(--ink);color:var(--paper);padding:11px 18px;border-radius:10px;font-size:13px;font-weight:500;z-index:999;transform:translateY(50px);opacity:0;transition:.22s;pointer-events:none;font-family:'Geist',sans-serif}
 .toast.on{transform:translateY(0);opacity:1}
 
 /* ── TOGGLE ── */
 .tog{position:relative;display:inline-block;width:36px;height:20px;flex-shrink:0}
 .tog input{opacity:0;width:0;height:0;position:absolute}
 .tog-sl{position:absolute;inset:0;background:var(--border2);border-radius:20px;cursor:pointer;transition:.2s}
-.tog-sl:before{content:'';position:absolute;width:14px;height:14px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.2s}
+.tog-sl:before{content:'';position:absolute;width:14px;height:14px;left:3px;top:3px;background:var(--surface);border-radius:50%;transition:.2s}
 .tog input:checked + .tog-sl{background:var(--green)}
 .tog input:checked + .tog-sl:before{transform:translateX(16px)}
 
@@ -158,7 +158,7 @@ tr:hover td{background:var(--paper2)}
 
 /* ── MONTH TEMPLATE ── */
 .mt-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;margin-top:10px}
-.mt-btn{padding:10px;border:1px solid var(--border);border-radius:8px;text-align:center;cursor:pointer;font-size:12px;font-weight:500;background:#fff;color:var(--ink2);transition:.12s}
+.mt-btn{padding:10px;border:1px solid var(--border);border-radius:8px;text-align:center;cursor:pointer;font-size:12px;font-weight:500;background:var(--surface);color:var(--ink2);transition:.12s}
 .mt-btn:hover{background:var(--paper2);border-color:var(--border2)}
 .mt-btn.has-data{background:var(--green2);border-color:var(--green3);color:var(--green)}
 
@@ -178,10 +178,7 @@ tr:hover td{background:var(--paper2)}
 /* ── SECTION DIVIDER ── */
 .divider{height:1px;background:var(--border);margin:20px 0}
 
-@media(max-width:700px){
-  .mstrip{grid-template-columns:1fr 1fr}
-  .dgrid{grid-template-columns:1fr}
-}
+@media(max-width:700px){.mstrip{grid-template-columns:1fr 1fr}.dgrid{grid-template-columns:1fr}.dv-actions{flex-wrap:wrap;gap:6px}.pg{padding:16px}.ph{flex-direction:column;gap:10px}}
 </style>
 </head>
 <body>
@@ -190,8 +187,8 @@ tr:hover td{background:var(--paper2)}
 <div id="login-screen">
   <div class="ls-card">
     <div class="ls-head">
-      <div class="ls-logo">MyOrg<span>Tracker</span></div>
-      <div class="ls-sub" style="color:rgba(255,255,255,.35)">ADMIN PORTAL</div>
+      <div class="ls-logo"><span class="my">my</span><span class="org">Org</span><span class="tracker">Tracker</span></div>
+      <div class="ls-sub">Admin Portal</div>
     </div>
     <div class="ls-body">
       <label class="ls-label">Admin PIN</label>
@@ -204,7 +201,7 @@ tr:hover td{background:var(--paper2)}
 
 <!-- ─── TOP NAV ────────────────────────────── -->
 <nav class="topnav" id="topnav" style="display:none">
-  <div class="tn-logo">MyOrg<span>Tracker</span></div>
+  <div class="tn-logo"><span class="my">my</span><span class="org">Org</span><span class="tracker">Tracker</span></div>
   <div class="tn-badge">ADMIN</div>
   <div class="tn-tab on" onclick="goPage('overview')">Overview</div>
   <div class="tn-tab" onclick="goPage('distributors')">Distributors</div>
@@ -540,7 +537,7 @@ function renderOverview() {
       const pct = Math.min(100,Math.round(est/dg*100));
       const col = colorFor(d.slug);
       return `<div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;cursor:pointer" onclick="viewDist('${d.slug}')">
-        <div style="width:32px;height:32px;border-radius:50%;background:${col};display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:700;font-size:11px;color:#fff;flex-shrink:0">${initials(d.name)}</div>
+        <div style="width:32px;height:32px;border-radius:50%;background:${col};display:flex;align-items:center;justify-content:center;font-family:'Geist',sans-serif;font-weight:700;font-size:11px;color:#fff;flex-shrink:0">${initials(d.name)}</div>
         <div style="flex:1;min-width:0">
           <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px">
             <span style="font-weight:500">${d.name}</span>
@@ -678,7 +675,7 @@ function renderDistDetail(d) {
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
         <div class="ct" style="margin:0">Entry Log</div>
         <div style="display:flex;gap:8px">
-          <select id="dd-month-filter" style="height:28px;padding:0 9px;font-size:12px;border:1px solid var(--border);border-radius:7px;background:#fff" onchange="renderDetailTable('${d.slug}')">
+          <select id="dd-month-filter" style="height:28px;padding:0 9px;font-size:12px;border:1px solid var(--border);border-radius:7px;background:var(--surface)" onchange="renderDetailTable('${d.slug}')">
             <option value="">All months</option>
             ${allMonths.map(mk=>{const[y,m]=mk.split('-').map(Number);return`<option value="${mk}">${MO[m-1]} ${y}</option>`;}).join('')}
           </select>
