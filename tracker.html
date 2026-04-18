@@ -311,6 +311,7 @@ td.n{font-family:'DM Mono',monospace;font-variant-numeric:tabular-nums}
         <div class="onb-dot" id="onb-d1"></div>
         <div class="onb-dot" id="onb-d2"></div>
         <div class="onb-dot" id="onb-d3"></div>
+        <div class="onb-dot" id="onb-d4"></div>
       </div>
       <div style="width:60px"></div>
     </div>
@@ -325,7 +326,7 @@ td.n{font-family:'DM Mono',monospace;font-variant-numeric:tabular-nums}
           <ul>
             <li>Pick your <b>style</b> — Minimal or Warm</li>
             <li>Pick your favorite <b>color</b></li>
-            <li>Confirm &amp; go</li>
+            <li>Set your <b>goal tier</b></li>
           </ul>
         </div>
         <button class="onb-cta" onclick="onbGo(1)">Let's go <span>→</span></button>
@@ -335,7 +336,7 @@ td.n{font-family:'DM Mono',monospace;font-variant-numeric:tabular-nums}
 
     <div class="onb-step" id="onb-1">
       <div class="onb-head">
-        <div class="onb-label">Step 1 of 2</div>
+        <div class="onb-label">Step 1 of 3</div>
         <h1>Pick your style</h1>
         <p>Two distinct feels — both beautiful, pick what suits you.</p>
       </div>
@@ -348,7 +349,7 @@ td.n{font-family:'DM Mono',monospace;font-variant-numeric:tabular-nums}
 
     <div class="onb-step" id="onb-2">
       <div class="onb-head">
-        <div class="onb-label">Step 2 of 2</div>
+        <div class="onb-label">Step 2 of 3</div>
         <h1>Pick your color</h1>
         <p>Nine colors in your chosen style. Tap one to continue.</p>
       </div>
@@ -359,7 +360,29 @@ td.n{font-family:'DM Mono',monospace;font-variant-numeric:tabular-nums}
       </div>
     </div>
 
+
     <div class="onb-step" id="onb-3">
+      <div class="onb-head">
+        <div class="onb-label">Step 3 of 3</div>
+        <h1>Set your goal</h1>
+        <p>Choose your Herbalife rank target. You can always update this later in Settings.</p>
+      </div>
+      <div class="card" style="padding:22px;margin-bottom:14px">
+        <div class="fg" style="margin-bottom:14px">
+          <label style="font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);font-weight:600;display:block;margin-bottom:8px">Goal Tier</label>
+          <select id="onb-goal-select" onchange="onbUpdateGoalInfo()" style="width:100%;height:46px;padding:0 14px;font-size:14px;border:1px solid var(--border2);border-radius:10px;background:var(--surface);color:var(--text);font-family:inherit;outline:none">
+          </select>
+        </div>
+        <div id="onb-goal-info" style="background:var(--surface2);border-radius:10px;padding:12px 14px;font-size:13px;color:var(--text2);line-height:1.6"></div>
+      </div>
+      <button class="onb-enter" onclick="onbPickGoal()">Confirm Goal <span>→</span></button>
+      <div class="onb-hint" style="margin-top:16px">
+        <span style="font-size:14px">⚙</span>
+        Change anytime in Settings → Goal Setting
+      </div>
+    </div>
+
+    <div class="onb-step" id="onb-4">
       <div class="onb-head">
         <div class="onb-label">All set</div>
       </div>
@@ -372,7 +395,7 @@ td.n{font-family:'DM Mono',monospace;font-variant-numeric:tabular-nums}
           <span id="onb-done-label">Paper</span>
         </div>
         <div class="onb-note">
-          <b>Don't love it?</b> Change your style or color anytime — all 18 themes — under <b>Settings → Appearance</b>.
+          <b>Don't love it?</b> Change your theme or goal anytime under <b>Settings</b>.
         </div>
         <button class="onb-enter" onclick="onbFinish()">Enter MyOrgTracker <span>→</span></button>
       </div>
@@ -487,7 +510,7 @@ td.n{font-family:'DM Mono',monospace;font-variant-numeric:tabular-nums}
 
     <div class="card" style="margin-bottom:16px">
       <div class="ct">Goal Setting</div>
-      <p style="font-size:13px;color:var(--text2);margin-bottom:14px;line-height:1.6">Choose your Herbalife rank goal. Your data and progress calculations will update to match.</p>
+      <p style="font-size:13px;color:var(--text2);margin-bottom:14px;line-height:1.6">Your goal tier drives all DV calculations and progress tracking. Change it here anytime.</p>
       <div class="fg" style="margin-bottom:14px">
         <label>Current Goal Tier</label>
         <select id="goal-select" onchange="saveGoalSetting()">
@@ -608,6 +631,17 @@ const SB_URL='https://nclvgzirfzddrbsnzryo.supabase.co';
 const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5jbHZnemlyZnpkZHJic256cnlvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY0Mzc0NTgsImV4cCI6MjA5MjAxMzQ1OH0.y7paxIa6Zd2ubwO8w_YwEHVNiKA5D6L5vHKxz7P6gC0';
 const sbCfg={url:SB_URL,k:SB_KEY};  // always-on
 
+async function loadPlatformInfluence(){
+  try{
+    const r=await fetch(SB_URL+'/rest/v1/platform_settings?key=eq.influence_factor&select=value',{
+      headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}
+    });
+    if(!r.ok)return;
+    const data=await r.json();
+    if(data[0]?.value)UPLIFT=+data[0].value;
+  }catch(e){}
+}
+
 async function fetchDistributorFromDB(slug){
   try{
     const r=await fetch(SB_URL+'/rest/v1/distributors?slug=eq.'+encodeURIComponent(slug)+'&is_active=eq.true&limit=1',{
@@ -618,7 +652,7 @@ async function fetchDistributorFromDB(slug){
     // Map Supabase row to internal format
     if(!data[0])return null;
     const d=data[0];
-    return {id:d.id,name:d.name,slug:d.slug,pin:d.pin,pinGoal:d.pin_goal,requirePin:d.require_pin,active:d.is_active,influence_factor:d.influence_factor||1.32};
+    return {id:d.id,name:d.name,slug:d.slug,pin:d.pin,pinGoal:d.pin_goal,requirePin:d.require_pin,active:d.is_active};
   }catch{return null;}
 }
 
@@ -700,6 +734,7 @@ function buildOnbColors(style){
     </button>`).join('');
 }
 let onbStyle=null,onbSelected=null;
+let onbGoalSelected=null;
 function onbPickStyle(style){
   onbStyle=style;
   document.querySelectorAll('.onb-scard').forEach(el=>el.classList.toggle('on',el.dataset.style===style));
@@ -710,39 +745,72 @@ function onbPickStyle(style){
 function onbPickColor(color){
   onbSelected=color;
   const c=findColor(color);
-  document.getElementById('onb-done-label').textContent=(onbStyle==='warm'?'Warm · ':'Minimal · ')+c.label;
-  document.getElementById('onb-done-dot').style.background=c.sw[c.sw.length-1];
   applyTheme(onbStyle||'minimal',color);
+  // Populate goal step
+  const goalSel=document.getElementById('onb-goal-select');
+  if(goalSel){goalSel.innerHTML=goalOptions(currentDist?.pinGoal||'mtp');onbUpdateGoalInfo();}
   onbGo(3);
+}
+function onbUpdateGoalInfo(){
+  const selEl=document.getElementById('onb-goal-select');
+  if(!selEl)return;
+  const g=goalById(selEl.value);
+  const threshold=Math.round(g.dv/UPLIFT);
+  const el=document.getElementById('onb-goal-info');
+  if(el)el.innerHTML=`<strong>${g.label}</strong><br>${g.dv.toLocaleString()} DV goal · You need <strong>${threshold.toLocaleString()}</strong> org volume to hit it`;
+}
+function onbPickGoal(){
+  const selEl=document.getElementById('onb-goal-select');
+  onbGoalSelected=selEl?selEl.value:'mtp';
+  const c=findColor(onbSelected||defaultColorFor(onbStyle||'minimal'));
+  const g=goalById(onbGoalSelected);
+  document.getElementById('onb-done-label').textContent=(onbStyle==='warm'?'Warm · ':'Minimal · ')+c.label+' · '+g.label;
+  document.getElementById('onb-done-dot').style.background=c.sw[c.sw.length-1];
+  onbGo(4);
 }
 function onbGo(step){
   document.querySelectorAll('.onb-step').forEach(s=>s.classList.remove('on'));
   document.getElementById('onb-'+step).classList.add('on');
   const back=document.getElementById('onb-back');
   const dots=document.getElementById('onb-dots');
-  back.classList.toggle('on',step===1||step===2);
+  back.classList.toggle('on',step>=1&&step<=3);
   dots.classList.toggle('on',step>=1);
   document.getElementById('onb-d1').classList.toggle('filled',step>=1);
   document.getElementById('onb-d2').classList.toggle('filled',step>=2);
   document.getElementById('onb-d3').classList.toggle('filled',step>=3);
+  document.getElementById('onb-d4').classList.toggle('filled',step>=4);
   window.scrollTo({top:0,behavior:'smooth'});
 }
 function onbBack(){
   const current=document.querySelector('.onb-step.on').id;
   if(current==='onb-1')onbGo(0);
   else if(current==='onb-2')onbGo(1);
+  else if(current==='onb-3')onbGo(2);
 }
-function onbFinish(){
+async function onbFinish(){
   const style=onbStyle||'minimal';
   const color=onbSelected||defaultColorFor(style);
+  const goalId=onbGoalSelected||currentDist?.pinGoal||'mtp';
+  const g=goalById(goalId);
   saveTheme({style,color});
+  // Update all records with chosen goal
+  recs.forEach(r=>{r.dv_goal=g.dv;});
+  recalcAll();
+  // Push goal to Supabase
+  try{
+    await fetch(SB_URL+'/rest/v1/distributors?slug=eq.'+userSlug,{
+      method:'PATCH',
+      headers:{...{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY},'Content-Type':'application/json','Prefer':'return=minimal'},
+      body:JSON.stringify({pin_goal:goalId,dv_goal:g.dv})
+    });
+  }catch(e){}
   document.getElementById('onb').classList.remove('on');
   if(currentDist)showApp(currentDist.name);
   else showApp('Default User');
 }
 function startOnboarding(userName){
   document.getElementById('onb-name').textContent=userName||'there';
-  onbStyle=null;onbSelected=null;
+  onbStyle=null;onbSelected=null;onbGoalSelected=null;
   buildOnbStyles();
   onbGo(0);
   document.getElementById('onb').classList.add('on');
@@ -847,7 +915,7 @@ async function initAuth(){
     return;
   }
   currentDist=dist;
-  UPLIFT=dist.influence_factor||1.32;
+  await loadPlatformInfluence();
   if(!dist.active){document.getElementById('inactive-screen').classList.add('on');return;}
   const session=sessionStorage.getItem('ot_session_'+userSlug);
   const persisted=localStorage.getItem('ot_persist_'+userSlug);

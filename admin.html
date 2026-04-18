@@ -299,8 +299,14 @@ tr:hover td{background:var(--paper2);transition:background .1s}
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;max-width:800px">
     <div class="card" style="margin-bottom:16px">
       <div class="ct">Platform Settings</div>
-      <p style="font-size:13px;color:var(--ink3);margin-bottom:14px;line-height:1.6">The influence factor (default 1.32) is applied per-distributor. Set it when creating a distributor. DV goal = Org Volume × factor.</p>
-      <div style="font-family:'DM Mono',monospace;font-size:13px;color:var(--ink2)">Default: <strong>1.32</strong> (32% uplift)</div>
+      <p style="font-size:13px;color:var(--ink3);margin-bottom:14px;line-height:1.6">The <strong>Influence Factor</strong> determines how Org Volume is converted to DV. At 1.32, an org volume of 113,636 equals 150,000 DV. This applies globally to all distributors.</p>
+      <div class="fg" style="margin-bottom:14px;max-width:320px">
+        <label>Influence Factor</label>
+        <select id="pf-influence" style="font-family:'DM Mono',monospace" onchange="updatePfInfo()">
+        </select>
+      </div>
+      <div id="pf-info" style="font-size:13px;color:var(--ink3);margin-bottom:14px"></div>
+      <button class="btn bp" onclick="savePlatformInfluence()">Save Influence Factor</button>
     </div>
     <div class="card">
       <div class="ct">Account</div>
@@ -344,10 +350,6 @@ tr:hover td{background:var(--paper2);transition:background .1s}
           <select id="nc-pin-goal" onchange="renderGoalInfo()">
           </select>
         </div>
-        <div class="fg" style="max-width:160px">
-          <label>Influence Factor</label>
-          <input type="number" id="nc-influence" value="1.32" step="0.01" min="1" max="2" style="width:100px;font-family:'DM Mono',monospace">
-        </div>
         <div class="fg">
           <label>Access PIN</label>
           <div style="display:flex;gap:6px;align-items:center">
@@ -361,10 +363,7 @@ tr:hover td{background:var(--paper2);transition:background .1s}
           <label class="tog"><input type="checkbox" id="nc-require-pin" checked><span class="tog-sl"></span></label>
           Require PIN on every visit
         </div>
-        <div style="display:flex;align-items:center;gap:8px;font-size:13px">
-          <label class="tog"><input type="checkbox" id="nc-is-admin"><span class="tog-sl"></span></label>
-          Admin access
-        </div>
+
       </div>
     </div>
     <div class="mf">
@@ -479,7 +478,16 @@ function goalOptions(sel){return GOAL_OPTIONS.map(g=>`<option value="${g.id}"${g
 const DV_GOAL = 150000; // default Millionaire Team Plus
 // PIN_MAP kept for backward compat with old records
 const PIN_MAP = {'7.5':113636,'5':75757,'3':45454,'1':15151};
-function getUplift(d){return d?.influence_factor||1.32;}
+let GLOBAL_UPLIFT=1.32; // loaded from platform_settings
+function getUplift(d){return GLOBAL_UPLIFT;}
+function influenceOptions(sel){
+  let opts='';
+  for(let v=1.00;v<=2.001;v=Math.round((v+0.01)*100)/100){
+    const vs=v.toFixed(2);
+    opts+=`<option value="${vs}"${vs===String((+sel).toFixed(2))?' selected':''}>${vs}× (${Math.round((v-1)*100)}% uplift)</option>`;
+  }
+  return opts;
+}
 function getDvGoal(d){if(d?.dv_goal)return +d.dv_goal;return dvForGoal(d?.pinGoal)||DV_GOAL;}
 const MO = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 const MONTH_FULL = ['January','February','March','April','May','June','July','August','September','October','November','December'];
@@ -536,6 +544,31 @@ function distFromRow(row, entries) {
       uplift_per_day: +e.uplift_per_day, pin_goal: e.pin_goal
     }))
   };
+}
+
+async function loadPlatformSettings(){
+  try{
+    const data=await sbFetch('/rest/v1/platform_settings?select=key,value');
+    (data||[]).forEach(row=>{
+      if(row.key==='influence_factor')GLOBAL_UPLIFT=+row.value||1.32;
+    });
+    const el=document.getElementById('pf-influence');
+    if(el)el.value=GLOBAL_UPLIFT.toFixed(2);
+  }catch(e){console.warn('Could not load platform settings',e);}
+}
+async function savePlatformInfluence(){
+  const val=document.getElementById('pf-influence').value;
+  GLOBAL_UPLIFT=+val;
+  try{
+    await sbFetch('/rest/v1/platform_settings?key=eq.influence_factor',{
+      method:'PATCH',
+      headers:{...SB_H(),'Prefer':'return=minimal'},
+      body:JSON.stringify({value:val,updated_at:new Date().toISOString()})
+    });
+    toast('Influence factor updated: '+val+'×');
+    await loadAllData('Recalculating…');
+    renderOverview();
+  }catch(e){toast('Error: '+e.message);}
 }
 
 async function loadAllData(msg='Loading…') {
@@ -600,7 +633,7 @@ async function checkAdminSession(){
     document.getElementById('admin-user-label').textContent = currentUser.name;
     initFieldEnhancements();
     startGhChecker();
-    await loadAllData('Loading dashboard…');
+    await Promise.all([loadAllData('Loading dashboard…'), loadPlatformSettings()]);
     goPage('overview');
   }catch(e){
     console.error('Auth check failed:', e);
@@ -715,7 +748,7 @@ function renderDistGrid() {
           <div class="dc-slug">?user=${d.slug}</div>
         </div>
         <div style="margin-left:auto;display:flex;flex-direction:column;align-items:flex-end;gap:4px">
-          ${d.isAdmin?'<span class="badge b-admin">ADMIN</span>':''}
+
           <span class="badge ${d.active?'b-active':'b-inactive'}">${d.active?'Active':'Inactive'}</span>
           ${d.requirePin?'<span class="badge b-pin">PIN</span>':''}
         </div>
@@ -819,10 +852,7 @@ function renderDistDetail(d) {
               <label class="tog"><input type="checkbox" ${d.requirePin?'checked':''} onchange="toggleRequirePin('${d.slug}',this.checked)"><span class="tog-sl"></span></label>
               <span>Require PIN every visit</span>
             </div>
-            <div style="display:flex;align-items:center;gap:8px">
-              <label class="tog"><input type="checkbox" ${d.isAdmin?'checked':''} onchange="toggleDistAdmin('${d.slug}',this.checked)"><span class="tog-sl"></span></label>
-              <span>Admin access</span>
-            </div>
+
           </div>
         </div>
       </div>
@@ -902,9 +932,7 @@ function openCreateModal() {
   document.getElementById('nc-name').value='';
   document.getElementById('nc-slug').value='';
   document.getElementById('nc-url-preview').textContent='/tracker?user=';
-  document.getElementById('nc-is-admin').checked=false;
   document.getElementById('nc-require-pin').checked=true;
-  document.getElementById('nc-influence').value='1.32';
   document.getElementById('nc-pin-goal').innerHTML=goalOptions('mtp');
   renderGoalInfo();
   genPin();
@@ -938,7 +966,7 @@ async function createDistributor() {
         name, slug, pin,
         pin_goal: pg,
         dv_goal: dvForGoal(pg),
-        influence_factor: inf,
+        influence_factor: GLOBAL_UPLIFT,
         is_active: true,
         require_pin: rp,
         created_by: currentUser.id
@@ -1109,8 +1137,18 @@ function copyUrl(slug) {
 // ══════════════════════════════════════════
 //  ADMIN COLLEAGUES
 // ══════════════════════════════════════════
-function renderSettings() {
+function renderSettings(){
+  const el=document.getElementById('pf-influence');
+  if(el){el.innerHTML=influenceOptions(GLOBAL_UPLIFT);updatePfInfo();}
   renderAdminList();
+}
+function updatePfInfo(){
+  const v=+document.getElementById('pf-influence').value||1.32;
+  const el=document.getElementById('pf-info');
+  if(el){
+    const ex=Math.round(150000/v);
+    el.textContent=`At ${v.toFixed(2)}×: reaching the Millionaire Team Plus goal (150,000 DV) requires ${ex.toLocaleString()} org volume.`;
+  }
 }
 function renderAdminList() {
   const c = document.getElementById('admin-list');
