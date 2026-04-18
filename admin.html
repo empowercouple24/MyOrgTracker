@@ -318,7 +318,9 @@ tr:hover td{background:var(--paper2);transition:background .1s}
       </div>
       <div id="imp-preview" style="display:none;background:var(--paper2);border-radius:8px;padding:12px 14px;margin-bottom:12px;font-size:13px;max-height:200px;overflow-y:auto"></div>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
-        <button class="btn bo" onclick="previewImport()">Preview Data</button>
+        <button class="btn bo" onclick="discoverTabs()">Discover Tabs</button>
+        <button class="btn bo" id="imp-fetch-all-btn" style="display:none" onclick="fetchAllTabs()">Fetch All Tabs</button>
+        <button class="btn bo" id="imp-preview-btn" style="display:none" onclick="previewImport()">Preview Single Tab</button>
         <button class="btn bp" id="imp-commit-btn" style="display:none" onclick="commitImport()">Import to Supabase</button>
       </div>
       <div id="imp-status" style="margin-top:10px;font-size:13px;color:var(--ink3)"></div>
@@ -518,7 +520,8 @@ let resetPinTarget = null;
 let detailChart = null;
 
 // Raw Supabase fetch helpers (no SDK needed for data operations)
-const SB_H = () => ({'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json'});
+let adminToken=SB_KEY; // replaced with real JWT after login
+const SB_H = () => ({'apikey':SB_KEY,'Authorization':'Bearer '+adminToken,'Content-Type':'application/json'});
 
 async function sbFetch(path, opts={}) {
   const r = await fetch(SB_URL + path, { headers: SB_H(), ...opts });
@@ -620,6 +623,7 @@ let sbClient = null;
 async function initSupabase(){
   const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2.45.4');
   sbClient = createClient(SB_URL, SB_KEY, {auth:{persistSession:true,autoRefreshToken:true}});
+  _setupTokenRefresh();
   return sbClient;
 }
 
@@ -641,7 +645,8 @@ async function checkAdminSession(){
       window.location.href = '/';
       return;
     }
-    // Admin verified — load data then show dashboard
+    // Admin verified — store JWT for RLS-authenticated requests
+    adminToken = session.access_token;
     currentUser = { name: profile.display_name || session.user.email, id: session.user.id };
     document.getElementById('auth-gate').style.display = 'none';
     document.getElementById('topnav').style.display = 'flex';
@@ -655,6 +660,13 @@ async function checkAdminSession(){
     document.getElementById('auth-msg').textContent = 'Error — redirecting…';
     setTimeout(()=>window.location.href='/',1500);
   }
+}
+
+// Keep adminToken fresh on token refresh
+async function _setupTokenRefresh(){
+  sbClient.auth.onAuthStateChange((event,session)=>{
+    if(session?.access_token)adminToken=session.access_token;
+  });
 }
 
 async function adminLogout(){
@@ -1288,9 +1300,218 @@ function toast(msg,ms=2800){const t=document.getElementById('toast');t.textConte
 
 
 // ══════════════════════════════════════════
-//  GOOGLE SHEET IMPORTER
+//  GOOGLE SHEET IMPORTER (multi-tab)
 // ══════════════════════════════════════════
 let importedRows=[];
+let allSheetTabs=[];
+
+function populateImportDist(){
+  const sel=document.getElementById('imp-dist');
+  if(!sel)return;
+  sel.innerHTML=state.distributors.map(d=>`<option value="${d.slug}">${d.name}</option>`).join('');
+}
+
+function extractSheetId(url){
+  const m=(url||'').match(/\/d\/([a-zA-Z0-9_-]+)/);
+  return m?m[1]:null;
+}
+
+async function fetchGvizJson(sheetId,sheetName){
+  const param=sheetName?`&sheet=${encodeURIComponent(sheetName)}`:'';
+  const url=`https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json${param}`;
+  const resp=await fetch(url);
+  if(!resp.ok)throw new Error('HTTP '+resp.status);
+  const text=await resp.text();
+  const json=text.replace(/^[^(]+\(/,'').replace(/\);?\s*$/,'');
+  return JSON.parse(json);
+}
+
+function parseGvizRows(data){
+  const cols=(data.table.cols||[]).map(c=>c.label||c.id||'');
+  const colsL=cols.map(c=>c.toLowerCase());
+  const rows=data.table.rows||[];
+  const find=(kws)=>colsL.findIndex(c=>kws.some(k=>c.includes(k)));
+  const dateCol=find(['date','day','fecha']);
+  const volCol=find(['volume','vol','org vol','org_vol','cumul']);
+  const monthCol=find(['month','mes']);
+  const yearCol=find(['year','año','yr']);
+  const dayCol=find(['day','dia','#']);
+  const parsed=[];
+  rows.forEach(row=>{
+    try{
+      const cells=row.c||[];
+      const val=i=>cells[i]?.v;
+      const str=i=>String(cells[i]?.v??cells[i]?.f??'').trim();
+      const rawVol=volCol>=0?val(volCol):null;
+      const org_volume=rawVol!=null?+String(rawVol).replace(/[^0-9.]/g,''):null;
+      if(!org_volume||org_volume<=0)return;
+      let year,month,day;
+      if(dateCol>=0&&cells[dateCol]){
+        const raw=cells[dateCol];
+        if(raw.f){
+          const p=raw.f.split(/[\/\-]/);
+          if(p.length===3){
+            if(p[0].length===4){year=+p[0];month=+p[1];day=+p[2];}
+            else{month=+p[0];day=+p[1];year=+p[2];}
+          }
+        }
+        if((!year)&&typeof raw.v==='number'){
+          const d=new Date(Math.round((raw.v-25569)*86400*1000));
+          year=d.getUTCFullYear();month=d.getUTCMonth()+1;day=d.getUTCDate();
+        }
+      }
+      if(!year&&yearCol>=0)year=+str(yearCol)||null;
+      if(!month&&monthCol>=0){
+        const mv=str(monthCol);
+        const mn={jan:1,feb:2,mar:3,apr:4,may:5,jun:6,jul:7,aug:8,sep:9,oct:10,nov:11,dec:12};
+        month=+mv||mn[mv.slice(0,3).toLowerCase()]||null;
+      }
+      if(!day&&dayCol>=0)day=+str(dayCol)||null;
+      if(!year||!month||!day||month<1||month>12||day<1||day>31||year<2010||year>2035)return;
+      parsed.push({year,month,day,org_volume,
+        entry_date:`${year}-${String(month).padStart(2,'0')}-${String(day).padStart(2,'0')}`
+      });
+    }catch(e){}
+  });
+  return parsed;
+}
+
+async function discoverTabs(){
+  const url=(document.getElementById('imp-url').value||'').trim();
+  const status=document.getElementById('imp-status');
+  const sheetId=extractSheetId(url);
+  if(!sheetId){status.textContent='Could not find a spreadsheet ID in that URL.';return;}
+  status.textContent='Discovering tabs…';
+  try{
+    // Use Sheets API v3 feeds endpoint — works for public sheets, no API key needed
+    const feedUrl=`https://spreadsheets.google.com/feeds/worksheets/${sheetId}/public/basic?alt=json`;
+    const resp=await fetch(feedUrl);
+    if(!resp.ok)throw new Error('Sheet may not be public (HTTP '+resp.status+'). Make sure sharing is set to Anyone with the link.');
+    const data=await resp.json();
+    allSheetTabs=(data.feed.entry||[]).map(e=>({
+      title:e.title.$t,
+      gid:e.id.$t.split('/').pop()
+    }));
+    status.innerHTML=`Found <strong>${allSheetTabs.length} tabs</strong>: ${allSheetTabs.map(t=>t.title).slice(0,6).join(', ')}${allSheetTabs.length>6?'…':''}<br>Click <strong>Preview All Tabs</strong> to fetch all data.`;
+    document.getElementById('imp-fetch-all-btn').style.display='inline-flex';
+    document.getElementById('imp-preview-btn').style.display='inline-flex';
+  }catch(e){
+    status.innerHTML=`<span style="color:var(--red)">${e.message}</span>`;
+  }
+}
+
+async function previewImport(){
+  const url=(document.getElementById('imp-url').value||'').trim();
+  const tab=(document.getElementById('imp-tab').value||'').trim();
+  const status=document.getElementById('imp-status');
+  const preview=document.getElementById('imp-preview');
+  const commitBtn=document.getElementById('imp-commit-btn');
+  importedRows=[];
+  commitBtn.style.display='none';
+  preview.style.display='none';
+  const sheetId=extractSheetId(url);
+  if(!sheetId){status.textContent='Invalid URL.';return;}
+  status.textContent='Fetching…';
+  try{
+    const data=await fetchGvizJson(sheetId,tab||null);
+    importedRows=parseGvizRows(data);
+    showPreview(status,preview,commitBtn);
+  }catch(e){status.innerHTML=`<span style="color:var(--red)">${e.message}</span>`;}
+}
+
+async function fetchAllTabs(){
+  const url=(document.getElementById('imp-url').value||'').trim();
+  const status=document.getElementById('imp-status');
+  const preview=document.getElementById('imp-preview');
+  const commitBtn=document.getElementById('imp-commit-btn');
+  const sheetId=extractSheetId(url);
+  if(!sheetId){status.textContent='Invalid URL.';return;}
+  if(!allSheetTabs.length){await discoverTabs();if(!allSheetTabs.length)return;}
+  importedRows=[];
+  let done=0;
+  status.textContent=`Fetching ${allSheetTabs.length} tabs…`;
+  preview.style.display='none';
+  commitBtn.style.display='none';
+  for(const tab of allSheetTabs){
+    try{
+      const data=await fetchGvizJson(sheetId,tab.title);
+      const rows=parseGvizRows(data);
+      importedRows.push(...rows);
+      done++;
+      status.textContent=`Fetched ${done}/${allSheetTabs.length} tabs (${importedRows.length} entries so far)…`;
+    }catch(e){
+      console.warn('Skipped tab',tab.title,e.message);
+      done++;
+    }
+  }
+  // Deduplicate by entry_date
+  const seen=new Set();
+  importedRows=importedRows.filter(r=>{const k=r.entry_date;if(seen.has(k))return false;seen.add(k);return true;});
+  showPreview(status,preview,commitBtn);
+}
+
+function showPreview(status,preview,commitBtn){
+  if(!importedRows.length){
+    status.innerHTML=`<span style="color:var(--red)">No parseable data found. Check column headers and sheet format.</span>`;
+    return;
+  }
+  const byMonth={};
+  importedRows.forEach(r=>{const k=r.year+'-'+String(r.month).padStart(2,'0');byMonth[k]=(byMonth[k]||0)+1;});
+  const keys=Object.keys(byMonth).sort();
+  const summary=keys.map(k=>`${MO[+k.split('-')[1]-1]} ${k.split('-')[0]}: ${byMonth[k]}d`).join(' · ');
+  preview.innerHTML=`<strong>${importedRows.length} entries</strong> across <strong>${keys.length} months</strong> (${keys[0]} → ${keys[keys.length-1]}):<br><br><div style="font-family:'DM Mono',monospace;font-size:11px;line-height:1.8;opacity:.8">${summary}</div>`;
+  preview.style.display='block';
+  status.textContent='Looks good — select a distributor above and click Import.';
+  commitBtn.style.display='inline-flex';
+}
+
+async function commitImport(){
+  const slug=document.getElementById('imp-dist').value;
+  const d=state.distributors.find(x=>x.slug===slug);
+  if(!d){toast('Select a distributor first');return;}
+  if(!importedRows.length){toast('No data — run Preview first');return;}
+  const btn=document.getElementById('imp-commit-btn');
+  const status=document.getElementById('imp-status');
+  btn.disabled=true;btn.textContent='Importing…';
+  const dg=getDvGoal(d);
+  const uplift=getUplift(d);
+  importedRows.sort((a,b)=>a.entry_date.localeCompare(b.entry_date));
+  const prevByMonth={};
+  const sbRows=importedRows.map(r=>{
+    const mk=r.month+'-'+r.year;
+    const prev=prevByMonth[mk];
+    const orgInc=prev!=null?r.org_volume-prev:r.org_volume;
+    prevByMonth[mk]=r.org_volume;
+    const estDv=Math.round(r.org_volume*uplift);
+    const dvRem=Math.max(0,Math.round(dg-estDv));
+    const dims=new Date(r.year,r.month,0).getDate();
+    const left=dims-r.day;
+    return{entry_date:r.entry_date,user_slug:slug,month_num:r.month,year_num:r.year,day_num:r.day,
+      org_volume:r.org_volume,org_increase:orgInc,dv_goal:dg,dv_remaining:dvRem,
+      org_daily_avg:left>0?Math.round(dvRem/left):0,est_org_dv:estDv,
+      uplift_per_day:left>0?Math.round(dvRem/left/uplift):0,pin_goal:d.pinGoal};
+  });
+  try{
+    const CHUNK=100;let imported=0;
+    for(let i=0;i<sbRows.length;i+=CHUNK){
+      await sbFetch('/rest/v1/org_volume?on_conflict=entry_date,user_slug',{
+        method:'POST',
+        headers:{...SB_H(),'Prefer':'resolution=merge-duplicates,return=minimal'},
+        body:JSON.stringify(sbRows.slice(i,i+CHUNK))
+      });
+      imported+=Math.min(CHUNK,sbRows.length-i);
+      status.textContent=`Imported ${imported}/${sbRows.length}…`;
+    }
+    btn.style.display='none';
+    status.innerHTML=`<span style="color:var(--green)">✓ Imported ${sbRows.length} entries for ${d.name} across ${Object.keys(importedRows.reduce((a,r)=>{a[r.year+'-'+r.month]=1;return a},{})).length} months.</span>`;
+    importedRows=[];allSheetTabs=[];
+    await loadAllData('Refreshing…');
+    toast('Import complete!');
+  }catch(e){
+    btn.disabled=false;btn.textContent='Import to Supabase';
+    status.innerHTML=`<span style="color:var(--red)">${e.message}</span>`;
+  }
+}
 
 function populateImportDist(){
   const sel=document.getElementById('imp-dist');
