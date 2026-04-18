@@ -521,7 +521,7 @@ let resetPinTarget = null;
 let detailChart = null;
 
 // Raw Supabase fetch helpers (no SDK needed for data operations)
-let adminToken=SB_KEY; // replaced with real JWT after login
+let adminToken=''; // set to anon key in initSupabase, then to real JWT after login
 const SB_H = () => ({'apikey':SB_KEY,'Authorization':'Bearer '+adminToken,'Content-Type':'application/json'});
 
 async function sbFetch(path, opts={}) {
@@ -624,6 +624,7 @@ let sbClient = null;
 function initSupabase(){
   if(sbClient)return sbClient; // already initialised
   // supabase global loaded via <script> tag — no async import needed
+  if(!adminToken)adminToken=SB_KEY; // use anon key until real JWT is obtained
   sbClient = supabase.createClient(SB_URL, SB_KEY, {auth:{persistSession:true,autoRefreshToken:true}});
   _setupTokenRefresh();
   return sbClient;
