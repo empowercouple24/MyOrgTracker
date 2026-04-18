@@ -297,6 +297,11 @@ tr:hover td{background:var(--paper2);transition:background .1s}
     <div class="ph-sub">Platform configuration and admin access</div>
   </div>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;max-width:800px">
+    <div class="card" style="margin-bottom:16px">
+      <div class="ct">Platform Settings</div>
+      <p style="font-size:13px;color:var(--ink3);margin-bottom:14px;line-height:1.6">The influence factor (default 1.32) is applied per-distributor. Set it when creating a distributor. DV goal = Org Volume × factor.</p>
+      <div style="font-family:'DM Mono',monospace;font-size:13px;color:var(--ink2)">Default: <strong>1.32</strong> (32% uplift)</div>
+    </div>
     <div class="card">
       <div class="ct">Account</div>
       <p style="font-size:13px;color:var(--ink3);margin-bottom:16px;line-height:1.6">You are signed in with Supabase Auth. To change your password, sign out and use the Forgot Password link on the sign-in page.</p>
@@ -329,18 +334,19 @@ tr:hover td{background:var(--paper2);transition:background .1s}
           <input type="text" id="nc-slug" placeholder="e.g. maria-jones">
         </div>
       </div>
+      <div id="nc-goal-info" style="background:var(--blue2);border:1px solid rgba(58,92,138,0.2);border-radius:8px;padding:10px 13px;margin-bottom:10px;font-size:12px;color:var(--blue)"></div>
       <div style="background:var(--paper2);border:1px solid var(--border);border-radius:8px;padding:11px 14px;margin-bottom:14px;font-size:12px;color:var(--ink3)">
         Their link will be: <span id="nc-url-preview" style="font-family:'DM Mono',monospace;color:var(--ink2)">/tracker?user=</span>
       </div>
       <div class="frow">
         <div class="fg" style="flex:1">
-          <label>PIN Goal</label>
-          <select id="nc-pin-goal">
-            <option value="7.5">Mill 7.5 — 113,636 DV</option>
-            <option value="5">Mill 5 — 75,757 DV</option>
-            <option value="3">Mill 3 — 45,454 DV</option>
-            <option value="1">Millionaire — 15,151 DV</option>
+          <label>Goal Tier</label>
+          <select id="nc-pin-goal" onchange="renderGoalInfo()">
           </select>
+        </div>
+        <div class="fg" style="max-width:160px">
+          <label>Influence Factor</label>
+          <input type="number" id="nc-influence" value="1.32" step="0.01" min="1" max="2" style="width:100px;font-family:'DM Mono',monospace">
         </div>
         <div class="fg">
           <label>Access PIN</label>
@@ -456,9 +462,25 @@ tr:hover td{background:var(--paper2);transition:background .1s}
 // ══════════════════════════════════════════
 //  CONSTANTS
 // ══════════════════════════════════════════
-const DV_GOAL = 113636;
-const UPLIFT  = 1.32;
-const PIN_MAP  = {'7.5':113636,'5':75757,'3':45454,'1':15151};
+const GOAL_OPTIONS=[
+  {id:'pt30k', label:'Presidents Team 30K',       dv:600000},
+  {id:'pt20k', label:'Presidents Team 20K',       dv:400000},
+  {id:'pt15k', label:'Presidents Team 15K',       dv:300000},
+  {id:'pt',    label:'Presidents Team',           dv:200000},
+  {id:'mtp',   label:'Millionaire Team Plus (7500)', dv:150000},
+  {id:'mt',    label:'Millionaire Team',          dv:80000},
+  {id:'getp',  label:'GET Plus (2500)',            dv:50000},
+  {id:'get',   label:'GET Team',                  dv:20000},
+  {id:'awt',   label:'Active World Team',         dv:10000},
+];
+function goalById(id){return GOAL_OPTIONS.find(g=>g.id===id)||GOAL_OPTIONS[4]}
+function dvForGoal(id){return goalById(id).dv}
+function goalOptions(sel){return GOAL_OPTIONS.map(g=>`<option value="${g.id}"${g.id===sel?' selected':''}>${g.label} — ${g.dv.toLocaleString()} DV</option>`).join('')}
+const DV_GOAL = 150000; // default Millionaire Team Plus
+// PIN_MAP kept for backward compat with old records
+const PIN_MAP = {'7.5':113636,'5':75757,'3':45454,'1':15151};
+function getUplift(d){return d?.influence_factor||1.32;}
+function getDvGoal(d){if(d?.dv_goal)return +d.dv_goal;return dvForGoal(d?.pinGoal)||DV_GOAL;}
 const MO = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 const MONTH_FULL = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 const COLORS = ['#1a5c3a','#1a3a6c','#6c1a3a','#3a1a6c','#6c3a1a','#1a6c5c','#5c1a6c','#3a6c1a'];
@@ -505,6 +527,7 @@ function distFromRow(row, entries) {
     isAdmin: false,
     active: row.is_active,
     createdAt: row.created_at,
+    influence_factor: row.influence_factor || 1.32,
     records: (entries || []).filter(e => e.user_slug === row.slug).map(e => ({
       year: e.year_num, month: e.month_num, day: e.day_num,
       org_volume: +e.org_volume, org_increase: +e.org_increase,
@@ -635,7 +658,7 @@ function renderOverview() {
       const mr = (d.records||[]).filter(r=>r.month===cm&&r.year===cy).sort((a,b)=>a.day-b.day);
       const last = mr[mr.length-1];
       const dg = PIN_MAP[d.pinGoal]||DV_GOAL;
-      const est = last ? Math.round((last.org_volume||0)*UPLIFT) : 0;
+      const uplift=getUplift(d);const est = last ? Math.round((last.org_volume||0)*uplift) : 0;
       const pct = Math.min(100,Math.round(est/dg*100));
       const col = colorFor(d.slug);
       return `<div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;cursor:pointer" onclick="viewDist('${d.slug}')">
@@ -661,7 +684,7 @@ function renderOverview() {
       <td><span style="font-weight:500">${r.distName}</span></td>
       <td>${MO[r.month-1]} ${r.day}, ${r.year}</td>
       <td class="n">${fmt(r.org_volume)}</td>
-      <td><span class="badge ${(r.org_increase||0)>=0?'b-active':'br_'}">${(r.org_increase||0)>=0?'+':''}${fmt(r.org_increase)}</span></td>
+      <td><span class="badge ${(r.org_increase||0)>=0?'b-active':'br_'}">${(r.org_increase||0)>=0?'+':''}${fmt(r.org_increase)}</span>${r.hit?'<span class="badge" style="background:#fef3c7;color:#92400e;margin-left:4px">🎯 HIT</span>':''}</td>
       <td><button class="btn bo btn-sm" onclick="viewDist('${r.distSlug}')">View</button></td>
     </tr>`).join('')
   }</tbody></table></div>`;
@@ -750,7 +773,7 @@ function renderDistDetail(d) {
     </div>
     <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px">
       <div class="met"><div class="met-l">Current Vol</div><div class="met-v">${fmt(last?.org_volume)}</div><div class="met-s">${MO[cm-1]} ${cy}</div></div>
-      <div class="met"><div class="met-l">Est. DV</div><div class="met-v">${fmt(last?Math.round(last.org_volume*UPLIFT):null)}</div><div class="met-s">×${UPLIFT} uplift</div></div>
+      <div class="met"><div class="met-l">Est. DV</div><div class="met-v">${fmt(last?Math.round(last.org_volume*UPLIFT):null)}</div><div class="met-s">×${getUplift(d)} uplift</div></div>
       <div class="met"><div class="met-l">DV Remaining</div><div class="met-v">${fmt(last?.dv_remaining)}</div><div class="met-s">To ${fmt(dg)} goal</div></div>
       <div class="met"><div class="met-l">Days Logged</div><div class="met-v">${mr.length}</div><div class="met-s">This month</div></div>
     </div>
@@ -843,7 +866,7 @@ function renderDetailTable(slug, mk) {
       <td>${MO[r.month-1]} ${r.day}, ${r.year}</td>
       <td class="n">${r.day}</td>
       <td class="n">${fmt(r.org_volume)}</td>
-      <td><span class="badge ${(r.org_increase||0)>=0?'b-active':'br_'}">${(r.org_increase||0)>=0?'+':''}${fmt(r.org_increase)}</span></td>
+      <td><span class="badge ${(r.org_increase||0)>=0?'b-active':'br_'}">${(r.org_increase||0)>=0?'+':''}${fmt(r.org_increase)}</span>${r.hit?'<span class="badge" style="background:#fef3c7;color:#92400e;margin-left:4px">🎯 HIT</span>':''}</td>
       <td class="n">${fmt(r.dv_remaining)}</td>
       <td class="n">${fmt(r.org_daily_avg)}</td>
       <td class="n">${fmt(r.est_org_dv)}</td>
@@ -867,12 +890,23 @@ async function deleteDistEntry(slug,y,m,day) {
 // ══════════════════════════════════════════
 //  CREATE DISTRIBUTOR
 // ══════════════════════════════════════════
+function renderGoalInfo(){
+  const sel=document.getElementById('nc-pin-goal').value;
+  const g=goalById(sel);
+  const inf=+document.getElementById('nc-influence').value||1.32;
+  const threshold=Math.round(g.dv/inf);
+  const el=document.getElementById('nc-goal-info');
+  if(el)el.innerHTML=`<strong>${g.label}</strong> — ${g.dv.toLocaleString()} DV goal · Volume threshold: <strong>${threshold.toLocaleString()}</strong> org vol`;
+}
 function openCreateModal() {
   document.getElementById('nc-name').value='';
   document.getElementById('nc-slug').value='';
   document.getElementById('nc-url-preview').textContent='/tracker?user=';
   document.getElementById('nc-is-admin').checked=false;
   document.getElementById('nc-require-pin').checked=true;
+  document.getElementById('nc-influence').value='1.32';
+  document.getElementById('nc-pin-goal').innerHTML=goalOptions('mtp');
+  renderGoalInfo();
   genPin();
   openModal('modal-create');
 }
@@ -903,7 +937,8 @@ async function createDistributor() {
       body: JSON.stringify({
         name, slug, pin,
         pin_goal: pg,
-        dv_goal: PIN_MAP[pg]||DV_GOAL,
+        dv_goal: dvForGoal(pg),
+        influence_factor: inf,
         is_active: true,
         require_pin: rp,
         created_by: currentUser.id
@@ -974,9 +1009,10 @@ async function saveLogEntry() {
   // Calculate derived values
   const recs = (d.records||[]).filter(r=>r.month===month&&r.year===year&&r.day<day).sort((a,b)=>b.day-a.day);
   const prev = recs[0];
+  const uplift = getUplift(d);
   const orgInc = prev ? vol - prev.org_volume : vol;
-  const dg = PIN_MAP[d.pinGoal]||DV_GOAL;
-  const estDv = Math.round(vol*UPLIFT);
+  const dg = getDvGoal(d);
+  const estDv = Math.round(vol*uplift);
   const dvRem = Math.max(0, Math.round(dg-estDv));
   const dims = new Date(year,month,0).getDate();
   const left = dims-day;
@@ -992,8 +1028,8 @@ async function saveLogEntry() {
         dv_remaining: dvRem,
         org_daily_avg: left>0?Math.round(dvRem/left):0,
         est_org_dv: estDv,
-        uplift_per_day: left>0?Math.round(dvRem/left/UPLIFT):0,
-        pin_goal: 'Mill '+d.pinGoal
+        uplift_per_day: left>0?Math.round(dvRem/left/uplift):0,
+        pin_goal: d.pinGoal
       })
     });
     closeModal('modal-log-entry');
@@ -1114,15 +1150,17 @@ function removeAdmin(id) {
 //  CALC
 // ══════════════════════════════════════════
 function recalcDist(d) {
+  const uplift = getUplift(d);
   const recs = (d.records||[]).sort((a,b)=>(a.year*10000+a.month*100+a.day)-(b.year*10000+b.month*100+b.day));
   recs.forEach(r => {
     const prev = recs.filter(x=>x.month===r.month&&x.year===r.year&&x.day<r.day).sort((a,b)=>b.day-a.day)[0];
     r.org_increase = prev ? r.org_volume-prev.org_volume : r.org_volume;
     const dims = new Date(r.year,r.month,0).getDate();
     const left = dims-r.day;
-    const dg   = r.dv_goal || PIN_MAP[d.pinGoal]||DV_GOAL;
-    r.est_org_dv     = Math.round(r.org_volume*UPLIFT);
+    const dg   = r.dv_goal || getDvGoal(d);
+    r.est_org_dv     = Math.round(r.org_volume*uplift);
     r.dv_remaining   = Math.max(0,Math.round(dg-r.est_org_dv));
+    r.hit            = r.est_org_dv >= dg;
     r.org_daily_avg  = left>0?Math.round(r.dv_remaining/left):0;
     r.uplift_per_day = left>0?Math.round(r.dv_remaining/left/UPLIFT):0;
   });

@@ -440,12 +440,7 @@ td.n{font-family:'DM Mono',monospace;font-variant-numeric:tabular-nums}
       </div>
       <div class="frow">
         <div class="fg"><label>PIN Goal</label>
-          <select id="epin" onchange="onPinChange()" style="min-width:200px">
-            <option value="7.5">Mill 7.5 — 113,636 DV</option>
-            <option value="5">Mill 5 — 75,757 DV</option>
-            <option value="3">Mill 3 — 45,454 DV</option>
-            <option value="1">Millionaire — 15,151 DV</option>
-            <option value="custom">Custom goal</option>
+          <select id="epin" onchange="onPinChange()" style="min-width:220px">
           </select>
         </div>
         <div class="fg" id="cdvw" style="display:none"><label>Custom DV Goal</label><input type="number" id="edv" placeholder="e.g. 90000" style="width:130px"></div>
@@ -489,6 +484,17 @@ td.n{font-family:'DM Mono',monospace;font-variant-numeric:tabular-nums}
 <!-- ── SETTINGS ── -->
 <div id="pg-settings" class="pg">
   <div style="max-width:720px">
+
+    <div class="card" style="margin-bottom:16px">
+      <div class="ct">Goal Setting</div>
+      <p style="font-size:13px;color:var(--text2);margin-bottom:14px;line-height:1.6">Choose your Herbalife rank goal. Your data and progress calculations will update to match.</p>
+      <div class="fg" style="margin-bottom:14px">
+        <label>Current Goal Tier</label>
+        <select id="goal-select" onchange="saveGoalSetting()">
+        </select>
+      </div>
+      <div id="goal-info" style="background:var(--accent-softer);border:1px solid var(--accent-soft);border-radius:8px;padding:11px 13px;font-size:13px;color:var(--text)"></div>
+    </div>
 
     <div class="card appearance">
       <div class="app-head">
@@ -542,8 +548,24 @@ td.n{font-family:'DM Mono',monospace;font-variant-numeric:tabular-nums}
 <div class="toast" id="toast"></div>
 
 <script>
-const DV_GOAL=113636,UPLIFT=1.32;
+const GOAL_OPTIONS=[
+  {id:'pt30k', label:'Presidents Team 30K',       dv:600000},
+  {id:'pt20k', label:'Presidents Team 20K',       dv:400000},
+  {id:'pt15k', label:'Presidents Team 15K',       dv:300000},
+  {id:'pt',    label:'Presidents Team',           dv:200000},
+  {id:'mtp',   label:'Millionaire Team Plus (7500)', dv:150000},
+  {id:'mt',    label:'Millionaire Team',          dv:80000},
+  {id:'getp',  label:'GET Plus (2500)',            dv:50000},
+  {id:'get',   label:'GET Team',                  dv:20000},
+  {id:'awt',   label:'Active World Team',         dv:10000},
+];
+function goalById(id){return GOAL_OPTIONS.find(g=>g.id===id)||GOAL_OPTIONS[4]}
+function dvForGoal(id){return goalById(id).dv}
+function goalOptions(sel){return GOAL_OPTIONS.map(g=>`<option value="${g.id}"${g.id===sel?' selected':''}>${g.label} — ${g.dv.toLocaleString()} DV</option>`).join('')}
+const DV_GOAL=150000;
 const PIN_MAP={'7.5':113636,'5':75757,'3':45454,'1':15151};
+let UPLIFT=1.32; // per-distributor influence factor loaded on auth
+
 const MO=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 const fmt=n=>n==null?'—':Math.round(n).toLocaleString();
 
@@ -596,7 +618,7 @@ async function fetchDistributorFromDB(slug){
     // Map Supabase row to internal format
     if(!data[0])return null;
     const d=data[0];
-    return {id:d.id,name:d.name,slug:d.slug,pin:d.pin,pinGoal:d.pin_goal,requirePin:d.require_pin,active:d.is_active};
+    return {id:d.id,name:d.name,slug:d.slug,pin:d.pin,pinGoal:d.pin_goal,requirePin:d.require_pin,active:d.is_active,influence_factor:d.influence_factor||1.32};
   }catch{return null;}
 }
 
@@ -621,6 +643,7 @@ function calcDerived(r,all){
   const dg=r.dv_goal||DV_GOAL;
   r.est_org_dv=Math.round(r.org_volume*UPLIFT);
   r.dv_remaining=Math.max(0,Math.round(dg-r.est_org_dv));
+  r.hit=r.est_org_dv>=dg;
   r.org_daily_avg=left>0?Math.round(r.dv_remaining/left):0;
   r.uplift_per_day=left>0?Math.round(r.dv_remaining/left/UPLIFT):0;
 }
@@ -725,6 +748,47 @@ function startOnboarding(userName){
   document.getElementById('onb').classList.add('on');
 }
 
+
+// ═══════════════════ GOAL SETTINGS ═══════════════════
+function populateGoalDropdowns(){
+  const savedGoal=currentDist?.pinGoal||'mtp';
+  const sel=document.getElementById('goal-select');
+  if(sel){sel.innerHTML=goalOptions(savedGoal);}
+  const epin=document.getElementById('epin');
+  if(epin){epin.innerHTML=goalOptions(savedGoal)+'<option value="custom">Custom goal</option>';}
+  updateGoalInfo();
+}
+function updateGoalInfo(){
+  const selEl=document.getElementById('goal-select');
+  const goalId=selEl?selEl.value:(currentDist?.pinGoal||'mtp');
+  const g=goalById(goalId);
+  const threshold=Math.round(g.dv/UPLIFT);
+  const infoEl=document.getElementById('goal-info');
+  if(infoEl)infoEl.innerHTML=`<strong>${g.label}</strong> · ${g.dv.toLocaleString()} DV goal · Volume threshold: <strong>${threshold.toLocaleString()}</strong> at ${UPLIFT}× uplift`;
+}
+async function saveGoalSetting(){
+  const selEl=document.getElementById('goal-select');
+  if(!selEl||!currentDist)return;
+  const goalId=selEl.value;
+  const g=goalById(goalId);
+  // Update all existing records' dv_goal
+  recs.forEach(r=>{r.dv_goal=g.dv;});
+  recalcAll();renderAll();
+  updateGoalInfo();
+  // Also sync to epin dropdown
+  const epinEl=document.getElementById('epin');
+  if(epinEl){const prev=epinEl.value;epinEl.innerHTML=goalOptions(goalId)+'<option value="custom">Custom goal</option>';epinEl.value=prev;}
+  // Push update to Supabase distributors table
+  try{
+    await fetch(SB_URL+'/rest/v1/distributors?slug=eq.'+userSlug,{
+      method:'PATCH',
+      headers:{...{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY},'Content-Type':'application/json','Prefer':'return=minimal'},
+      body:JSON.stringify({pin_goal:goalId,dv_goal:g.dv})
+    });
+    toast('Goal updated: '+g.label);
+  }catch(e){toast('Goal saved locally');}
+}
+
 // ═══════════════════ APPEARANCE ═══════════════════
 let appStyleView='minimal';
 function buildAppearanceGrid(){
@@ -783,6 +847,7 @@ async function initAuth(){
     return;
   }
   currentDist=dist;
+  UPLIFT=dist.influence_factor||1.32;
   if(!dist.active){document.getElementById('inactive-screen').classList.add('on');return;}
   const session=sessionStorage.getItem('ot_session_'+userSlug);
   const persisted=localStorage.getItem('ot_persist_'+userSlug);
@@ -815,6 +880,7 @@ function submitPin(){
 }
 
 function showApp(name){
+  populateGoalDropdowns();
   document.getElementById('main-nav').style.display='flex';
   document.getElementById('nav-name').textContent=name?'/ '+name:'';
   const theme=loadTheme()||{style:'minimal',color:'paper'};
@@ -932,7 +998,7 @@ function renderTable(){
   if(!rows.length){body.innerHTML=`<tr><td colspan="9"><div class="empty"><p>No data yet.</p></div></td></tr>`;return}
   body.innerHTML=rows.map(r=>{
     const dk=key(r),editing=editKey===dk,sign=(r.org_increase||0)>=0?'+':'';
-    return`<tr><td>${MO[r.month-1]} ${r.day}, ${r.year}</td><td class="n">${r.day}</td><td class="n">${editing?`<input class="ei" id="eiv" value="${r.org_volume}" type="number">`:fmt(r.org_volume)}</td><td><span class="badge ${(r.org_increase||0)>=0?'bg':'br'}">${sign}${fmt(r.org_increase)}</span></td><td class="n">${fmt(r.dv_remaining)}</td><td class="n">${fmt(r.org_daily_avg)}</td><td class="n">${fmt(r.est_org_dv)}</td><td class="n">${fmt(r.uplift_per_day)}</td><td style="white-space:nowrap">${editing?`<button class="btn bp bsm" onclick="saveEdit('${dk}')">Save</button> <button class="btn bo bsm" onclick="cancelEdit()">×</button>`:`<button class="btn bo bsm" onclick="startEdit('${dk}')">Edit</button> <button class="btn bdng bsm" onclick="del('${dk}')">Del</button>`}</td></tr>`;
+    return`<tr><td>${MO[r.month-1]} ${r.day}, ${r.year}</td><td class="n">${r.day}</td><td class="n">${editing?`<input class="ei" id="eiv" value="${r.org_volume}" type="number">`:fmt(r.org_volume)}</td><td><span class="badge ${(r.org_increase||0)>=0?'bg':'br'}">${sign}${fmt(r.org_increase)}</span></td><td class="n">${r.hit?'<span style="color:#92400e;font-weight:600;font-size:11px">🎯 HIT</span>':fmt(r.dv_remaining)}</td><td class="n">${fmt(r.org_daily_avg)}</td><td class="n">${fmt(r.est_org_dv)}</td><td class="n">${fmt(r.uplift_per_day)}</td><td style="white-space:nowrap">${editing?`<button class="btn bp bsm" onclick="saveEdit('${dk}')">Save</button> <button class="btn bo bsm" onclick="cancelEdit()">×</button>`:`<button class="btn bo bsm" onclick="startEdit('${dk}')">Edit</button> <button class="btn bdng bsm" onclick="del('${dk}')">Del</button>`}</td></tr>`;
   }).join('');
 }
 function startEdit(k){editKey=k;renderTable()}
@@ -970,7 +1036,7 @@ function previewEntry(){
   const inc=prev?vol-prev.org_volume:vol;
   const dims=new Date(year,month,0).getDate(),left=dims-day;
   const pin=document.getElementById('epin').value;
-  const dg=pin==='custom'?(+document.getElementById('edv').value||DV_GOAL):PIN_MAP[pin]||DV_GOAL;
+  const dg=pin==='custom'?(+document.getElementById('edv').value||DV_GOAL):(dvForGoal(pin)||PIN_MAP[pin]||DV_GOAL);
   const dvRem=Math.max(0,dg-vol*UPLIFT);
   const need=left>0?Math.round(dvRem/left):0;
   document.getElementById('pi').textContent=(inc>=0?'+':'')+fmt(inc);
@@ -984,10 +1050,10 @@ function previewEntry(){
 });
 function saveEntry(){
   const month=+document.getElementById('em').value,year=+document.getElementById('ey').value,day=+document.getElementById('ed').value,vol=+document.getElementById('ev').value;
-  const pin=document.getElementById('epin').value,dg=pin==='custom'?(+document.getElementById('edv').value||DV_GOAL):PIN_MAP[pin]||DV_GOAL;
+  const pin=document.getElementById('epin').value,dg=pin==='custom'?(+document.getElementById('edv').value||DV_GOAL):(dvForGoal(pin)||PIN_MAP[pin]||DV_GOAL);
   if(!day||!vol){toast('Please fill in day and org volume');return}
   const idx=recs.findIndex(r=>r.year===year&&r.month===month&&r.day===day);
-  const rec={year,month,day,org_volume:vol,dv_goal:dg,pin_goal:'Mill '+pin};
+  const rec={year,month,day,org_volume:vol,dv_goal:dg,pin_goal:pin};
   if(idx>=0){recs[idx]={...recs[idx],...rec}}else{recs.push(rec)}
   recalcAll();active={year,month};renderAll();
   const saved=recs.find(r=>r.year===year&&r.month===month&&r.day===day);
