@@ -59,20 +59,24 @@ body[data-style="warm"][data-color="forest"]{--bg:linear-gradient(135deg,#d0e8d4
 body{font-family:'Geist',system-ui,sans-serif;background:var(--bg);background-attachment:fixed;color:var(--text);min-height:100vh;font-size:14px;line-height:1.5;transition:background 0.2s}
 
 /* ── PIN SCREEN ── */
-#pin-screen{position:fixed;inset:0;background:#18181b;display:none;align-items:center;justify-content:center;z-index:1000;flex-direction:column;padding:20px}
+#pin-screen{position:fixed;inset:0;background:var(--bg,#fafaf8);display:none;align-items:center;justify-content:center;z-index:1000;flex-direction:column;padding:20px;background-attachment:fixed}
 #pin-screen.on{display:flex}
-.ps-card{background:#fff;width:100%;max-width:340px;border-radius:16px;overflow:hidden;box-shadow:0 24px 80px rgba(0,0,0,.4)}
-.ps-head{padding:28px;text-align:center;background:#18181b}
-.ps-logo{font-size:20px;font-weight:600;color:#fff;letter-spacing:-.01em}
-.ps-name{font-size:13px;color:rgba(255,255,255,.5);margin-top:5px;font-family:'DM Mono',monospace}
-.ps-body{padding:24px}
-.ps-label{font-size:11px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:#8a8a92;margin-bottom:6px;display:block}
-.ps-input{width:100%;height:44px;border:1px solid rgba(0,0,0,0.12);border-radius:8px;padding:0 14px;font-size:20px;font-family:'DM Mono',monospace;letter-spacing:6px;text-align:center;background:#f5f5f6;color:#18181b;outline:none;margin-bottom:12px;transition:.15s}
-.ps-input:focus{border-color:#18181b;background:#fff}
-.ps-btn{width:100%;height:42px;background:#18181b;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;transition:.15s}
-.ps-btn:hover{opacity:.9}
-.ps-err{font-size:12px;color:#b52b2b;text-align:center;margin-top:8px;min-height:16px}
-.ps-stay{display:flex;align-items:center;gap:8px;font-size:12px;color:#4a4a52;margin-bottom:12px}
+.ps-card{background:var(--surface,#fff);width:100%;max-width:380px;border-radius:20px;overflow:hidden;box-shadow:0 2px 4px rgba(0,0,0,0.04),0 14px 44px rgba(0,0,0,0.08);border:1px solid var(--border,rgba(0,0,0,0.08))}
+.ps-head{padding:32px 28px 22px;text-align:center;border-bottom:1px solid var(--divider,rgba(0,0,0,0.06))}
+.ps-logo{font-family:'EB Garamond',serif;font-size:24px;line-height:0.95;letter-spacing:-0.015em;color:var(--text,#18181b);display:inline-flex;align-items:baseline}
+.ps-logo .my{font-style:italic;font-weight:400}
+.ps-logo .org{font-weight:600}
+.ps-logo .tracker{font-weight:400;color:var(--text3,#7a7568);margin-left:0.04em}
+.ps-name{font-size:13px;color:var(--text2,#55595e);margin-top:8px;font-family:'DM Mono',monospace;letter-spacing:0.06em}
+.ps-body{padding:24px 28px 28px}
+.ps-label{font-family:'DM Mono',monospace;font-size:10px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--text3,#8a8578);margin-bottom:6px;display:block}
+.ps-input{width:100%;height:50px;border:1px solid var(--border,rgba(0,0,0,0.12));border-radius:11px;padding:0 14px;font-size:22px;font-family:'DM Mono',monospace;letter-spacing:8px;text-align:center;background:var(--bg,#fafaf8);color:var(--text,#18181b);outline:none;margin-bottom:14px;transition:.15s;-webkit-appearance:none}
+.ps-input:focus{border-color:var(--accent,#18181b);background:var(--surface,#fff)}
+.ps-input::placeholder{letter-spacing:4px;font-size:16px}
+.ps-btn{width:100%;height:50px;background:var(--accent,#18181b);color:var(--surface,#fff);border:none;border-radius:11px;font-size:15px;font-weight:500;cursor:pointer;transition:.12s;font-family:inherit}
+.ps-btn:hover{transform:translateY(-1px);opacity:.9}
+.ps-err{font-size:13px;color:var(--red,#b84a5e);text-align:center;margin-top:10px;min-height:18px}
+.ps-stay{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text2,#55595e);margin-bottom:14px}
 .tog{position:relative;display:inline-block;width:32px;height:18px;flex-shrink:0}
 .tog input{opacity:0;width:0;height:0;position:absolute}
 .tog-sl{position:absolute;inset:0;background:rgba(0,0,0,0.2);border-radius:20px;cursor:pointer;transition:.2s}
@@ -275,6 +279,27 @@ td.n{font-family:'DM Mono',monospace;font-variant-numeric:tabular-nums}
 .app-card .ft .sw{width:9px;height:9px;border-radius:50%;border:1px solid var(--border)}
 
 @media(max-width:680px){.mstrip{grid-template-columns:1fr 1fr}.g2{grid-template-columns:1fr}}
+
+/* Early theme — applied to html element before body loads */
+html[data-style="warm"][data-color="sunrise"]{--bg:linear-gradient(135deg,#ffe5d4 0%,#ffcdc2 50%,#ffb5b0 100%)}
+html[data-style="warm"][data-color="dusk"]{--bg:linear-gradient(135deg,#e8d7f0 0%,#e0c7e8 50%,#f5c7dc 100%)}
+html[data-style="warm"][data-color="meadow"]{--bg:linear-gradient(135deg,#d9e6cb 0%,#e8e6b9 50%,#f0dfa8 100%)}
+html[data-style="warm"][data-color="seafoam"]{--bg:linear-gradient(135deg,#cfe9e0 0%,#b5dfd3 50%,#9cd5c6 100%)}
+html[data-style="warm"][data-color="rosewater"]{--bg:linear-gradient(135deg,#f5ccd4 0%,#f0c3c0 50%,#f0c7a8 100%)}
+html[data-style="warm"][data-color="citrus"]{--bg:linear-gradient(135deg,#fde8b0 0%,#fcd49a 50%,#fcb982 100%)}
+html[data-style="warm"][data-color="horizon"]{--bg:linear-gradient(135deg,#c8dcef 0%,#d7d8ea 50%,#f0d0bf 100%)}
+html[data-style="warm"][data-color="bloom"]{--bg:linear-gradient(135deg,#f5c5d9 0%,#f0b5c7 50%,#ec9fb7 100%)}
+html[data-style="warm"][data-color="forest"]{--bg:linear-gradient(135deg,#d0e8d4 0%,#b5ddbf 50%,#9acfa9 100%)}
+html[data-color="sage"]{--bg:#f3f1e9}
+html[data-color="sky"]{--bg:#eef3f8}
+html[data-color="linen"]{--bg:#f4ede1}
+html[data-color="mist"]{--bg:#eef0f2}
+html[data-color="butter"]{--bg:#fcf6e6}
+html[data-color="rose"]{--bg:#fbf0f0}
+html[data-color="lilac"]{--bg:#f4effa}
+html[data-color="coral"]{--bg:#fdf0ea}
+html,body{background:var(--bg,#fafaf8);background-attachment:fixed}
+
 </style>
 </head>
 <body data-color="paper">
@@ -283,12 +308,14 @@ td.n{font-family:'DM Mono',monospace;font-variant-numeric:tabular-nums}
 <div id="pin-screen">
   <div class="ps-card">
     <div class="ps-head">
-      <div class="ps-logo">MyOrgTracker</div>
+      <div class="ps-logo">
+        <span class="my">my</span><span class="org">Org</span><span class="tracker">Tracker</span>
+      </div>
       <div class="ps-name" id="ps-username">Loading…</div>
     </div>
     <div class="ps-body">
       <label class="ps-label">Your Access PIN</label>
-      <input class="ps-input" type="password" id="pin-input" maxlength="6" placeholder="••••••" onkeydown="if(event.key==='Enter')submitPin()">
+      <input class="ps-input" type="password" id="pin-input" maxlength="6" placeholder="······" onkeydown="if(event.key==='Enter')submitPin()">
       <div class="ps-stay">
         <label class="tog"><input type="checkbox" id="stay-in"><span class="tog-sl"></span></label>
         Stay logged in on this device
@@ -693,6 +720,8 @@ function saveTheme(t){localStorage.setItem(THEME_KEY,JSON.stringify(t))}
 function applyTheme(style,color){
   document.body.setAttribute('data-style',style||'minimal');
   document.body.setAttribute('data-color',color);
+  document.documentElement.setAttribute('data-style',style||'minimal');
+  document.documentElement.setAttribute('data-color',color);
   if(active)renderDash();
   updateAppearanceUI(style||'minimal',color);
 }
