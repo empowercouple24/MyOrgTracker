@@ -36,7 +36,9 @@ body[data-style="warm"] .card{border-radius:20px;box-shadow:0 2px 24px rgba(0,0,
 body[data-style="warm"] .btn{border-radius:12px;font-family:'Manrope',sans-serif;font-weight:600}
 body[data-style="warm"] .fg input,body[data-style="warm"] .fg select{border-radius:11px;font-family:'Manrope',sans-serif}
 body[data-style="warm"] .tab{font-weight:600}
-body[data-style="warm"] .pill{border-radius:999px;font-weight:600}
+body[data-style="warm"] .pill.has-data{font-weight:600;}
+.pill.cur-month{box-shadow:0 0 0 1.5px var(--accent);}
+.pill{border-radius:999px;font-weight:600}
 body[data-style="warm"] .preview{border-radius:14px}
 body[data-style="warm"] .drop{border-radius:14px}
 body[data-style="warm"] .app-card{border-radius:18px}
@@ -189,6 +191,8 @@ body{font-family:'Geist',system-ui,sans-serif;background:var(--bg);background-at
 .pg{display:none;padding:22px;max-width:1080px;margin:0 auto}
 .pg.on{display:block}
 .pills{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap}
+.pill.has-data{font-weight:600;}
+.pill.cur-month{box-shadow:0 0 0 1.5px var(--accent);}
 .pill{padding:6px 12px;border:1px solid var(--border);border-radius:999px;font-size:12px;font-weight:500;color:var(--text2);cursor:pointer;background:var(--surface);transition:.12s}
 .pill:hover{color:var(--text);border-color:var(--border2)}
 .pill.on{background:var(--accent);color:var(--surface);border-color:var(--accent)}
@@ -418,7 +422,7 @@ td.n{font-family:'DM Mono',monospace;font-variant-numeric:tabular-nums}
 
 <!-- ── DASHBOARD ── -->
 <div id="pg-dash" class="pg">
-  <div id="mpills" class="pills"></div>
+  <div id="mpills" style="flex-wrap:wrap;gap:6px" class="pills"></div>
   <div class="mstrip">
     <div class="met"><div class="met-l">Org Volume</div><div class="met-v" id="mv">—</div><div class="met-s">Cumulative MTD</div></div>
     <div class="met"><div class="met-l">Daily Avg Inc.</div><div class="met-v" id="ma">—</div><div class="met-s">Avg daily delta</div></div>
@@ -988,13 +992,37 @@ function go(name,evt){
 
 // ═══════════════════ MONTHS ═══════════════════
 function monthKeys(){return[...new Set(recs.map(r=>r.year+'-'+String(r.month).padStart(2,'0')))].sort()}
+function allMonthsFrom2019(){
+  const now=new Date();const keys=[];
+  for(let y=2019;y<=now.getFullYear();y++){
+    const mEnd=y===now.getFullYear()?now.getMonth()+1:12;
+    for(let m=1;m<=mEnd;m++)keys.push(y+'-'+String(m).padStart(2,'0'));
+  }
+  return keys.reverse(); // newest first
+}
 function buildPills(){
-  const keys=monthKeys();const c=document.getElementById('mpills');c.innerHTML='';
-  if(!keys.length){c.innerHTML='<span style="font-size:13px;color:var(--text3)">No data yet — log an entry or import your CSV.</span>';return}
-  if(!active||!keys.includes(active.year+'-'+String(active.month).padStart(2,'0')))active=mk(keys[keys.length-1]);
-  keys.forEach(k=>{
-    const{year,month}=mk(k);const on=active&&active.year===year&&active.month===month;
-    const p=document.createElement('div');p.className='pill'+(on?' on':'');p.textContent=MO[month-1]+' '+year;
+  const allKeys=allMonthsFrom2019();
+  const dataKeys=new Set(monthKeys());
+  const c=document.getElementById('mpills');c.innerHTML='';
+  const now=new Date();
+  const curKey=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
+  if(!active)active=mk(curKey);
+  // Group by year for header separators
+  let lastYear=null;
+  allKeys.forEach(k=>{
+    const{year,month}=mk(k);
+    if(year!==lastYear){
+      const yr=document.createElement('div');
+      yr.style.cssText='font-family:"DM Mono",monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);width:100%;margin-top:8px;margin-bottom:2px;padding:0 2px;flex-basis:100%';
+      yr.textContent=year;c.appendChild(yr);lastYear=year;
+    }
+    const hasData=dataKeys.has(k);
+    const on=active&&active.year===year&&active.month===month;
+    const isCur=k===curKey;
+    const p=document.createElement('div');
+    p.className='pill'+(on?' on':'')+(hasData?' has-data':'')+(isCur?' cur-month':'');
+    p.textContent=MO[month-1];
+    if(!hasData&&!isCur)p.style.opacity='0.45';
     p.onclick=()=>{active={year,month};buildPills();renderDash()};
     c.appendChild(p);
   });

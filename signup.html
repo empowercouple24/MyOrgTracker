@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#f4ede1">
+<title>MyOrgTracker · Join</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%2318181b'/%3E%3Ctext x='16' y='23' text-anchor='middle' font-family='EB Garamond,serif' font-weight='600' font-size='20' fill='%23fbbf24' letter-spacing='-.03em'%3EO%3C/text%3E%3C/svg%3E">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html{background:#f4ede1;-webkit-tap-highlight-color:transparent}
+body{font-family:'Geist',system-ui,sans-serif;background:#f4ede1;color:#18181b;min-height:100vh;min-height:100dvh;line-height:1.5;font-size:15px;-webkit-font-smoothing:antialiased;display:flex;flex-direction:column;padding:0 20px;padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}
+
+.page{flex:1;display:flex;flex-direction:column;max-width:440px;margin:0 auto;width:100%;padding-top:48px;padding-bottom:28px}
+
+.wm{font-family:'EB Garamond',serif;line-height:0.95;letter-spacing:-0.015em;color:#18181b;display:inline-flex;align-items:baseline;text-decoration:none}
+.wm .my{font-style:italic;font-weight:400}
+.wm .org{font-weight:600}
+.wm .tracker{font-weight:400;color:#7a7568;margin-left:0.04em}
+.topbar{display:flex;align-items:center;justify-content:center;margin-bottom:44px}
+
+.hero-intro{margin-bottom:24px}
+.hero-intro h2{font-family:'EB Garamond',serif;font-size:clamp(26px,8vw,32px);font-weight:400;letter-spacing:-0.01em;line-height:1.1;color:#18181b;margin-bottom:8px}
+.hero-intro h2 em{font-style:italic}
+.hero-intro p{font-size:15px;color:#5d5a52;line-height:1.55;max-width:360px}
+
+.card{background:#fbf6ec;border-radius:20px;padding:26px 24px;box-shadow:0 1px 2px rgba(61,46,31,0.04),0 10px 28px rgba(61,46,31,0.06);border:1px solid rgba(61,46,31,0.06)}
+.card-head{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:#8a8578;margin-bottom:18px;font-weight:500}
+
+.field{margin-bottom:14px}
+.field label{display:block;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#7a7568;margin-bottom:6px;font-weight:500}
+.field input,.field select{width:100%;height:48px;border:1px solid rgba(61,46,31,0.14);border-radius:10px;padding:0 14px;font-size:15px;background:#fffdf5;color:#18181b;outline:none;font-family:'Geist',sans-serif;transition:border-color .15s;-webkit-appearance:none}
+.field input:focus,.field select:focus{border-color:#18181b;background:#fff}
+.field input:disabled,.field select:disabled{opacity:0.5;background:#f5f0e3}
+.field input::placeholder{color:#b8b0a0}
+
+.hint{font-size:12px;color:#8a8578;margin-top:6px;line-height:1.5}
+
+.goal-info{background:#fffdf5;border:1px solid rgba(61,46,31,0.1);border-radius:8px;padding:11px 13px;font-size:13px;color:#5d5a52;line-height:1.5;margin-top:6px;display:none}
+.goal-info.on{display:block}
+
+.btn-primary{width:100%;height:52px;background:#18181b;color:#fafaf8;border:none;border-radius:11px;font-size:15px;font-weight:500;cursor:pointer;font-family:'Geist',sans-serif;transition:.15s;display:flex;align-items:center;justify-content:center;gap:10px;margin-top:6px}
+.btn-primary:hover:not(:disabled){transform:translateY(-1px)}
+.btn-primary:disabled{opacity:0.6;cursor:not-allowed}
+.spinner{width:16px;height:16px;border:2px solid rgba(255,255,255,0.3);border-top-color:#fafaf8;border-radius:50%;animation:spin .75s linear infinite;display:none}
+.btn-primary.loading .spinner{display:block}
+.btn-primary.loading .btn-label{opacity:0.75}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.alert{font-size:13.5px;line-height:1.5;border-radius:10px;padding:12px 14px;margin-bottom:16px;display:none}
+.alert.on{display:block}
+.alert-err{background:#fbf0f0;color:#3d1a24;border:1px solid rgba(184,74,94,0.22)}
+.alert-ok{background:#f0f6ed;color:#1d3312;border:1px solid rgba(90,138,58,0.25)}
+
+.steps{display:flex;gap:6px;margin-bottom:24px;justify-content:center}
+.step-dot{width:24px;height:4px;border-radius:2px;background:rgba(61,46,31,0.15);transition:.2s}
+.step-dot.on{background:#18181b}
+
+.pw-wrap{position:relative;display:flex;align-items:center}
+.pw-wrap input{flex:1;padding-right:44px!important}
+.pw-eye{position:absolute;right:10px;background:none;border:none;cursor:pointer;color:#7a7568;padding:5px;display:flex;align-items:center;border-radius:6px;height:32px;width:32px}
+.pw-eye:hover{color:#18181b;background:rgba(0,0,0,0.04)}
+
+.lp-footer{margin-top:auto;padding-top:32px;text-align:center;font-size:11px;color:#a89f8d;font-family:'DM Mono',monospace;letter-spacing:0.14em;text-transform:uppercase}
+html::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;background-image:radial-gradient(rgba(61,46,31,0.025) 1px,transparent 1px);background-size:3px 3px}
+
+/* Step panels */
+.step-panel{display:none}
+.step-panel.on{display:block}
+
+.success-panel{text-align:center;padding:20px 0}
+.success-icon{font-size:52px;margin-bottom:20px}
+.success-panel h2{font-family:'EB Garamond',serif;font-size:28px;font-weight:500;letter-spacing:-.01em;margin-bottom:10px}
+.success-panel p{font-size:15px;color:#5d5a52;line-height:1.6;margin-bottom:24px}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header class="topbar">
+    <a href="/" class="wm" style="font-size:clamp(22px,6vw,26px)">
+      <span class="my">my</span><span class="org">Org</span><span class="tracker">Tracker</span>
+    </a>
+  </header>
+
+  <!-- Loading state -->
+  <div id="panel-loading">
+    <div style="text-align:center;padding:60px 0;color:#8a8578;font-family:'DM Mono',monospace;font-size:13px;letter-spacing:.1em">Setting up your account…</div>
+  </div>
+
+  <!-- Error state (bad token / slug) -->
+  <div id="panel-error" style="display:none">
+    <div class="card">
+      <div class="card-head">Something went wrong</div>
+      <div class="alert alert-err on" id="error-msg">This invite link is invalid or has expired.</div>
+      <p style="font-size:14px;color:#5d5a52;line-height:1.6;margin-bottom:16px">Ask your admin to resend the invite, or contact support.</p>
+      <a href="/" class="btn-primary" style="text-decoration:none"><span class="btn-label">Back to Sign In</span></a>
+    </div>
+  </div>
+
+  <!-- Step 1: Set up profile -->
+  <div id="panel-setup" style="display:none">
+    <main class="hero-intro">
+      <h2><em>Welcome!</em></h2>
+      <p>Complete your profile to get started tracking your Org Volume.</p>
+    </main>
+
+    <div class="steps">
+      <div class="step-dot on" id="sd1"></div>
+      <div class="step-dot" id="sd2"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">Your Profile</div>
+      <div class="alert alert-err" id="setup-err"></div>
+
+      <div class="field">
+        <label>First Name</label>
+        <input type="text" id="s-first" autocomplete="given-name" placeholder="Maria">
+      </div>
+      <div class="field">
+        <label>Last Name</label>
+        <input type="text" id="s-last" autocomplete="family-name" placeholder="Jones">
+      </div>
+      <div class="field">
+        <label>Goal Tier</label>
+        <select id="s-goal" onchange="updateSignupGoalInfo()"></select>
+        <div class="goal-info" id="s-goal-info"></div>
+      </div>
+
+      <button class="btn-primary" id="setup-next-btn" onclick="goToPassword()">
+        <span class="btn-label">Next →</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Step 2: Set password -->
+  <div id="panel-password" style="display:none">
+    <main class="hero-intro">
+      <h2><em>Set your password.</em></h2>
+      <p>Choose a password you'll use to sign in at myorgtracker.vercel.app.</p>
+    </main>
+
+    <div class="steps">
+      <div class="step-dot" id="pd1"></div>
+      <div class="step-dot on" id="pd2"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">Create Password</div>
+      <div class="alert alert-err" id="pw-err"></div>
+
+      <div class="field" style="margin-bottom:6px">
+        <label>Password</label>
+        <div class="pw-wrap">
+          <input type="password" id="s-pw" autocomplete="new-password" placeholder="at least 8 characters" minlength="8">
+          <button type="button" class="pw-eye" onclick="togglePw('s-pw',this)">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="field">
+        <label>Confirm Password</label>
+        <div class="pw-wrap">
+          <input type="password" id="s-pw2" autocomplete="new-password" placeholder="type it again" minlength="8">
+          <button type="button" class="pw-eye" onclick="togglePw('s-pw2',this)">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:10px;margin-top:8px">
+        <button class="btn-primary" style="background:transparent;color:#18181b;border:1px solid rgba(61,46,31,0.2);flex:0 0 auto;width:auto;padding:0 18px" onclick="backToProfile()">← Back</button>
+        <button class="btn-primary" id="pw-submit-btn" onclick="completeSignup()" style="flex:1">
+          <span class="btn-label">Complete Setup</span>
+          <span class="spinner" aria-hidden="true"></span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Success -->
+  <div id="panel-success" style="display:none">
+    <div class="card">
+      <div class="success-panel">
+        <div class="success-icon">🎉</div>
+        <h2>You're all set!</h2>
+        <p>Your MyOrgTracker account is ready. Start tracking your Org Volume and watching your progress toward your goal.</p>
+        <a id="tracker-link" href="/tracker?user=" class="btn-primary" style="text-decoration:none">
+          <span class="btn-label">Go to My Tracker →</span>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <footer class="lp-footer">myOrgTracker</footer>
+</div>
+
+<script type="module">
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.4';
+
+const SB_URL='https://nclvgzirfzddrbsnzryo.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5jbHZnemlyZnpkZHJic256cnlvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY0Mzc0NTgsImV4cCI6MjA5MjAxMzQ1OH0.y7paxIa6Zd2ubwO8w_YwEHVNiKA5D6L5vHKxz7P6gC0';
+const sb = createClient(SB_URL, SB_KEY, {auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+
+const GOAL_OPTIONS=[
+  {id:'pt30k',label:'Presidents Team 30K',dv:600000},
+  {id:'pt20k',label:'Presidents Team 20K',dv:400000},
+  {id:'pt15k',label:'Presidents Team 15K',dv:300000},
+  {id:'pt',label:'Presidents Team',dv:200000},
+  {id:'mtp',label:'Millionaire Team Plus (7500)',dv:150000},
+  {id:'mt',label:'Millionaire Team',dv:80000},
+  {id:'getp',label:'GET Plus (2500)',dv:50000},
+  {id:'get',label:'GET Team',dv:20000},
+  {id:'awt',label:'Active World Team',dv:10000},
+];
+function goalById(id){return GOAL_OPTIONS.find(g=>g.id===id)||GOAL_OPTIONS[4]}
+
+const $ = id => document.getElementById(id);
+const params = new URLSearchParams(window.location.search);
+const slug = params.get('slug');
+
+let distRecord = null;
+let uplift = 1.32;
+
+function showPanel(id){
+  ['panel-loading','panel-error','panel-setup','panel-password','panel-success'].forEach(p=>$(p).style.display='none');
+  $(id).style.display='block';
+}
+function showErr(panelId, msg){ const el=$(panelId); el.textContent=msg; el.classList.add('on'); }
+function hideErr(panelId){ $(panelId).classList.remove('on'); }
+
+window.togglePw = function(id, btn){
+  const el=$(id); const show=el.type==='password';
+  el.type=show?'text':'password';
+  btn.innerHTML=show
+    ?'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>'
+    :'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
+};
+
+window.updateSignupGoalInfo = function(){
+  const sel=$('s-goal'); if(!sel)return;
+  const g=goalById(sel.value);
+  const threshold=Math.round(g.dv/uplift);
+  const el=$('s-goal-info');
+  if(el){el.innerHTML=`${g.dv.toLocaleString()} DV goal · You need <strong>${threshold.toLocaleString()}</strong> org vol to hit it`;el.classList.add('on');}
+};
+
+window.goToPassword = function(){
+  const first=$('s-first').value.trim();
+  const last=$('s-last').value.trim();
+  if(!first){showErr('setup-err','Please enter your first name.');return;}
+  hideErr('setup-err');
+  showPanel('panel-password');
+};
+
+window.backToProfile = function(){ showPanel('panel-setup'); };
+
+window.completeSignup = async function(){
+  const pw=$('s-pw').value;
+  const pw2=$('s-pw2').value;
+  if(pw.length<8){showErr('pw-err','Password must be at least 8 characters.');return;}
+  if(pw!==pw2){showErr('pw-err','Passwords don\'t match.');return;}
+  hideErr('pw-err');
+
+  const btn=$('pw-submit-btn');
+  btn.classList.add('loading');btn.disabled=true;
+
+  const first=$('s-first').value.trim();
+  const last=$('s-last').value.trim();
+  const goalId=$('s-goal').value;
+  const g=goalById(goalId);
+
+  try{
+    // Update password on the current session (magic link already authenticated them)
+    const { error:pwErr } = await sb.auth.updateUser({ password: pw });
+    if(pwErr) throw pwErr;
+
+    const { data:{ user } } = await sb.auth.getUser();
+
+    // Update the profiles row (created by trigger)
+    await sb.from('profiles').update({
+      display_name: first+' '+last,
+      role: 'distributor',
+      slug: slug
+    }).eq('id', user.id);
+
+    // Activate the distributor row
+    await sb.from('distributors').update({
+      first_name: first,
+      last_name: last,
+      name: first+' '+last,
+      pin_goal: goalId,
+      dv_goal: g.dv,
+      is_active: true,
+      status: 'active',
+      auth_user_id: user.id
+    }).eq('slug', slug);
+
+    // Success
+    $('tracker-link').href='/tracker?user='+slug;
+    showPanel('panel-success');
+  }catch(e){
+    btn.classList.remove('loading');btn.disabled=false;
+    showErr('pw-err','Error: '+e.message);
+  }
+};
+
+// ─── Init ────────────────────────────────────────────────────────────────
+async function init(){
+  if(!slug){ showPanel('panel-error'); $('error-msg').textContent='No invite slug found in this link. Ask your admin to resend.'; return; }
+
+  // Supabase magic link sets session via detectSessionInUrl
+  // Wait briefly for session to be established
+  await new Promise(r=>setTimeout(r,400));
+
+  const { data:{ session } } = await sb.auth.getSession();
+
+  // Load platform influence factor
+  try{
+    const r=await fetch(SB_URL+'/rest/v1/platform_settings?key=eq.influence_factor&select=value',{headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}});
+    if(r.ok){const d=await r.json();if(d[0]?.value)uplift=+d[0].value;}
+  }catch(e){}
+
+  // Fetch the distributor record
+  try{
+    const r=await fetch(SB_URL+'/rest/v1/distributors?slug=eq.'+encodeURIComponent(slug)+'&select=*',{headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}});
+    if(!r.ok)throw new Error('Could not load invite');
+    const data=await r.json();
+    if(!data[0])throw new Error('Invite not found');
+    distRecord=data[0];
+  }catch(e){
+    showPanel('panel-error');
+    $('error-msg').textContent=e.message;
+    return;
+  }
+
+  // If already active (already enrolled), send to tracker
+  if(distRecord.status==='active'){
+    window.location.href='/tracker?user='+slug;
+    return;
+  }
+
+  // Pre-fill name from invite
+  if(distRecord.first_name)$('s-first').value=distRecord.first_name;
+  if(distRecord.last_name)$('s-last').value=distRecord.last_name;
+
+  // Populate goal dropdown
+  const goalSel=$('s-goal');
+  goalSel.innerHTML=GOAL_OPTIONS.map(g=>`<option value="${g.id}"${g.id===distRecord.pin_goal?' selected':''}>${g.label} — ${g.dv.toLocaleString()} DV</option>`).join('');
+  updateSignupGoalInfo();
+
+  showPanel('panel-setup');
+  $('s-first').focus();
+}
+
+// Handle auth state changes (magic link callback)
+sb.auth.onAuthStateChange((event, session)=>{
+  if(event==='SIGNED_IN'&&session){
+    // User just came back from magic link — continue with setup
+  }
+});
+
+init().catch(e=>{ showPanel('panel-error'); $('error-msg').textContent='Unexpected error: '+e.message; });
+</script>
+</body>
+</html>

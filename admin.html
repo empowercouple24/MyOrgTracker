@@ -259,7 +259,7 @@ tr:hover td{background:var(--paper2);transition:background .1s}
       <div class="ph-title">Dashboard Overview</div>
       <div class="ph-sub">All distributor organizations at a glance</div>
     </div>
-    <button class="btn bp" onclick="openCreateModal()">＋ New Distributor</button>
+    <button class="btn bp" onclick="openInviteModal()">✉ Invite Distributor</button>
   </div>
   <div class="mstrip" id="ov-metrics"></div>
   <div class="card" style="margin-bottom:18px">
@@ -279,7 +279,7 @@ tr:hover td{background:var(--paper2);transition:background .1s}
       <div class="ph-title">Distributors</div>
       <div class="ph-sub">Manage accounts, access, and monthly templates</div>
     </div>
-    <button class="btn bp" onclick="openCreateModal()">＋ New Distributor</button>
+    <button class="btn bp" onclick="openInviteModal()">✉ Invite Distributor</button>
   </div>
   <div class="dgrid" id="dist-grid"></div>
 </div>
@@ -327,48 +327,36 @@ tr:hover td{background:var(--paper2);transition:background .1s}
 <div class="modal-bg" id="modal-create">
   <div class="modal">
     <div class="mh">
-      <div class="mh-title">New Distributor</div>
-      <div class="mh-close" onclick="closeModal('modal-create')">✕</div>
+      <div class="mh-title">Invite Distributor</div>
+      <div class="mh-close" onclick="closeInviteModal()">✕</div>
     </div>
     <div class="mb">
-      <div class="frow">
-        <div class="fg" style="flex:1"><label>Full Name</label><input type="text" id="nc-name" placeholder="e.g. Maria Jones" oninput="autoSlug()"></div>
-      </div>
-      <div class="frow">
-        <div class="fg" style="flex:1">
-          <label>URL Slug <span style="font-weight:400;text-transform:none;font-size:10px">(used in their link)</span></label>
-          <input type="text" id="nc-slug" placeholder="e.g. maria-jones">
+      <div id="inv-form">
+        <div class="frow">
+          <div class="fg" style="flex:1"><label>First Name</label><input type="text" id="inv-first" placeholder="e.g. Maria" oninput="autoInviteSlug()"></div>
+          <div class="fg" style="flex:1"><label>Last Name</label><input type="text" id="inv-last" placeholder="e.g. Jones" oninput="autoInviteSlug()"></div>
         </div>
-      </div>
-      <div id="nc-goal-info" style="background:var(--blue2);border:1px solid rgba(58,92,138,0.2);border-radius:8px;padding:10px 13px;margin-bottom:10px;font-size:12px;color:var(--blue)"></div>
-      <div style="background:var(--paper2);border:1px solid var(--border);border-radius:8px;padding:11px 14px;margin-bottom:14px;font-size:12px;color:var(--ink3)">
-        Their link will be: <span id="nc-url-preview" style="font-family:'DM Mono',monospace;color:var(--ink2)">/tracker?user=</span>
-      </div>
-      <div class="frow">
-        <div class="fg" style="flex:1">
+        <div class="fg" style="margin-bottom:12px"><label>Email Address</label><input type="email" id="inv-email" placeholder="distributor@example.com"></div>
+        <div class="fg" style="margin-bottom:12px">
           <label>Goal Tier</label>
-          <select id="nc-pin-goal" onchange="renderGoalInfo()">
-          </select>
+          <select id="inv-goal" onchange="updateInviteGoalInfo()" style="width:100%"></select>
         </div>
-        <div class="fg">
-          <label>Access PIN</label>
-          <div style="display:flex;gap:6px;align-items:center">
-            <input type="text" id="nc-access-pin" placeholder="Auto" style="width:90px;font-family:'DM Mono',monospace;letter-spacing:2px" maxlength="6" readonly>
-            <button class="btn bo btn-sm" onclick="genPin()">Generate</button>
-          </div>
+        <div id="inv-goal-info" style="background:var(--blue2);border:1px solid rgba(58,92,138,0.2);border-radius:8px;padding:10px 13px;margin-bottom:14px;font-size:12px;color:var(--blue)"></div>
+        <div style="background:var(--paper2);border:1px solid var(--border);border-radius:8px;padding:11px 14px;font-size:12px;color:var(--ink3)">
+          Their signup link: <span id="inv-url-preview" style="font-family:'DM Mono',monospace;font-size:11px;color:var(--ink2)">—</span>
         </div>
       </div>
-      <div class="frow" style="align-items:center;gap:14px">
-        <div style="display:flex;align-items:center;gap:8px;font-size:13px">
-          <label class="tog"><input type="checkbox" id="nc-require-pin" checked><span class="tog-sl"></span></label>
-          Require PIN on every visit
-        </div>
-
+      <div id="inv-success" style="display:none;text-align:center;padding:20px 0">
+        <div style="font-size:32px;margin-bottom:12px">✉</div>
+        <div style="font-family:'EB Garamond',serif;font-size:20px;font-weight:500;margin-bottom:8px">Invite sent!</div>
+        <p style="font-size:13px;color:var(--ink3);margin-bottom:18px;line-height:1.6">A magic link was sent to <strong id="inv-sent-email"></strong>. They can also use the link below:</p>
+        <div style="background:var(--paper2);border:1px solid var(--border);border-radius:8px;padding:12px;font-family:'DM Mono',monospace;font-size:11px;word-break:break-all;cursor:pointer;color:var(--ink2);margin-bottom:16px" id="inv-copy-link" onclick="copyInviteLink()">—</div>
+        <button class="btn bo btn-sm" onclick="copyInviteLink()">Copy Link</button>
       </div>
     </div>
-    <div class="mf">
-      <button class="btn bo" onclick="closeModal('modal-create')">Cancel</button>
-      <button class="btn bp" onclick="createDistributor()">Create Account</button>
+    <div class="mf" id="inv-footer">
+      <button class="btn bo" onclick="closeInviteModal()">Cancel</button>
+      <button class="btn bp" id="inv-send-btn" onclick="sendInvite()">Send Invite</button>
     </div>
   </div>
 </div>
@@ -917,68 +905,7 @@ async function deleteDistEntry(slug,y,m,day) {
   } catch(e) { toast('Error: ' + e.message); }
 }
 
-// ══════════════════════════════════════════
-//  CREATE DISTRIBUTOR
-// ══════════════════════════════════════════
-function renderGoalInfo(){
-  const sel=document.getElementById('nc-pin-goal').value;
-  const g=goalById(sel);
-  const inf=+document.getElementById('nc-influence').value||1.32;
-  const threshold=Math.round(g.dv/inf);
-  const el=document.getElementById('nc-goal-info');
-  if(el)el.innerHTML=`<strong>${g.label}</strong> — ${g.dv.toLocaleString()} DV goal · Volume threshold: <strong>${threshold.toLocaleString()}</strong> org vol`;
-}
-function openCreateModal() {
-  document.getElementById('nc-name').value='';
-  document.getElementById('nc-slug').value='';
-  document.getElementById('nc-url-preview').textContent='/tracker?user=';
-  document.getElementById('nc-require-pin').checked=true;
-  document.getElementById('nc-pin-goal').innerHTML=goalOptions('mtp');
-  renderGoalInfo();
-  genPin();
-  openModal('modal-create');
-}
-function autoSlug() {
-  const name = document.getElementById('nc-name').value;
-  const slug = name.toLowerCase().trim().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
-  document.getElementById('nc-slug').value = slug;
-  document.getElementById('nc-url-preview').textContent = '/tracker?user=' + slug;
-}
-document.getElementById('nc-slug').addEventListener('input', function(){
-  document.getElementById('nc-url-preview').textContent = '/tracker?user=' + this.value;
-});
-function genPin() {
-  document.getElementById('nc-access-pin').value = genPinStr();
-}
-async function createDistributor() {
-  const name = document.getElementById('nc-name').value.trim();
-  const slug = document.getElementById('nc-slug').value.trim();
-  const pin  = document.getElementById('nc-access-pin').value.trim();
-  const pg   = document.getElementById('nc-pin-goal').value;
-  const rp   = document.getElementById('nc-require-pin').checked;
-  if (!name||!slug||!pin) { toast('Please fill in all fields'); return; }
-  if (state.distributors.find(d=>d.slug===slug)) { toast('URL slug already in use'); return; }
-  try {
-    await sbFetch('/rest/v1/distributors', {
-      method:'POST',
-      headers:{...SB_H(),'Prefer':'return=minimal'},
-      body: JSON.stringify({
-        name, slug, pin,
-        pin_goal: pg,
-        dv_goal: dvForGoal(pg),
-        influence_factor: GLOBAL_UPLIFT,
-        is_active: true,
-        require_pin: rp,
-        created_by: currentUser.id
-      })
-    });
-    closeModal('modal-create');
-    await loadAllData('Refreshing…');
-    renderDistGrid();
-    renderOverview();
-    toast('Distributor created: ' + name);
-  } catch(e) { toast('Error: ' + e.message); }
-}
+// CREATE DISTRIBUTOR — see openInviteModal / sendInvite above
 
 // ══════════════════════════════════════════
 //  RESET PIN
