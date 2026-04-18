@@ -297,7 +297,34 @@ tr:hover td{background:var(--paper2);transition:background .1s}
     <div class="ph-sub">Platform configuration and admin access</div>
   </div>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;max-width:800px">
+    
     <div class="card" style="margin-bottom:16px">
+      <div class="ct">Import from Google Sheet</div>
+      <p style="font-size:13px;color:var(--ink3);margin-bottom:16px;line-height:1.6">
+        Paste a public Google Sheet URL to import a distributor's historical Org Volume data.
+        The sheet must be shared publicly (Anyone with the link → Viewer).
+      </p>
+      <div class="fg" style="margin-bottom:10px">
+        <label>Distributor</label>
+        <select id="imp-dist" style="width:100%"></select>
+      </div>
+      <div class="fg" style="margin-bottom:10px">
+        <label>Google Sheet URL</label>
+        <input type="url" id="imp-url" placeholder="https://docs.google.com/spreadsheets/d/..." style="width:100%">
+      </div>
+      <div class="fg" style="margin-bottom:14px">
+        <label>Sheet Tab Name (optional — leave blank for first tab)</label>
+        <input type="text" id="imp-tab" placeholder="e.g. Sheet1 or leave blank">
+      </div>
+      <div id="imp-preview" style="display:none;background:var(--paper2);border-radius:8px;padding:12px 14px;margin-bottom:12px;font-size:13px;max-height:200px;overflow-y:auto"></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn bo" onclick="previewImport()">Preview Data</button>
+        <button class="btn bp" id="imp-commit-btn" style="display:none" onclick="commitImport()">Import to Supabase</button>
+      </div>
+      <div id="imp-status" style="margin-top:10px;font-size:13px;color:var(--ink3)"></div>
+    </div>
+
+<div class="card" style="margin-bottom:16px">
       <div class="ct">Platform Settings</div>
       <p style="font-size:13px;color:var(--ink3);margin-bottom:14px;line-height:1.6">The <strong>Influence Factor</strong> determines how Org Volume is converted to DV. At 1.32, an org volume of 113,636 equals 150,000 DV. This applies globally to all distributors.</p>
       <div class="fg" style="margin-bottom:14px;max-width:320px">
@@ -905,7 +932,117 @@ async function deleteDistEntry(slug,y,m,day) {
   } catch(e) { toast('Error: ' + e.message); }
 }
 
-// CREATE DISTRIBUTOR — see openInviteModal / sendInvite above
+
+// ══════════════════════════════════════════
+//  INVITE DISTRIBUTOR
+// ══════════════════════════════════════════
+let inviteSlug='';
+
+function openInviteModal(){
+  document.getElementById('inv-first').value='';
+  document.getElementById('inv-last').value='';
+  document.getElementById('inv-email').value='';
+  const gs=document.getElementById('inv-goal');
+  if(gs)gs.innerHTML=goalOptions('mtp');
+  document.getElementById('inv-url-preview').textContent='—';
+  document.getElementById('inv-goal-info').innerHTML='';
+  document.getElementById('inv-form').style.display='block';
+  document.getElementById('inv-success').style.display='none';
+  document.getElementById('inv-footer').style.display='flex';
+  const btn=document.getElementById('inv-send-btn');
+  btn.disabled=false;btn.textContent='Send Invite';
+  inviteSlug='';
+  updateInviteGoalInfo();
+  openModal('modal-create');
+}
+function closeInviteModal(){
+  closeModal('modal-create');
+  if(inviteSlug){loadAllData('Refreshing…').then(()=>{renderDistGrid();renderOverview();});}
+}
+function autoInviteSlug(){
+  const f=(document.getElementById('inv-first').value||'').trim();
+  const l=(document.getElementById('inv-last').value||'').trim();
+  const full=(f+' '+l).trim();
+  inviteSlug=full.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+  const prev=document.getElementById('inv-url-preview');
+  if(prev)prev.textContent=inviteSlug?window.location.origin+'/signup?slug='+inviteSlug:'—';
+}
+function updateInviteGoalInfo(){
+  const sel=document.getElementById('inv-goal');
+  if(!sel)return;
+  const g=goalById(sel.value);
+  const threshold=Math.round(g.dv/GLOBAL_UPLIFT);
+  const el=document.getElementById('inv-goal-info');
+  if(el)el.innerHTML=`<strong>${g.label}</strong> — ${g.dv.toLocaleString()} DV · Volume threshold: <strong>${threshold.toLocaleString()}</strong>`;
+}
+function copyInviteLink(){
+  const link=window.location.origin+'/signup?slug='+inviteSlug;
+  navigator.clipboard.writeText(link).then(()=>toast('✓ Link copied'));
+}
+async function sendInvite(){
+  const first=(document.getElementById('inv-first').value||'').trim();
+  const last=(document.getElementById('inv-last').value||'').trim();
+  const email=(document.getElementById('inv-email').value||'').trim().toLowerCase();
+  const goal=document.getElementById('inv-goal').value;
+  if(!first){toast('First name is required');return;}
+  if(!email||!email.includes('@')){toast('Valid email is required');return;}
+  autoInviteSlug();
+  if(!inviteSlug){toast('Please enter a name');return;}
+  // Ensure unique slug
+  if(state.distributors.find(d=>d.slug===inviteSlug)){
+    inviteSlug=inviteSlug+'-'+Math.random().toString(36).slice(2,6);
+  }
+  const btn=document.getElementById('inv-send-btn');
+  btn.disabled=true;btn.textContent='Sending…';
+  try{
+    // 1. Create pending distributor row
+    await sbFetch('/rest/v1/distributors',{
+      method:'POST',
+      headers:{...SB_H(),'Prefer':'return=minimal'},
+      body:JSON.stringify({
+        name:first+(last?' '+last:''),slug:inviteSlug,
+        email,pin:genPinStr(),
+        first_name:first,last_name:last||null,
+        pin_goal:goal,dv_goal:dvForGoal(goal),
+        influence_factor:GLOBAL_UPLIFT,
+        is_active:false,status:'pending',
+        created_by:currentUser.id
+      })
+    });
+    // 2. Send magic link invite
+    const redirectTo=window.location.origin+'/signup?slug='+inviteSlug;
+    const {error} = await sbClient.auth.signInWithOtp({
+      email,
+      options:{shouldCreateUser:true,emailRedirectTo:redirectTo}
+    });
+    if(error)throw error;
+    // 3. Show success
+    document.getElementById('inv-form').style.display='none';
+    document.getElementById('inv-footer').style.display='none';
+    document.getElementById('inv-sent-email').textContent=email;
+    document.getElementById('inv-copy-link').textContent=redirectTo;
+    document.getElementById('inv-success').style.display='block';
+    toast('Invite sent to '+email);
+  }catch(e){
+    btn.disabled=false;btn.textContent='Send Invite';
+    // If email sending fails, distributor row was still created — still show link
+    if(inviteSlug&&e.message&&(e.message.includes('rate')||e.message.includes('email'))){
+      const redirectTo=window.location.origin+'/signup?slug='+inviteSlug;
+      document.getElementById('inv-form').style.display='none';
+      document.getElementById('inv-footer').style.display='none';
+      document.getElementById('inv-sent-email').textContent=email+' (email may be rate-limited)';
+      document.getElementById('inv-copy-link').textContent=redirectTo;
+      document.getElementById('inv-success').style.display='block';
+    }else{
+      toast('Error: '+e.message);
+    }
+  }
+}
+// Legacy aliases
+function openCreateModal(){openInviteModal();}
+function createDistributor(){sendInvite();}
+function autoSlug(){}
+function genPin(){}
 
 // ══════════════════════════════════════════
 //  RESET PIN
@@ -1065,6 +1202,7 @@ function copyUrl(slug) {
 //  ADMIN COLLEAGUES
 // ══════════════════════════════════════════
 function renderSettings(){
+  populateImportDist();
   const el=document.getElementById('pf-influence');
   if(el){el.innerHTML=influenceOptions(GLOBAL_UPLIFT);updatePfInfo();}
   renderAdminList();
@@ -1147,6 +1285,204 @@ function toast(msg,ms=2800){const t=document.getElementById('toast');t.textConte
 //  INIT
 // ══════════════════════════════════════════
 // Demo seeding removed — data loaded from Supabase on login
+
+
+// ══════════════════════════════════════════
+//  GOOGLE SHEET IMPORTER
+// ══════════════════════════════════════════
+let importedRows=[];
+
+function populateImportDist(){
+  const sel=document.getElementById('imp-dist');
+  if(!sel)return;
+  sel.innerHTML=state.distributors.map(d=>`<option value="${d.slug}">${d.name}</option>`).join('');
+}
+
+async function previewImport(){
+  const url=(document.getElementById('imp-url').value||'').trim();
+  const tab=(document.getElementById('imp-tab').value||'').trim();
+  const status=document.getElementById('imp-status');
+  const preview=document.getElementById('imp-preview');
+  const commitBtn=document.getElementById('imp-commit-btn');
+  importedRows=[];
+  commitBtn.style.display='none';
+  preview.style.display='none';
+  if(!url){status.textContent='Please enter a Google Sheet URL.';return;}
+  
+  // Extract sheet ID
+  const m=url.match(/\/d\/([a-zA-Z0-9_-]+)/);
+  if(!m){status.textContent='Could not find a spreadsheet ID in that URL.';return;}
+  const sheetId=m[1];
+  
+  status.textContent='Fetching sheet data…';
+  try{
+    // Use Google Visualization API (works for public sheets without API key)
+    const sheetParam=tab?`&sheet=${encodeURIComponent(tab)}`:'';
+    const vizUrl=`https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json${sheetParam}`;
+    const resp=await fetch(vizUrl);
+    if(!resp.ok)throw new Error('Could not fetch sheet (status '+resp.status+'). Make sure it is shared publicly.');
+    const text=await resp.text();
+    // Strip JSONP wrapper google.visualization.Query.setResponse({...})
+    const json=text.replace(/^[^(]+\(/,'').replace(/\);?\s*$/,'');
+    const data=JSON.parse(json);
+    const cols=data.table.cols.map(c=>c.label||c.id);
+    const rows=data.table.rows||[];
+    
+    status.textContent=`Found ${rows.length} rows, ${cols.length} columns. Detecting format…`;
+    
+    // Auto-detect column mapping
+    // Look for: date/day column, org volume column, month/year
+    // Common formats:
+    // A) date | org_volume
+    // B) month | year | day | org_volume
+    // C) day | volume (month/year from context)
+    
+    const colsLower=cols.map(c=>(c||'').toLowerCase());
+    const findCol=(keywords)=>colsLower.findIndex(c=>keywords.some(k=>c.includes(k)));
+    
+    const dateCol=findCol(['date','day','fecha']);
+    const volCol=findCol(['volume','vol','org vol','org_vol','cumulative']);
+    const monthCol=findCol(['month','mes']);
+    const yearCol=findCol(['year','año','yr']);
+    const dayCol=findCol(['day','dia','#']);
+    
+    importedRows=[];
+    let skipped=0;
+    
+    rows.forEach((row,ri)=>{
+      try{
+        const cells=row.c||[];
+        const val=(idx)=>cells[idx]?.v;
+        const str=(idx)=>String(cells[idx]?.v||cells[idx]?.f||'').trim();
+        
+        let year,month,day,org_volume;
+        
+        // Extract org volume
+        const rawVol=volCol>=0?val(volCol):null;
+        org_volume=rawVol!=null?+String(rawVol).replace(/[^0-9.]/g,''):null;
+        if(!org_volume||org_volume<=0){skipped++;return;}
+        
+        // Extract date
+        if(dateCol>=0&&cells[dateCol]?.v!=null){
+          const rawDate=cells[dateCol];
+          if(rawDate.v instanceof Object||typeof rawDate.v==='string'){
+            // Date object from gviz is Date(year,month,day) 0-indexed month
+            if(rawDate.f){
+              const parts=rawDate.f.split(/[\/\-]/);
+              if(parts.length===3){
+                // MM/DD/YYYY or YYYY-MM-DD
+                if(parts[0].length===4){year=+parts[0];month=+parts[1];day=+parts[2];}
+                else{month=+parts[0];day=+parts[1];year=+parts[2];}
+              }
+            }
+            if(!year&&rawDate.v&&rawDate.v.constructor&&rawDate.v.constructor.name==='Date'){
+              year=rawDate.v.getFullYear();month=rawDate.v.getMonth()+1;day=rawDate.v.getDate();
+            }
+          }else if(typeof rawDate.v==='number'){
+            // Serial date
+            const d=new Date(Math.round((rawDate.v-25569)*86400*1000));
+            year=d.getUTCFullYear();month=d.getUTCMonth()+1;day=d.getUTCDate();
+          }
+        }
+        
+        // Fallback: separate month/year/day columns
+        if(!year&&yearCol>=0)year=+str(yearCol)||null;
+        if(!month&&monthCol>=0){
+          const mv=str(monthCol);
+          const mn={jan:1,feb:2,mar:3,apr:4,may:5,jun:6,jul:7,aug:8,sep:9,oct:10,nov:11,dec:12};
+          month=+mv||mn[mv.slice(0,3).toLowerCase()]||null;
+        }
+        if(!day&&dayCol>=0)day=+str(dayCol)||null;
+        
+        if(!year||!month||!day){skipped++;return;}
+        if(month<1||month>12||day<1||day>31){skipped++;return;}
+        if(year<2010||year>2030){skipped++;return;}
+        
+        importedRows.push({year,month,day,org_volume,
+          entry_date:`${year}-${String(month).padStart(2,'0')}-${String(day).padStart(2,'0')}`
+        });
+      }catch(e){skipped++;}
+    });
+    
+    if(!importedRows.length){
+      status.innerHTML=`<span style="color:var(--red)">Could not parse any rows. Check the column format. Columns found: ${cols.join(', ')}</span>`;
+      return;
+    }
+    
+    // Show preview
+    const byMonth={};
+    importedRows.forEach(r=>{const k=r.year+'-'+String(r.month).padStart(2,'0');byMonth[k]=(byMonth[k]||0)+1;});
+    const summary=Object.keys(byMonth).sort().map(k=>`${MO[+k.split('-')[1]-1]} ${k.split('-')[0]}: ${byMonth[k]} entries`).join('<br>');
+    preview.innerHTML=`<strong>${importedRows.length} entries</strong> across ${Object.keys(byMonth).length} months (${skipped} skipped):<br><br>${summary}`;
+    preview.style.display='block';
+    status.textContent='Review the preview above, then click Import.';
+    commitBtn.style.display='inline-flex';
+    
+  }catch(e){
+    status.innerHTML=`<span style="color:var(--red)">Error: ${e.message}</span>`;
+  }
+}
+
+async function commitImport(){
+  const slug=document.getElementById('imp-dist').value;
+  const d=state.distributors.find(x=>x.slug===slug);
+  if(!d){toast('Select a distributor first');return;}
+  if(!importedRows.length){toast('No data to import');return;}
+  
+  const btn=document.getElementById('imp-commit-btn');
+  const status=document.getElementById('imp-status');
+  btn.disabled=true;btn.textContent='Importing…';
+  
+  const dg=getDvGoal(d);
+  // Calculate derived values and build rows
+  importedRows.sort((a,b)=>a.entry_date.localeCompare(b.entry_date));
+  const prevByMonth={};
+  const sbRows=importedRows.map(r=>{
+    const mk=r.month+'-'+r.year;
+    const prev=prevByMonth[mk];
+    const orgInc=prev?r.org_volume-prev:r.org_volume;
+    prevByMonth[mk]=r.org_volume;
+    const uplift=getUplift(d);
+    const estDv=Math.round(r.org_volume*uplift);
+    const dvRem=Math.max(0,Math.round(dg-estDv));
+    const dims=new Date(r.year,r.month,0).getDate();
+    const left=dims-r.day;
+    return {
+      entry_date:r.entry_date,user_slug:slug,
+      month_num:r.month,year_num:r.year,day_num:r.day,
+      org_volume:r.org_volume,org_increase:orgInc,
+      dv_goal:dg,dv_remaining:dvRem,
+      org_daily_avg:left>0?Math.round(dvRem/left):0,
+      est_org_dv:estDv,
+      uplift_per_day:left>0?Math.round(dvRem/left/uplift):0,
+      pin_goal:d.pinGoal
+    };
+  });
+  
+  try{
+    // Batch upsert in chunks of 100
+    const CHUNK=100;
+    let done=0;
+    for(let i=0;i<sbRows.length;i+=CHUNK){
+      const chunk=sbRows.slice(i,i+CHUNK);
+      await sbFetch('/rest/v1/org_volume?on_conflict=entry_date,user_slug',{
+        method:'POST',
+        headers:{...SB_H(),'Prefer':'resolution=merge-duplicates,return=minimal'},
+        body:JSON.stringify(chunk)
+      });
+      done+=chunk.length;
+      status.textContent=`Imported ${done}/${sbRows.length}…`;
+    }
+    btn.style.display='none';
+    status.innerHTML=`<span style="color:var(--green)">✓ Successfully imported ${sbRows.length} entries for ${d.name}.</span>`;
+    importedRows=[];
+    await loadAllData('Refreshing…');
+    toast('Import complete: '+sbRows.length+' entries');
+  }catch(e){
+    btn.disabled=false;btn.textContent='Import to Supabase';
+    status.innerHTML=`<span style="color:var(--red)">Import error: ${e.message}</span>`;
+  }
+}
 
 // ══════════════════════════════════════════
 //  PASSWORD + EMAIL FIELD ENHANCEMENTS
