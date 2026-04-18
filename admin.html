@@ -179,6 +179,21 @@ tr:hover td{background:var(--paper2);transition:background .1s}
 .divider{height:1px;background:var(--border);margin:20px 0}
 
 @media(max-width:700px){.mstrip{grid-template-columns:1fr 1fr}.dgrid{grid-template-columns:1fr}.dv-actions{flex-wrap:wrap;gap:6px}.pg{padding:16px}.ph{flex-direction:column;gap:10px}}
+
+/* ── PASSWORD TOGGLE ── */
+.pw-wrap{position:relative;display:flex;align-items:center}
+.pw-wrap input{flex:1;padding-right:44px!important}
+.pw-eye{position:absolute;right:10px;background:none;border:none;cursor:pointer;color:var(--ink3,#5d5a52);padding:5px;display:flex;align-items:center;justify-content:center;transition:.12s;border-radius:6px;flex-shrink:0;height:32px;width:32px}
+.pw-eye:hover{color:var(--ink,#18181b);background:rgba(0,0,0,0.04)}
+.pw-eye svg{pointer-events:none}
+
+/* ── GITHUB VERSION CHECKER ── */
+.gh-check{display:inline-flex;align-items:center;gap:4px;font-family:'DM Mono',monospace;font-size:9px;font-weight:500;padding:3px 9px;border-radius:20px;transition:all .3s;white-space:nowrap;letter-spacing:.05em;cursor:default;user-select:none}
+.gh-check.checking{background:rgba(0,0,0,0.05);color:var(--ink4,#a89f8d)}
+.gh-check.ok{background:rgba(45,107,66,0.1);color:var(--green,#2d6b42)}
+.gh-check.update{background:#fef3c7;color:#92400e;cursor:pointer;font-weight:600;animation:gh-pulse 2s ease-in-out infinite}
+.gh-check.rate,.gh-check.error{opacity:0;pointer-events:none}
+@keyframes gh-pulse{0%,100%{opacity:1}50%{opacity:.7}}
 </style>
 </head>
 <body>
@@ -187,7 +202,7 @@ tr:hover td{background:var(--paper2);transition:background .1s}
 <div id="login-screen">
   <div class="ls-card">
     <div class="ls-head">
-      <div class="ls-logo"><span class="my">my</span><span class="org">Org</span><span class="tracker">Tracker</span></div>
+      <a href="/" class="ls-logo" style="text-decoration:none;justify-content:center"><span class="my">my</span><span class="org">Org</span><span class="tracker">Tracker</span></a>
       <div class="ls-sub">Admin Portal</div>
     </div>
     <div class="ls-body">
@@ -201,12 +216,13 @@ tr:hover td{background:var(--paper2);transition:background .1s}
 
 <!-- ─── TOP NAV ────────────────────────────── -->
 <nav class="topnav" id="topnav" style="display:none">
-  <div class="tn-logo"><span class="my">my</span><span class="org">Org</span><span class="tracker">Tracker</span></div>
+  <a href="/" class="tn-logo" style="text-decoration:none"><span class="my">my</span><span class="org">Org</span><span class="tracker">Tracker</span></a>
   <div class="tn-badge">ADMIN</div>
   <div class="tn-tab on" onclick="goPage('overview')">Overview</div>
   <div class="tn-tab" onclick="goPage('distributors')">Distributors</div>
   <div class="tn-tab" onclick="goPage('settings')">Settings</div>
   <div class="tn-right">
+    <div id="gh-check" class="gh-check checking">···</div>
     <span class="tn-user" id="admin-user-label"></span>
     <span class="tn-logout" onclick="adminLogout()">Log out</span>
   </div>
@@ -1021,6 +1037,80 @@ if (!state.distributors.length) {
   });
   saveState();
 }
+
+// ══════════════════════════════════════════
+//  PASSWORD + EMAIL FIELD ENHANCEMENTS
+// ══════════════════════════════════════════
+const EYE_OPEN = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`;
+const EYE_SHUT = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>`;
+const CLR_ICON = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`;
+
+function initFieldEnhancements(){
+  // Password eye toggle
+  document.querySelectorAll('input[type="password"]').forEach(inp=>{
+    if(inp.closest('.pw-wrap'))return;
+    const wrap=document.createElement('div');wrap.className='pw-wrap';
+    inp.parentNode.insertBefore(wrap,inp);wrap.appendChild(inp);
+    const btn=document.createElement('button');btn.type='button';btn.className='pw-eye';
+    btn.setAttribute('aria-label','Toggle visibility');btn.innerHTML=EYE_OPEN;
+    btn.addEventListener('click',()=>{
+      const show=inp.type==='password';
+      inp.type=show?'text':'password';
+      btn.innerHTML=show?EYE_SHUT:EYE_OPEN;
+    });
+    wrap.appendChild(btn);
+  });
+  // Email clear button
+  document.querySelectorAll('input[type="email"]').forEach(inp=>{
+    if(inp.closest('.pw-wrap'))return;
+    const wrap=document.createElement('div');wrap.className='pw-wrap';
+    inp.parentNode.insertBefore(wrap,inp);wrap.appendChild(inp);
+    const btn=document.createElement('button');btn.type='button';btn.className='pw-eye';
+    btn.setAttribute('aria-label','Clear');btn.innerHTML=CLR_ICON;btn.style.display='none';
+    inp.addEventListener('input',()=>btn.style.display=inp.value?'flex':'none');
+    btn.addEventListener('click',()=>{inp.value='';inp.focus();btn.style.display='none';});
+    wrap.appendChild(btn);
+  });
+}
+
+// ══════════════════════════════════════════
+//  GITHUB VERSION CHECKER
+// ══════════════════════════════════════════
+const GH_REPO='empowercouple24/MyOrgTracker';
+let _ghBaseSha=null,_ghLimited=false;
+
+async function _ghFetch(){
+  if(_ghLimited)return;
+  try{
+    const r=await fetch(`https://api.github.com/repos/${GH_REPO}/commits/main`,{
+      headers:{'Accept':'application/vnd.github.v3+json'},cache:'no-store'
+    });
+    if(r.status===403||r.status===429){_ghLimited=true;_ghSet('rate');return;}
+    if(!r.ok){_ghSet('error');return;}
+    const d=await r.json();
+    const sha=(d.sha||'').slice(0,7);
+    const msg=(d.commit?.message||'').split('\n')[0];
+    if(!_ghBaseSha){_ghBaseSha=sha;_ghSet('ok',sha);return;}
+    _ghSet(sha!==_ghBaseSha?'update':'ok',sha,msg);
+  }catch{_ghSet('error');}
+}
+function _ghSet(state,sha,msg){
+  document.querySelectorAll('.gh-check').forEach(el=>{
+    el.className='gh-check '+state;
+    if(state==='ok'){el.innerHTML='✓ '+sha;el.title='Up to date ('+sha+')';el.onclick=null;}
+    else if(state==='update'){el.innerHTML='↑ Reload';el.title=(msg||'New commit')+' — click to reload';el.onclick=()=>location.reload(true);}
+    else if(state==='checking'){el.innerHTML='···';el.onclick=null;}
+    else{el.onclick=null;}
+  });
+}
+function startGhChecker(){
+  _ghSet('checking');
+  _ghFetch();
+  setInterval(()=>{if(!document.hidden)_ghFetch();},10000);
+}
+
+// Init
+document.addEventListener("DOMContentLoaded",()=>{initFieldEnhancements();startGhChecker();});
 </script>
 </body>
 </html>
