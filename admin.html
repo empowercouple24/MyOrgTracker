@@ -197,6 +197,13 @@ tr:hover td{background:var(--paper2);transition:background .1s}
 
 @media(max-width:700px){.mstrip{grid-template-columns:1fr 1fr}.dgrid{grid-template-columns:1fr}.dv-actions{flex-wrap:wrap;gap:6px}.pg{padding:16px}.ph{flex-direction:column;gap:10px}}
 
+
+/* ── LOADING OVERLAY ── */
+#data-loading{position:fixed;inset:0;background:rgba(244,237,225,0.85);z-index:900;display:none;align-items:center;justify-content:center;flex-direction:column;gap:12px}
+#data-loading.on{display:flex}
+.dl-spin{width:22px;height:22px;border:2px solid var(--border2);border-top-color:var(--ink);border-radius:50%;animation:spin .75s linear infinite}
+.dl-txt{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink3)}
+
 /* ── PASSWORD TOGGLE ── */
 .pw-wrap{position:relative;display:flex;align-items:center}
 .pw-wrap input{flex:1;padding-right:44px!important}
@@ -224,6 +231,12 @@ tr:hover td{background:var(--paper2);transition:background .1s}
   <div id="auth-msg" style="font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink4)">Signing in…</div>
 </div>
 
+<!-- ─── DATA LOADING ──────────────────────── -->
+<div id="data-loading">
+  <div class="dl-spin"></div>
+  <div class="dl-txt" id="dl-txt">Loading…</div>
+</div>
+
 <!-- ─── TOP NAV ────────────────────────────── -->
 <nav class="topnav" id="topnav" style="display:none">
   <a href="/" class="tn-logo" style="text-decoration:none"><span class="my">my</span><span class="org">Org</span><span class="tracker">Tracker</span></a>
@@ -232,6 +245,7 @@ tr:hover td{background:var(--paper2);transition:background .1s}
   <div class="tn-tab" onclick="goPage('distributors')">Distributors</div>
   <div class="tn-tab" onclick="goPage('settings')">Settings</div>
   <div class="tn-right">
+    <button class="btn bo btn-sm" onclick="loadAllData('Refreshing…').then(()=>{renderOverview();toast('✓ Refreshed')})" title="Refresh data" style="padding:0 10px;height:28px;font-size:11px">↻ Refresh</button>
     <div id="gh-check" class="gh-check checking">···</div>
     <span class="tn-user" id="admin-user-label"></span>
     <span class="tn-logout" onclick="adminLogout()">Log out</span>
@@ -288,16 +302,7 @@ tr:hover td{background:var(--paper2);transition:background .1s}
       <p style="font-size:13px;color:var(--ink3);margin-bottom:16px;line-height:1.6">You are signed in with Supabase Auth. To change your password, sign out and use the Forgot Password link on the sign-in page.</p>
       <button class="btn bo" onclick="adminLogout()">Sign Out</button>
     </div>
-    <div class="card">
-      <div class="ct">Supabase Connection</div>
-      <p style="font-size:13px;color:var(--ink3);margin-bottom:14px;line-height:1.6">Configure backend persistence. Without Supabase, data lives in localStorage only.</p>
-      <div class="fg" style="margin-bottom:10px"><label>Project URL</label><input type="url" id="sb-url" placeholder="https://xxxx.supabase.co"></div>
-      <div class="fg" style="margin-bottom:14px"><label>Anon Key</label><input type="text" id="sb-key" placeholder="eyJhbGci..."></div>
-      <div style="display:flex;gap:8px;align-items:center">
-        <button class="btn bp" onclick="saveSB()">Save & Test</button>
-        <span id="sb-status" style="font-size:12px"></span>
-      </div>
-    </div>
+
     <div class="card" style="grid-column:1/-1">
       <div class="ct">Admin Access — Colleagues</div>
       <p style="font-size:13px;color:var(--ink3);margin-bottom:14px;line-height:1.6">Grant admin-level access to a trusted colleague. They get their own PIN and see everything you see.</p>
@@ -459,20 +464,75 @@ const MONTH_FULL = ['January','February','March','April','May','June','July','Au
 const COLORS = ['#1a5c3a','#1a3a6c','#6c1a3a','#3a1a6c','#6c3a1a','#1a6c5c','#5c1a6c','#3a6c1a'];
 
 // ══════════════════════════════════════════
-//  STATE
+//  STATE — backed by Supabase
 // ══════════════════════════════════════════
-let state = JSON.parse(localStorage.getItem('ot_admin') || 'null') || {
-  adminPin: '000000',
-  admins: [{id:'root',name:'You (Primary Admin)',pin:'000000',isRoot:true}],
-  distributors: [],
-  sbUrl: '', sbKey: ''
-};
-let currentUser = null; // which admin is logged in
-let viewingDist = null; // slug of distributor being viewed
+let state = { distributors: [] };
+let currentUser = null;
+let viewingDist = null;
 let resetPinTarget = null;
 let detailChart = null;
 
-function saveState() { localStorage.setItem('ot_admin', JSON.stringify(state)); }
+// Raw Supabase fetch helpers (no SDK needed for data operations)
+const SB_H = () => ({'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json'});
+
+async function sbFetch(path, opts={}) {
+  const r = await fetch(SB_URL + path, { headers: SB_H(), ...opts });
+  if (!r.ok) {
+    const txt = await r.text().catch(()=>'');
+    throw new Error('Supabase error ' + r.status + ': ' + txt.slice(0,120));
+  }
+  return r.status === 204 ? null : r.json();
+}
+
+function showLoading(msg='Loading…') {
+  document.getElementById('dl-txt').textContent = msg;
+  document.getElementById('data-loading').classList.add('on');
+}
+function hideLoading() {
+  document.getElementById('data-loading').classList.remove('on');
+}
+
+// Maps Supabase distributor row → internal format (preserves all render functions)
+function distFromRow(row, entries) {
+  return {
+    id: row.id,
+    name: row.name,
+    slug: row.slug,
+    pin: row.pin,
+    pinGoal: row.pin_goal,
+    dv_goal: row.dv_goal,
+    requirePin: row.require_pin,
+    isAdmin: false,
+    active: row.is_active,
+    createdAt: row.created_at,
+    records: (entries || []).filter(e => e.user_slug === row.slug).map(e => ({
+      year: e.year_num, month: e.month_num, day: e.day_num,
+      org_volume: +e.org_volume, org_increase: +e.org_increase,
+      dv_goal: +e.dv_goal, dv_remaining: +e.dv_remaining,
+      org_daily_avg: +e.org_daily_avg, est_org_dv: +e.est_org_dv,
+      uplift_per_day: +e.uplift_per_day, pin_goal: e.pin_goal
+    }))
+  };
+}
+
+async function loadAllData(msg='Loading…') {
+  showLoading(msg);
+  try {
+    const [dists, entries] = await Promise.all([
+      sbFetch('/rest/v1/distributors?select=*&order=created_at.asc'),
+      sbFetch('/rest/v1/org_volume?select=*&order=entry_date.asc')
+    ]);
+    state.distributors = (dists || []).map(row => distFromRow(row, entries || []));
+    hideLoading();
+  } catch(e) {
+    hideLoading();
+    toast('Failed to load data: ' + e.message);
+    console.error(e);
+  }
+}
+
+// saveState kept as no-op (data lives in Supabase now)
+function saveState() {}
 const fmt = n => n==null?'—':Math.round(n).toLocaleString();
 const genPinStr = () => String(Math.floor(100000 + Math.random()*900000));
 const initials = name => name.trim().split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
@@ -510,14 +570,15 @@ async function checkAdminSession(){
       window.location.href = '/';
       return;
     }
-    // Admin verified — show the dashboard
+    // Admin verified — load data then show dashboard
     currentUser = { name: profile.display_name || session.user.email, id: session.user.id };
     document.getElementById('auth-gate').style.display = 'none';
     document.getElementById('topnav').style.display = 'flex';
     document.getElementById('admin-user-label').textContent = currentUser.name;
-    goPage('overview');
     initFieldEnhancements();
     startGhChecker();
+    await loadAllData('Loading dashboard…');
+    goPage('overview');
   }catch(e){
     console.error('Auth check failed:', e);
     document.getElementById('auth-msg').textContent = 'Error — redirecting…';
@@ -792,15 +853,15 @@ function renderDetailTable(slug, mk) {
   }</tbody></table>`;
 }
 
-function deleteDistEntry(slug,y,m,day) {
+async function deleteDistEntry(slug,y,m,day) {
   if (!confirm('Delete this entry?')) return;
-  const d = state.distributors.find(x=>x.slug===slug);
-  if (!d) return;
-  d.records = (d.records||[]).filter(r=>!(r.year===y&&r.month===m&&r.day===day));
-  recalcDist(d);
-  saveState();
-  renderDistDetail(d);
-  toast('Entry deleted');
+  const entryDate = y+'-'+String(m).padStart(2,'0')+'-'+String(day).padStart(2,'0');
+  try {
+    await sbFetch('/rest/v1/org_volume?entry_date=eq.'+entryDate+'&user_slug=eq.'+slug, {method:'DELETE'});
+    await loadAllData('Refreshing…');
+    if (viewingDist) viewDist(viewingDist);
+    toast('Entry deleted');
+  } catch(e) { toast('Error: ' + e.message); }
 }
 
 // ══════════════════════════════════════════
@@ -827,22 +888,33 @@ document.getElementById('nc-slug').addEventListener('input', function(){
 function genPin() {
   document.getElementById('nc-access-pin').value = genPinStr();
 }
-function createDistributor() {
+async function createDistributor() {
   const name = document.getElementById('nc-name').value.trim();
   const slug = document.getElementById('nc-slug').value.trim();
   const pin  = document.getElementById('nc-access-pin').value.trim();
   const pg   = document.getElementById('nc-pin-goal').value;
   const rp   = document.getElementById('nc-require-pin').checked;
-  const ia   = document.getElementById('nc-is-admin').checked;
   if (!name||!slug||!pin) { toast('Please fill in all fields'); return; }
   if (state.distributors.find(d=>d.slug===slug)) { toast('URL slug already in use'); return; }
-  const dist = {id:Date.now().toString(),name,slug,pin,pinGoal:pg,requirePin:rp,isAdmin:ia,active:true,records:[],createdAt:new Date().toISOString()};
-  state.distributors.push(dist);
-  saveState();
-  closeModal('modal-create');
-  renderDistGrid();
-  renderOverview();
-  toast('Distributor created: ' + name);
+  try {
+    await sbFetch('/rest/v1/distributors', {
+      method:'POST',
+      headers:{...SB_H(),'Prefer':'return=minimal'},
+      body: JSON.stringify({
+        name, slug, pin,
+        pin_goal: pg,
+        dv_goal: PIN_MAP[pg]||DV_GOAL,
+        is_active: true,
+        require_pin: rp,
+        created_by: currentUser.id
+      })
+    });
+    closeModal('modal-create');
+    await loadAllData('Refreshing…');
+    renderDistGrid();
+    renderOverview();
+    toast('Distributor created: ' + name);
+  } catch(e) { toast('Error: ' + e.message); }
 }
 
 // ══════════════════════════════════════════
@@ -859,16 +931,23 @@ function openResetPin(slug) {
 function genResetPin() {
   document.getElementById('rp-pin').textContent = genPinStr();
 }
-function saveResetPin() {
+async function saveResetPin() {
   const d = state.distributors.find(x=>x.slug===resetPinTarget);
   if (!d) return;
-  d.pin = document.getElementById('rp-pin').textContent;
-  d.requirePin = document.getElementById('rp-require').checked;
-  saveState();
-  closeModal('modal-reset-pin');
-  toast('PIN reset for ' + d.name);
-  if (viewingDist === d.slug) renderDistDetail(d);
-  else renderDistGrid();
+  const newPin = document.getElementById('rp-pin').textContent;
+  const rp = document.getElementById('rp-require').checked;
+  try {
+    await sbFetch('/rest/v1/distributors?id=eq.'+d.id, {
+      method:'PATCH',
+      headers:{...SB_H(),'Prefer':'return=minimal'},
+      body: JSON.stringify({pin: newPin, require_pin: rp})
+    });
+    closeModal('modal-reset-pin');
+    await loadAllData('Refreshing…');
+    toast('PIN reset for ' + d.name);
+    if (viewingDist === d.slug) viewDist(d.slug);
+    else renderDistGrid();
+  } catch(e) { toast('Error: ' + e.message); }
 }
 
 // ══════════════════════════════════════════
@@ -884,7 +963,7 @@ function openLogEntry(slug) {
   document.getElementById('le-vol').value   = '';
   openModal('modal-log-entry');
 }
-function saveLogEntry() {
+async function saveLogEntry() {
   const d = state.distributors.find(x=>x.slug===viewingDist);
   if (!d) return;
   const month = +document.getElementById('le-month').value;
@@ -892,14 +971,36 @@ function saveLogEntry() {
   const day   = +document.getElementById('le-day').value;
   const vol   = +document.getElementById('le-vol').value;
   if (!day||!vol) { toast('Fill in all fields'); return; }
-  const idx = (d.records||[]).findIndex(r=>r.year===year&&r.month===month&&r.day===day);
-  const rec = {year,month,day,org_volume:vol,dv_goal:PIN_MAP[d.pinGoal]||DV_GOAL,pin_goal:'Mill '+d.pinGoal};
-  if (idx>=0) { d.records[idx]={...d.records[idx],...rec}; } else { d.records.push(rec); }
-  recalcDist(d);
-  saveState();
-  closeModal('modal-log-entry');
-  renderDistDetail(d);
-  toast('Entry saved');
+  // Calculate derived values
+  const recs = (d.records||[]).filter(r=>r.month===month&&r.year===year&&r.day<day).sort((a,b)=>b.day-a.day);
+  const prev = recs[0];
+  const orgInc = prev ? vol - prev.org_volume : vol;
+  const dg = PIN_MAP[d.pinGoal]||DV_GOAL;
+  const estDv = Math.round(vol*UPLIFT);
+  const dvRem = Math.max(0, Math.round(dg-estDv));
+  const dims = new Date(year,month,0).getDate();
+  const left = dims-day;
+  const entryDate = year+'-'+String(month).padStart(2,'0')+'-'+String(day).padStart(2,'0');
+  try {
+    await sbFetch('/rest/v1/org_volume?on_conflict=entry_date,user_slug', {
+      method:'POST',
+      headers:{...SB_H(),'Prefer':'resolution=merge-duplicates,return=minimal'},
+      body: JSON.stringify({
+        entry_date: entryDate, user_slug: d.slug,
+        month_num: month, year_num: year, day_num: day,
+        org_volume: vol, org_increase: orgInc, dv_goal: dg,
+        dv_remaining: dvRem,
+        org_daily_avg: left>0?Math.round(dvRem/left):0,
+        est_org_dv: estDv,
+        uplift_per_day: left>0?Math.round(dvRem/left/UPLIFT):0,
+        pin_goal: 'Mill '+d.pinGoal
+      })
+    });
+    closeModal('modal-log-entry');
+    await loadAllData('Refreshing…');
+    if (viewingDist) viewDist(viewingDist);
+    toast('Entry saved');
+  } catch(e) { toast('Error: ' + e.message); }
 }
 
 // ══════════════════════════════════════════
@@ -929,20 +1030,33 @@ function openCreateTemplate(slug) {
 // ══════════════════════════════════════════
 //  TOGGLE HELPERS
 // ══════════════════════════════════════════
-function toggleActive(slug) {
+async function toggleActive(slug) {
   const d = state.distributors.find(x=>x.slug===slug);
   if (!d) return;
-  d.active = !d.active;
-  saveState();
-  renderDistGrid();
-  toast(d.name + ' ' + (d.active ? 'activated' : 'deactivated'));
+  const newActive = !d.active;
+  try {
+    await sbFetch('/rest/v1/distributors?id=eq.'+d.id, {
+      method:'PATCH',
+      headers:{...SB_H(),'Prefer':'return=minimal'},
+      body: JSON.stringify({is_active: newActive})
+    });
+    await loadAllData('Refreshing…');
+    renderDistGrid();
+    toast(d.name + ' ' + (newActive ? 'activated' : 'deactivated'));
+  } catch(e) { toast('Error: ' + e.message); }
 }
-function toggleRequirePin(slug, val) {
+async function toggleRequirePin(slug, val) {
   const d = state.distributors.find(x=>x.slug===slug);
   if (!d) return;
-  d.requirePin = val;
-  saveState();
-  toast('PIN requirement ' + (val?'enabled':'disabled') + ' for ' + d.name);
+  try {
+    await sbFetch('/rest/v1/distributors?id=eq.'+d.id, {
+      method:'PATCH',
+      headers:{...SB_H(),'Prefer':'return=minimal'},
+      body: JSON.stringify({require_pin: val})
+    });
+    d.requirePin = val;
+    toast('PIN requirement ' + (val?'enabled':'disabled') + ' for ' + d.name);
+  } catch(e) { toast('Error: ' + e.message); }
 }
 function toggleDistAdmin(slug, val) {
   const d = state.distributors.find(x=>x.slug===slug);
@@ -960,10 +1074,6 @@ function copyUrl(slug) {
 //  ADMIN COLLEAGUES
 // ══════════════════════════════════════════
 function renderSettings() {
-  const sc = document.getElementById('sb-url');
-  const sk = document.getElementById('sb-key');
-  if (sc) sc.value = state.sbUrl||'';
-  if (sk) sk.value = state.sbKey||'';
   renderAdminList();
 }
 function renderAdminList() {
@@ -998,19 +1108,7 @@ function removeAdmin(id) {
   toast('Admin access removed');
 }
 
-// ══════════════════════════════════════════
-//  SUPABASE
-// ══════════════════════════════════════════
-function saveSB() {
-  state.sbUrl = document.getElementById('sb-url').value.trim();
-  state.sbKey = document.getElementById('sb-key').value.trim();
-  saveState();
-  const st = document.getElementById('sb-status');
-  st.textContent='Testing...';
-  fetch(state.sbUrl+'/rest/v1/org_volume?limit=1',{headers:{'apikey':state.sbKey,'Authorization':'Bearer '+state.sbKey}})
-    .then(r=>{ st.innerHTML=r.ok?'<span style="color:var(--green)">✓ Connected</span>':'<span style="color:var(--red)">✗ Failed ('+r.status+')</span>'; })
-    .catch(e=>{ st.innerHTML='<span style="color:var(--red)">✗ '+e.message+'</span>'; });
-}
+// Supabase config removed — credentials baked in via checkAdminSession
 
 // ══════════════════════════════════════════
 //  CALC
@@ -1045,23 +1143,7 @@ function toast(msg,ms=2800){const t=document.getElementById('toast');t.textConte
 // ══════════════════════════════════════════
 //  INIT
 // ══════════════════════════════════════════
-// Seed demo distributors if empty
-if (!state.distributors.length) {
-  const demos = [
-    {name:'Maria Gonzalez',slug:'maria-gonzalez',pinGoal:'5'},
-    {name:'James Chen',slug:'james-chen',pinGoal:'3'},
-    {name:'Priya Sharma',slug:'priya-sharma',pinGoal:'7.5'},
-  ];
-  demos.forEach(({name,slug,pinGoal}) => {
-    const d = {id:Date.now().toString()+Math.random(),name,slug,pin:genPinStr(),pinGoal,requirePin:true,isAdmin:false,active:true,records:[],createdAt:new Date().toISOString()};
-    // Seed some march data
-    const vols = [2100,4800,7300,10200,13500,16800,19200,22400,25100,28600];
-    vols.forEach((v,i)=>d.records.push({year:2026,month:3,day:i+1,org_volume:v,dv_goal:PIN_MAP[pinGoal]||DV_GOAL,pin_goal:'Mill '+pinGoal}));
-    recalcDist(d);
-    state.distributors.push(d);
-  });
-  saveState();
-}
+// Demo seeding removed — data loaded from Supabase on login
 
 // ══════════════════════════════════════════
 //  PASSWORD + EMAIL FIELD ENHANCEMENTS

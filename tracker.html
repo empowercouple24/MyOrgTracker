@@ -271,22 +271,6 @@ td.n{font-family:'DM Mono',monospace;font-variant-numeric:tabular-nums}
 .app-card .ft .sw{width:9px;height:9px;border-radius:50%;border:1px solid var(--border)}
 
 @media(max-width:680px){.mstrip{grid-template-columns:1fr 1fr}.g2{grid-template-columns:1fr}}
-
-/* ── PASSWORD TOGGLE ── */
-.pw-wrap{position:relative;display:flex;align-items:center}
-.pw-wrap input{flex:1;padding-right:44px!important}
-.pw-eye{position:absolute;right:10px;background:none;border:none;cursor:pointer;color:var(--ink3,#5d5a52);padding:5px;display:flex;align-items:center;justify-content:center;transition:.12s;border-radius:6px;flex-shrink:0;height:32px;width:32px}
-.pw-eye:hover{color:var(--ink,#18181b);background:rgba(0,0,0,0.04)}
-.pw-eye svg{pointer-events:none}
-
-/* ── GITHUB VERSION CHECKER ── */
-.gh-check{display:inline-flex;align-items:center;gap:4px;font-family:'DM Mono',monospace;font-size:9px;font-weight:500;padding:3px 9px;border-radius:20px;transition:all .3s;white-space:nowrap;letter-spacing:.05em;cursor:default;user-select:none}
-.gh-check.checking{background:rgba(0,0,0,0.05);color:var(--ink4,#a89f8d)}
-.gh-check.ok{background:rgba(45,107,66,0.1);color:var(--green,#2d6b42)}
-.gh-check.update{background:#fef3c7;color:#92400e;cursor:pointer;font-weight:600;animation:gh-pulse 2s ease-in-out infinite}
-.gh-check.rate,.gh-check.error{opacity:0;pointer-events:none}
-@keyframes gh-pulse{0%,100%{opacity:1}50%{opacity:.7}}
-
 </style>
 </head>
 <body data-color="paper">
@@ -398,8 +382,7 @@ td.n{font-family:'DM Mono',monospace;font-variant-numeric:tabular-nums}
 
 <!-- ── NAV ── -->
 <nav class="nav" id="main-nav" style="display:none">
-  <div class="brand" style="text-decoration:none;cursor:pointer" onclick="window.location='/'">MyOrgTracker <em id="nav-name"></em></div>
-  <div id="gh-check" class="gh-check checking" style="margin-left:auto;margin-right:8px">···</div>
+  <div class="brand">MyOrgTracker <em id="nav-name"></em></div>
   <div class="tab on" onclick="go('dash')">Dashboard</div>
   <div class="tab" onclick="go('data')">Data</div>
   <div class="tab" onclick="go('entry')">Log Entry</div>
@@ -523,13 +506,7 @@ td.n{font-family:'DM Mono',monospace;font-variant-numeric:tabular-nums}
       <div class="app-grid" id="app-grid"></div>
     </div>
 
-    <div class="card">
-      <div class="ct">Supabase Connection</div>
-      <p style="font-size:13px;color:var(--text2);margin-bottom:16px;line-height:1.65">Connect Supabase to sync your data across devices. Data stays local in your browser until connected.</p>
-      <div class="frow">
-        <div class="fg" style="flex:1;min-width:200px"><label>Project URL</label><input type="url" id="sbu" placeholder="https://xxxx.supabase.co"></div>
-        <div class="fg" style="flex:1;min-width:200px"><label>Anon Key</label><input type="text" id="sbk" placeholder="eyJhbGc…"></div>
-      </div>
+    <!-- Supabase credentials baked in — no config needed -->
       <div style="display:flex;gap:9px;align-items:center;flex-wrap:wrap">
         <button class="btn bp" onclick="saveSB()">Save &amp; Test</button>
         <button class="btn" onclick="syncAllSB()">Sync All Entries</button>
@@ -602,15 +579,29 @@ function defaultColorFor(style){return style==='warm'?'sunrise':'paper'}
 const urlParams=new URLSearchParams(window.location.search);
 const userSlug=urlParams.get('user')||'default';
 const STORE_KEY='ot_user_'+userSlug;
-const ADMIN_KEY='ot_admin';
 const THEME_KEY='ot_theme_'+userSlug;
 
-function loadAdminState(){return JSON.parse(localStorage.getItem(ADMIN_KEY)||'null')}
-function getDistributor(){const admin=loadAdminState();if(!admin)return null;return admin.distributors.find(d=>d.slug===userSlug)||null}
+// ── Supabase (baked-in credentials, no user config needed) ──────────────
+const SB_URL='https://nclvgzirfzddrbsnzryo.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5jbHZnemlyZnpkZHJic256cnlvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY0Mzc0NTgsImV4cCI6MjA5MjAxMzQ1OH0.y7paxIa6Zd2ubwO8w_YwEHVNiKA5D6L5vHKxz7P6gC0';
+const sbCfg={url:SB_URL,k:SB_KEY};  // always-on
+
+async function fetchDistributorFromDB(slug){
+  try{
+    const r=await fetch(SB_URL+'/rest/v1/distributors?slug=eq.'+encodeURIComponent(slug)+'&is_active=eq.true&limit=1',{
+      headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}
+    });
+    if(!r.ok)return null;
+    const data=await r.json();
+    // Map Supabase row to internal format
+    if(!data[0])return null;
+    const d=data[0];
+    return {id:d.id,name:d.name,slug:d.slug,pin:d.pin,pinGoal:d.pin_goal,requirePin:d.require_pin,active:d.is_active};
+  }catch{return null;}
+}
 
 let recs=JSON.parse(localStorage.getItem(STORE_KEY)||'[]');
 let active=null,cVol=null,cInc=null,editKey=null;
-let sbCfg=JSON.parse(localStorage.getItem('ot_sb_'+userSlug)||'null');
 let currentDist=null;
 
 function saveRecs(){
@@ -783,16 +774,16 @@ function updateAppearanceUI(style,color){
 }
 
 // ═══════════════════ AUTH ═══════════════════
-function initAuth(){
-  const dist=getDistributor();
+async function initAuth(){
+  if(userSlug==='default'){afterAuth('Default User');return;}
+  // Show a brief loading state on the pin screen while we fetch
+  const dist=await fetchDistributorFromDB(userSlug);
   if(!dist){
-    if(userSlug==='default'){afterAuth('Default User');return}
     document.getElementById('inactive-screen').classList.add('on');
     return;
   }
   currentDist=dist;
-  if(dist.records&&dist.records.length>0){recs=dist.records;saveRecs()}
-  if(!dist.active){document.getElementById('inactive-screen').classList.add('on');return}
+  if(!dist.active){document.getElementById('inactive-screen').classList.add('on');return;}
   const session=sessionStorage.getItem('ot_session_'+userSlug);
   const persisted=localStorage.getItem('ot_persist_'+userSlug);
   if(session==='ok'||persisted==='ok'||!dist.requirePin){
@@ -815,13 +806,12 @@ function afterAuth(name){
 
 function submitPin(){
   const val=document.getElementById('pin-input').value.trim();
-  const dist=getDistributor();
-  if(!dist||val!==dist.pin){document.getElementById('pin-err').textContent='Incorrect PIN. Try again.';return}
+  if(!currentDist||val!==currentDist.pin){document.getElementById('pin-err').textContent='Incorrect PIN. Try again.';return;}
   const stay=document.getElementById('stay-in').checked;
   sessionStorage.setItem('ot_session_'+userSlug,'ok');
   if(stay)localStorage.setItem('ot_persist_'+userSlug,'ok');
   document.getElementById('pin-screen').classList.remove('on');
-  afterAuth(dist.name);
+  afterAuth(currentDist.name);
 }
 
 function showApp(name){
@@ -1100,78 +1090,6 @@ function syncAllSB(){
     .catch(e=>toast('Sync failed: '+e.message));
 }
 
-
-// ══════════════════════════════════════════
-//  PASSWORD + EMAIL FIELD ENHANCEMENTS
-// ══════════════════════════════════════════
-const EYE_OPEN = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`;
-const EYE_SHUT = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>`;
-const CLR_ICON = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`;
-
-function initFieldEnhancements(){
-  // Password eye toggle
-  document.querySelectorAll('input[type="password"]').forEach(inp=>{
-    if(inp.closest('.pw-wrap'))return;
-    const wrap=document.createElement('div');wrap.className='pw-wrap';
-    inp.parentNode.insertBefore(wrap,inp);wrap.appendChild(inp);
-    const btn=document.createElement('button');btn.type='button';btn.className='pw-eye';
-    btn.setAttribute('aria-label','Toggle visibility');btn.innerHTML=EYE_OPEN;
-    btn.addEventListener('click',()=>{
-      const show=inp.type==='password';
-      inp.type=show?'text':'password';
-      btn.innerHTML=show?EYE_SHUT:EYE_OPEN;
-    });
-    wrap.appendChild(btn);
-  });
-  // Email clear button
-  document.querySelectorAll('input[type="email"]').forEach(inp=>{
-    if(inp.closest('.pw-wrap'))return;
-    const wrap=document.createElement('div');wrap.className='pw-wrap';
-    inp.parentNode.insertBefore(wrap,inp);wrap.appendChild(inp);
-    const btn=document.createElement('button');btn.type='button';btn.className='pw-eye';
-    btn.setAttribute('aria-label','Clear');btn.innerHTML=CLR_ICON;btn.style.display='none';
-    inp.addEventListener('input',()=>btn.style.display=inp.value?'flex':'none');
-    btn.addEventListener('click',()=>{inp.value='';inp.focus();btn.style.display='none';});
-    wrap.appendChild(btn);
-  });
-}
-
-// ══════════════════════════════════════════
-//  GITHUB VERSION CHECKER
-// ══════════════════════════════════════════
-const GH_REPO='empowercouple24/MyOrgTracker';
-let _ghBaseSha=null,_ghLimited=false;
-
-async function _ghFetch(){
-  if(_ghLimited)return;
-  try{
-    const r=await fetch(`https://api.github.com/repos/${GH_REPO}/commits/main`,{
-      headers:{'Accept':'application/vnd.github.v3+json'},cache:'no-store'
-    });
-    if(r.status===403||r.status===429){_ghLimited=true;_ghSet('rate');return;}
-    if(!r.ok){_ghSet('error');return;}
-    const d=await r.json();
-    const sha=(d.sha||'').slice(0,7);
-    const msg=(d.commit?.message||'').split('\n')[0];
-    if(!_ghBaseSha){_ghBaseSha=sha;_ghSet('ok',sha);return;}
-    _ghSet(sha!==_ghBaseSha?'update':'ok',sha,msg);
-  }catch{_ghSet('error');}
-}
-function _ghSet(state,sha,msg){
-  document.querySelectorAll('.gh-check').forEach(el=>{
-    el.className='gh-check '+state;
-    if(state==='ok'){el.innerHTML='✓ '+sha;el.title='Up to date ('+sha+')';el.onclick=null;}
-    else if(state==='update'){el.innerHTML='↑ Reload';el.title=(msg||'New commit')+' — click to reload';el.onclick=()=>location.reload(true);}
-    else if(state==='checking'){el.innerHTML='···';el.onclick=null;}
-    else{el.onclick=null;}
-  });
-}
-function startGhChecker(){
-  _ghSet('checking');
-  _ghFetch();
-  setInterval(()=>{if(!document.hidden)_ghFetch();},10000);
-}
-
 function toast(msg,ms=2800){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('on');setTimeout(()=>t.classList.remove('on'),ms)}
 function renderAll(){buildPills();renderDash();buildFilter();renderTable()}
 
@@ -1179,8 +1097,8 @@ const now=new Date();
 document.getElementById('em').value=now.getMonth()+1;
 document.getElementById('ey').value=now.getFullYear();
 document.getElementById('ed').value=now.getDate();
-if(sbCfg){document.getElementById('sbu').value=sbCfg.url||'';document.getElementById('sbk').value=sbCfg.k||''}
-initAuth();
+// Supabase credentials baked in — Settings config removed
+initAuth().catch(e=>{console.error(e);document.getElementById("inactive-screen").classList.add("on");});
 </script>
 </body>
 </html>
