@@ -2,37 +2,308 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>MyOrgTracker</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#f4ede1">
+<title>MyOrgTracker · Sign In</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%2318181b'/%3E%3Ctext x='16' y='23' text-anchor='middle' font-family='EB Garamond,serif' font-weight='600' font-size='20' fill='%23fbbf24' letter-spacing='-0.03em'%3EO%3C/text%3E%3C/svg%3E">
 <style>
-  *{box-sizing:border-box;margin:0;padding:0}
-  body{font-family:'Geist',system-ui,sans-serif;background:#fafaf8;color:#18181b;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;line-height:1.5}
-  .card{background:#fff;border-radius:22px;padding:44px 36px 36px;max-width:440px;width:100%;box-shadow:0 2px 24px rgba(0,0,0,.04),0 1px 3px rgba(0,0,0,.03);text-align:center}
-  .logo{width:56px;height:56px;border-radius:14px;background:#18181b;color:#fff;display:inline-flex;align-items:center;justify-content:center;font-weight:600;font-size:22px;letter-spacing:-.02em;margin-bottom:22px}
-  h1{font-weight:500;font-size:28px;letter-spacing:-.025em;margin-bottom:10px}
-  p{font-size:15px;color:#55595e;margin-bottom:28px;max-width:340px;margin-left:auto;margin-right:auto}
-  .btn{display:inline-block;padding:13px 26px;background:#18181b;color:#fff;text-decoration:none;border-radius:999px;font-size:14px;font-weight:500;transition:.15s;margin:4px}
-  .btn:hover{transform:translateY(-1px);opacity:.9}
-  .btn.outline{background:transparent;color:#18181b;border:1px solid rgba(0,0,0,.14)}
-  .footer{margin-top:32px;padding-top:20px;border-top:1px solid rgba(0,0,0,.06);font-size:12px;color:#8a8d92;font-family:'DM Mono',monospace;letter-spacing:.05em}
-  .help{font-size:12px;color:#8a8d92;margin-top:18px;line-height:1.6}
+*{box-sizing:border-box;margin:0;padding:0}
+html{background:#f4ede1;-webkit-tap-highlight-color:transparent}
+body{font-family:'Geist',system-ui,sans-serif;background:#f4ede1;color:#18181b;min-height:100vh;min-height:100dvh;line-height:1.5;font-size:15px;-webkit-font-smoothing:antialiased;display:flex;flex-direction:column;padding:0 20px;padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}
+
+.page{flex:1;display:flex;flex-direction:column;max-width:440px;margin:0 auto;width:100%;padding-top:48px;padding-bottom:28px}
+
+/* Wordmark */
+.wm{font-family:'EB Garamond',serif;line-height:0.95;letter-spacing:-0.015em;color:#18181b;display:inline-flex;align-items:baseline}
+.wm .my{font-style:italic;font-weight:400}
+.wm .org{font-weight:600}
+.wm .tracker{font-weight:400;color:#7a7568;margin-left:0.04em}
+
+.topbar{display:flex;align-items:center;justify-content:center;margin-bottom:56px}
+
+/* Hero intro */
+.hero-intro{margin-bottom:28px}
+.hero-intro h2{font-family:'EB Garamond',serif;font-size:clamp(28px,8vw,34px);font-weight:400;letter-spacing:-0.01em;line-height:1.1;color:#18181b;margin-bottom:10px}
+.hero-intro h2 em{font-style:italic}
+.hero-intro p{font-size:15px;color:#5d5a52;line-height:1.55;max-width:360px}
+
+/* Card */
+.card{background:#fbf6ec;border-radius:20px;padding:26px 24px;box-shadow:0 1px 2px rgba(61,46,31,0.04),0 10px 28px rgba(61,46,31,0.06);border:1px solid rgba(61,46,31,0.06)}
+
+.card-head{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.18em;text-transform:uppercase;color:#8a8578;margin-bottom:18px;font-weight:500}
+
+.field{margin-bottom:14px}
+.field label{display:block;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:#7a7568;margin-bottom:6px;font-weight:500}
+.field input{width:100%;height:48px;border:1px solid rgba(61,46,31,0.14);border-radius:10px;padding:0 14px;font-size:16px;background:#fffdf5;color:#18181b;outline:none;font-family:'Geist',sans-serif;transition:border-color .15s,background .15s;-webkit-appearance:none}
+.field input:focus{border-color:#18181b;background:#fff}
+.field input::placeholder{color:#b8b0a0}
+.field input:disabled{opacity:0.5;background:#f5f0e3}
+
+.forgot{display:block;text-align:right;font-size:13px;color:#7a7568;text-decoration:none;margin-top:-6px;margin-bottom:18px;font-weight:500;background:none;border:none;cursor:pointer;font-family:inherit;padding:6px 2px;margin-left:auto;min-height:32px}
+.forgot:hover,.forgot:focus{color:#18181b;text-decoration:underline}
+
+.btn-primary{width:100%;height:52px;background:#18181b;color:#fafaf8;border:none;border-radius:11px;font-size:15px;font-weight:500;cursor:pointer;font-family:'Geist',sans-serif;letter-spacing:0.005em;transition:transform .1s,opacity .15s;display:flex;align-items:center;justify-content:center;gap:10px}
+.btn-primary:hover:not(:disabled){transform:translateY(-1px)}
+.btn-primary:active:not(:disabled){transform:translateY(0)}
+.btn-primary:disabled{opacity:0.6;cursor:not-allowed}
+.spinner{width:16px;height:16px;border:2px solid rgba(255,255,255,0.3);border-top-color:#fafaf8;border-radius:50%;animation:spin .75s linear infinite;display:none}
+.btn-primary.loading .spinner{display:block}
+.btn-primary.loading .btn-label{opacity:0.75}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.alert{font-size:13.5px;line-height:1.5;border-radius:10px;padding:12px 14px;margin-bottom:16px;display:none}
+.alert.on{display:block}
+.alert-err{background:#fbf0f0;color:#3d1a24;border:1px solid rgba(184,74,94,0.22)}
+.alert-ok{background:#f0f6ed;color:#1d3312;border:1px solid rgba(90,138,58,0.25)}
+
+.under-link{text-align:center;margin-top:22px;font-size:13.5px;color:#7a7568;font-weight:500}
+.under-link button{color:#18181b;text-decoration:none;border:none;background:none;cursor:pointer;font-family:inherit;font-weight:500;font-size:inherit;padding:4px 2px;border-bottom:1px solid rgba(24,24,27,0.25)}
+.under-link button:hover{border-bottom-color:#18181b}
+
+/* Footer */
+.lp-footer{margin-top:auto;padding-top:40px;text-align:center;font-size:11px;color:#a89f8d;font-family:'DM Mono',monospace;letter-spacing:0.14em;text-transform:uppercase}
+
+/* Hidden element swap for forgot-password mode */
+.mode-forgot .pw-wrap,.mode-forgot .forgot-btn{display:none}
+.mode-forgot .back-btn{display:inline-flex}
+.back-btn{display:none;align-items:center;gap:6px;margin-bottom:16px;font-size:13.5px;color:#7a7568;background:none;border:none;cursor:pointer;font-family:inherit;font-weight:500;padding:6px 4px;margin-left:-4px}
+.back-btn:hover{color:#18181b}
+
+/* Subtle paper texture */
+html::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;background-image:radial-gradient(rgba(61,46,31,0.025) 1px,transparent 1px);background-size:3px 3px}
 </style>
 </head>
 <body>
-  <div class="card">
-    <div class="logo">M</div>
-    <h1>MyOrgTracker</h1>
-    <p>Organizational Volume tracking for Herbalife distributors. Daily progress toward your PIN goals.</p>
-    <a href="/admin" class="btn">Admin Portal</a>
-    <a href="/tracker" class="btn outline">Distributor Tracker</a>
-    <div class="help">
-      If you're a distributor, use the personal link your sponsor sent you.<br>
-      It looks like: <strong>/tracker?user=<em>your-name</em></strong>
+
+<div class="page" id="page">
+
+  <header class="topbar">
+    <div class="wm" style="font-size:clamp(22px,6vw,26px)">
+      <span class="my">my</span><span class="org">Org</span><span class="tracker">Tracker</span>
     </div>
-    <div class="footer">MYORGTRACKER</div>
+  </header>
+
+  <main class="hero-intro" id="hero">
+    <h2 id="hero-h"><em>Welcome back.</em></h2>
+    <p id="hero-p">Sign in to track your Org Volume and see today's progress.</p>
+  </main>
+
+  <div class="card" id="auth-card">
+    <div class="card-head" id="card-head">Distributor Sign In</div>
+
+    <button class="back-btn" id="back-btn" type="button">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      Back to sign in
+    </button>
+
+    <div class="alert alert-err" id="alert-err"></div>
+    <div class="alert alert-ok" id="alert-ok"></div>
+
+    <form id="auth-form" autocomplete="on" novalidate>
+      <div class="field">
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email" autocomplete="email" inputmode="email" placeholder="you@example.com" required>
+      </div>
+      <div class="field pw-wrap">
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" autocomplete="current-password" placeholder="••••••••" required>
+      </div>
+      <button type="button" class="forgot forgot-btn" id="forgot-btn">Forgot password?</button>
+      <button type="submit" class="btn-primary" id="submit-btn">
+        <span class="btn-label" id="btn-label">Sign In</span>
+        <span class="spinner" aria-hidden="true"></span>
+      </button>
+    </form>
   </div>
+
+  <div class="under-link">
+    Are you an admin? <button type="button" id="admin-toggle">Sign in here</button>
+  </div>
+
+  <footer class="lp-footer">
+    myOrgTracker
+  </footer>
+
+</div>
+
+
+<script type="module">
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.4';
+
+// ═══════════════════════════════════════════════════════════════
+// Config
+// ═══════════════════════════════════════════════════════════════
+const SB_URL = 'https://nclvgzirfzddrbsnzryo.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5jbHZnemlyZnpkZHJic256cnlvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY0Mzc0NTgsImV4cCI6MjA5MjAxMzQ1OH0.y7paxIa6Zd2ubwO8w_YwEHVNiKA5D6L5vHKxz7P6gC0';
+const sb = createClient(SB_URL, SB_KEY, { auth: { persistSession: true, autoRefreshToken: true } });
+
+// ═══════════════════════════════════════════════════════════════
+// Element refs
+// ═══════════════════════════════════════════════════════════════
+const $ = id => document.getElementById(id);
+const page = $('page'), card = $('auth-card'), form = $('auth-form');
+const emailEl = $('email'), pwEl = $('password');
+const submitBtn = $('submit-btn'), btnLabel = $('btn-label');
+const errEl = $('alert-err'), okEl = $('alert-ok');
+const heroH = $('hero-h'), heroP = $('hero-p'), cardHead = $('card-head');
+const forgotBtn = $('forgot-btn'), backBtn = $('back-btn'), adminToggle = $('admin-toggle');
+
+let mode = 'distributor'; // 'distributor' | 'admin' | 'forgot'
+
+// ═══════════════════════════════════════════════════════════════
+// UI helpers
+// ═══════════════════════════════════════════════════════════════
+function setMode(m){
+  mode = m;
+  errEl.classList.remove('on'); okEl.classList.remove('on');
+  card.classList.toggle('mode-forgot', m==='forgot');
+  if(m==='distributor'){
+    heroH.innerHTML='<em>Welcome back.</em>';
+    heroP.textContent='Sign in to track your Org Volume and see today\'s progress.';
+    cardHead.textContent='Distributor Sign In';
+    btnLabel.textContent='Sign In';
+    pwEl.autocomplete='current-password';
+  } else if(m==='admin'){
+    heroH.innerHTML='<em>Admin portal.</em>';
+    heroP.textContent='Sign in to manage distributors, view all data, and configure the platform.';
+    cardHead.textContent='Admin Sign In';
+    btnLabel.textContent='Sign In as Admin';
+    pwEl.autocomplete='current-password';
+  } else if(m==='forgot'){
+    heroH.innerHTML='<em>Reset password.</em>';
+    heroP.textContent='Enter your email and we\'ll send you a link to set a new password.';
+    cardHead.textContent='Forgot Password';
+    btnLabel.textContent='Send Reset Link';
+  }
+}
+function showErr(msg){
+  errEl.textContent=msg; errEl.classList.add('on'); okEl.classList.remove('on');
+}
+function showOk(msg){
+  okEl.textContent=msg; okEl.classList.add('on'); errEl.classList.remove('on');
+}
+function setLoading(on){
+  submitBtn.classList.toggle('loading',on);
+  submitBtn.disabled=on;
+  emailEl.disabled=on; pwEl.disabled=on;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// Mode switches
+// ═══════════════════════════════════════════════════════════════
+adminToggle.addEventListener('click',()=>{
+  setMode(mode==='admin'?'distributor':'admin');
+  adminToggle.textContent = mode==='admin' ? 'Back to distributor sign in' : 'Sign in here';
+  emailEl.focus();
+});
+forgotBtn.addEventListener('click',()=>{
+  setMode('forgot');
+  emailEl.focus();
+});
+backBtn.addEventListener('click',()=>{
+  setMode('distributor');
+  adminToggle.textContent='Sign in here';
+});
+
+// ═══════════════════════════════════════════════════════════════
+// Form submit — routes by mode
+// ═══════════════════════════════════════════════════════════════
+form.addEventListener('submit',async(e)=>{
+  e.preventDefault();
+  const email=emailEl.value.trim().toLowerCase();
+  const pw=pwEl.value;
+  if(!email){showErr('Please enter your email.');return}
+
+  if(mode==='forgot'){
+    return handleForgot(email);
+  }
+  if(!pw){showErr('Please enter your password.');return}
+  return handleLogin(email,pw);
+});
+
+async function handleLogin(email,password){
+  setLoading(true);
+  errEl.classList.remove('on'); okEl.classList.remove('on');
+  const { data, error } = await sb.auth.signInWithPassword({ email, password });
+  if(error){
+    setLoading(false);
+    if(error.message.toLowerCase().includes('invalid login')){
+      showErr('Email or password is incorrect. Try again or tap Forgot password.');
+    } else if(error.message.toLowerCase().includes('email not confirmed')){
+      showErr('Your email isn\'t confirmed yet. Check your inbox for the confirmation link.');
+    } else {
+      showErr(error.message);
+    }
+    return;
+  }
+  // Logged in — look up profile to decide where to send them
+  const { data: profile, error: perr } = await sb
+    .from('profiles')
+    .select('role, slug, display_name')
+    .eq('id', data.user.id)
+    .single();
+  if(perr || !profile){
+    setLoading(false);
+    showErr('Your account isn\'t fully set up. Please contact your admin.');
+    await sb.auth.signOut();
+    return;
+  }
+  // Admin mode strictness: if they used the admin form, their profile MUST be admin
+  if(mode==='admin' && profile.role!=='admin'){
+    setLoading(false);
+    showErr('This account doesn\'t have admin access.');
+    await sb.auth.signOut();
+    return;
+  }
+  if(profile.role==='admin'){
+    showOk('Signing you in…');
+    window.location.href = '/admin';
+    return;
+  }
+  // distributor path
+  if(!profile.slug){
+    setLoading(false);
+    showErr('Your distributor profile isn\'t fully set up (no slug assigned). Please contact your admin.');
+    await sb.auth.signOut();
+    return;
+  }
+  showOk('Signing you in…');
+  window.location.href = '/tracker?user=' + encodeURIComponent(profile.slug);
+}
+
+async function handleForgot(email){
+  setLoading(true);
+  errEl.classList.remove('on'); okEl.classList.remove('on');
+  const { error } = await sb.auth.resetPasswordForEmail(email, {
+    redirectTo: window.location.origin + '/reset-password'
+  });
+  setLoading(false);
+  if(error){ showErr(error.message); return }
+  showOk('Check your email for a password reset link. It may take a minute to arrive.');
+  pwEl.value='';
+}
+
+// ═══════════════════════════════════════════════════════════════
+// If already signed in, send them onward
+// ═══════════════════════════════════════════════════════════════
+(async()=>{
+  const { data: { session } } = await sb.auth.getSession();
+  if(!session) return;
+  const { data: profile } = await sb.from('profiles').select('role, slug').eq('id', session.user.id).single();
+  if(!profile) return;
+  if(profile.role==='admin'){ window.location.href='/admin'; return }
+  if(profile.slug){ window.location.href='/tracker?user='+encodeURIComponent(profile.slug); return }
+  // distributor with no slug — stay on landing page with a message
+  showErr('Your distributor profile isn\'t fully set up. Please contact your admin.');
+  await sb.auth.signOut();
+})();
+
+// Surface a clean initial state
+setMode('distributor');
+</script>
+
 </body>
 </html>
