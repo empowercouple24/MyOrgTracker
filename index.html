@@ -67,7 +67,9 @@ body{font-family:'Geist',system-ui,sans-serif;background:#f4ede1;color:#18181b;m
 .lp-footer{margin-top:auto;padding-top:40px;text-align:center;font-size:11px;color:#a89f8d;font-family:'DM Mono',monospace;letter-spacing:0.14em;text-transform:uppercase}
 
 /* Hidden element swap for forgot-password mode */
-.mode-forgot .pw-wrap,.mode-forgot .forgot-btn{display:none}
+/* Use .field.pw-wrap so we only match the password field (where pw-wrap sits on .field directly),
+   not the email input's wrapper (where pw-wrap is a child div added by initFieldEnhancements). */
+.mode-forgot .field.pw-wrap,.mode-forgot .forgot-btn{display:none}
 .mode-forgot .back-btn{display:inline-flex}
 .back-btn{display:none;align-items:center;gap:6px;margin-bottom:16px;font-size:13.5px;color:#7a7568;background:none;border:none;cursor:pointer;font-family:inherit;font-weight:500;padding:6px 4px;margin-left:-4px}
 .back-btn:hover{color:#18181b}
