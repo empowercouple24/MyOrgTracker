@@ -154,7 +154,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.4';
 // ═══════════════════════════════════════════════════════════════
 const SB_URL = 'https://nclvgzirfzddrbsnzryo.supabase.co';
 const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5jbHZnemlyZnpkZHJic256cnlvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY0Mzc0NTgsImV4cCI6MjA5MjAxMzQ1OH0.y7paxIa6Zd2ubwO8w_YwEHVNiKA5D6L5vHKxz7P6gC0';
-const sb = createClient(SB_URL, SB_KEY, { auth: { persistSession: true, autoRefreshToken: true } });
+const sb = createClient(SB_URL, SB_KEY, { auth: { persistSession: true, autoRefreshToken: true, flowType: 'pkce' } });
 
 // ═══════════════════════════════════════════════════════════════
 // Element refs

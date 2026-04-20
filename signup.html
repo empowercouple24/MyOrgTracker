@@ -204,7 +204,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.4';
 
 const SB_URL='https://nclvgzirfzddrbsnzryo.supabase.co';
 const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5jbHZnemlyZnpkZHJic256cnlvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY0Mzc0NTgsImV4cCI6MjA5MjAxMzQ1OH0.y7paxIa6Zd2ubwO8w_YwEHVNiKA5D6L5vHKxz7P6gC0';
-const sb = createClient(SB_URL, SB_KEY, {auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+const sb = createClient(SB_URL, SB_KEY, {auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,flowType:'pkce'}});
 
 const GOAL_OPTIONS=[
   {id:'pt30k',label:'Presidents Team 30K',dv:600000},
@@ -313,9 +313,23 @@ window.completeSignup = async function(){
 async function init(){
   if(!slug){ showPanel('panel-error'); $('error-msg').textContent='No invite slug found in this link. Ask your admin to resend.'; return; }
 
-  // Supabase magic link sets session via detectSessionInUrl
-  // Wait briefly for session to be established
-  await new Promise(r=>setTimeout(r,400));
+  // Magic link in PKCE flow lands as ?code=...; detectSessionInUrl will exchange it.
+  // If a code is present in the URL but the SDK hasn't processed it yet (race), give it a
+  // moment, then fall back to an explicit exchange so we never miss it.
+  const urlHasCode = params.has('code');
+  if(urlHasCode){
+    await new Promise(r=>setTimeout(r,300));
+    const { data:{ session: s1 } } = await sb.auth.getSession();
+    if(!s1){
+      try{ await sb.auth.exchangeCodeForSession(window.location.href); }catch(e){}
+    }
+    // Clean ?code=... out of the URL bar so a refresh doesn't re-trigger it
+    const cleanUrl = window.location.pathname + '?slug=' + encodeURIComponent(slug);
+    history.replaceState(null,'',cleanUrl);
+  } else {
+    // Implicit-flow style (#access_token=...) or already-signed-in case
+    await new Promise(r=>setTimeout(r,400));
+  }
 
   const { data:{ session } } = await sb.auth.getSession();
 
@@ -338,8 +352,10 @@ async function init(){
     return;
   }
 
-  // If already active (already enrolled), send to tracker
-  if(distRecord.status==='active'){
+  // If already linked to an auth user, send to tracker (they're done with signup).
+  // Note: this gates on auth_user_id, NOT status. A distributor can be marked "active"
+  // (created/activated by an admin) but never have completed login setup yet.
+  if(distRecord.auth_user_id){
     window.location.href='/tracker?user='+slug;
     return;
   }

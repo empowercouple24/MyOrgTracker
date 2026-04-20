@@ -58,32 +58,6 @@ body[data-style="warm"][data-color="forest"]{--bg:linear-gradient(135deg,#d0e8d4
 
 body{font-family:'Geist',system-ui,sans-serif;background:var(--bg);background-attachment:fixed;color:var(--text);min-height:100vh;font-size:14px;line-height:1.5;transition:background 0.2s}
 
-/* ── PIN SCREEN ── */
-#pin-screen{position:fixed;inset:0;background:var(--bg,#fafaf8);display:none;align-items:center;justify-content:center;z-index:1000;flex-direction:column;padding:20px;background-attachment:fixed}
-#pin-screen.on{display:flex}
-.ps-card{background:var(--surface,#fff);width:100%;max-width:380px;border-radius:20px;overflow:hidden;box-shadow:0 2px 4px rgba(0,0,0,0.04),0 14px 44px rgba(0,0,0,0.08);border:1px solid var(--border,rgba(0,0,0,0.08))}
-.ps-head{padding:32px 28px 22px;text-align:center;border-bottom:1px solid var(--divider,rgba(0,0,0,0.06))}
-.ps-logo{font-family:'EB Garamond',serif;font-size:24px;line-height:0.95;letter-spacing:-0.015em;color:var(--text,#18181b);display:inline-flex;align-items:baseline}
-.ps-logo .my{font-style:italic;font-weight:400}
-.ps-logo .org{font-weight:600}
-.ps-logo .tracker{font-weight:400;color:var(--text3,#7a7568);margin-left:0.04em}
-.ps-name{font-size:13px;color:var(--text2,#55595e);margin-top:8px;font-family:'DM Mono',monospace;letter-spacing:0.06em}
-.ps-body{padding:24px 28px 28px}
-.ps-label{font-family:'DM Mono',monospace;font-size:10px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--text3,#8a8578);margin-bottom:6px;display:block}
-.ps-input{width:100%;height:50px;border:1px solid var(--border,rgba(0,0,0,0.12));border-radius:11px;padding:0 14px;font-size:22px;font-family:'DM Mono',monospace;letter-spacing:8px;text-align:center;background:var(--bg,#fafaf8);color:var(--text,#18181b);outline:none;margin-bottom:14px;transition:.15s;-webkit-appearance:none}
-.ps-input:focus{border-color:var(--accent,#18181b);background:var(--surface,#fff)}
-.ps-input::placeholder{letter-spacing:4px;font-size:16px}
-.ps-btn{width:100%;height:50px;background:var(--accent,#18181b);color:var(--surface,#fff);border:none;border-radius:11px;font-size:15px;font-weight:500;cursor:pointer;transition:.12s;font-family:inherit}
-.ps-btn:hover{transform:translateY(-1px);opacity:.9}
-.ps-err{font-size:13px;color:var(--red,#b84a5e);text-align:center;margin-top:10px;min-height:18px}
-.ps-stay{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text2,#55595e);margin-bottom:14px}
-.tog{position:relative;display:inline-block;width:32px;height:18px;flex-shrink:0}
-.tog input{opacity:0;width:0;height:0;position:absolute}
-.tog-sl{position:absolute;inset:0;background:rgba(0,0,0,0.2);border-radius:20px;cursor:pointer;transition:.2s}
-.tog-sl:before{content:'';position:absolute;width:12px;height:12px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.2s}
-.tog input:checked+.tog-sl{background:#18181b}
-.tog input:checked+.tog-sl:before{transform:translateX(14px)}
-
 /* ── INACTIVE ── */
 #inactive-screen{position:fixed;inset:0;background:#18181b;display:none;align-items:center;justify-content:center;z-index:1000;flex-direction:column;gap:16px;text-align:center;padding:40px;color:#fff}
 #inactive-screen.on{display:flex}
@@ -303,28 +277,6 @@ html,body{background:var(--bg,#fafaf8);background-attachment:fixed}
 </style>
 </head>
 <body data-color="paper">
-
-<!-- ── PIN SCREEN ── -->
-<div id="pin-screen">
-  <div class="ps-card">
-    <div class="ps-head">
-      <div class="ps-logo">
-        <span class="my">my</span><span class="org">Org</span><span class="tracker">Tracker</span>
-      </div>
-      <div class="ps-name" id="ps-username">Loading…</div>
-    </div>
-    <div class="ps-body">
-      <label class="ps-label">Your Access PIN</label>
-      <input class="ps-input" type="password" id="pin-input" maxlength="6" placeholder="······" onkeydown="if(event.key==='Enter')submitPin()">
-      <div class="ps-stay">
-        <label class="tog"><input type="checkbox" id="stay-in"><span class="tog-sl"></span></label>
-        Stay logged in on this device
-      </div>
-      <button class="ps-btn" onclick="submitPin()">Access My Tracker</button>
-      <div class="ps-err" id="pin-err"></div>
-    </div>
-  </div>
-</div>
 
 <!-- ── INACTIVE SCREEN ── -->
 <div id="inactive-screen">
@@ -941,7 +893,6 @@ function updateAppearanceUI(style,color){
 // ═══════════════════ AUTH ═══════════════════
 async function initAuth(){
   if(userSlug==='default'){afterAuth('Default User');return;}
-  // Show a brief loading state on the pin screen while we fetch
   const dist=await fetchDistributorFromDB(userSlug);
   if(!dist){
     document.getElementById('inactive-screen').classList.add('on');
@@ -950,14 +901,9 @@ async function initAuth(){
   currentDist=dist;
   await loadPlatformInfluence();
   if(!dist.active){document.getElementById('inactive-screen').classList.add('on');return;}
-  const session=sessionStorage.getItem('ot_session_'+userSlug);
-  const persisted=localStorage.getItem('ot_persist_'+userSlug);
-  if(session==='ok'||persisted==='ok'||!dist.requirePin){
-    afterAuth(dist.name);
-  }else{
-    document.getElementById('ps-username').textContent=dist.name;
-    document.getElementById('pin-screen').classList.add('on');
-  }
+  // Auth is handled upstream by index.html (email + password via Supabase).
+  // If we got this far the session is valid; just show the app.
+  afterAuth(dist.name);
 }
 
 function afterAuth(name){
@@ -968,16 +914,6 @@ function afterAuth(name){
   }else{
     startOnboarding(name?name.split(' ')[0]:null);
   }
-}
-
-function submitPin(){
-  const val=document.getElementById('pin-input').value.trim();
-  if(!currentDist||val!==currentDist.pin){document.getElementById('pin-err').textContent='Incorrect PIN. Try again.';return;}
-  const stay=document.getElementById('stay-in').checked;
-  sessionStorage.setItem('ot_session_'+userSlug,'ok');
-  if(stay)localStorage.setItem('ot_persist_'+userSlug,'ok');
-  document.getElementById('pin-screen').classList.remove('on');
-  afterAuth(currentDist.name);
 }
 
 function showApp(name){
@@ -993,13 +929,11 @@ function showApp(name){
 }
 
 function doLogout(){
+  // Clear any legacy session keys (harmless if missing)
   sessionStorage.removeItem('ot_session_'+userSlug);
   localStorage.removeItem('ot_persist_'+userSlug);
-  document.getElementById('main-nav').style.display='none';
-  document.querySelectorAll('.pg').forEach(p=>p.classList.remove('on'));
-  document.getElementById('pin-screen').classList.add('on');
-  document.getElementById('pin-input').value='';
-  document.getElementById('pin-err').textContent='';
+  // Send the user back to the sign-in page; index.html will tear down the Supabase session as needed
+  window.location.href = '/';
 }
 
 // ═══════════════════ NAV ═══════════════════

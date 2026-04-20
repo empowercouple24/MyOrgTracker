@@ -343,13 +343,6 @@ tr:hover td{background:var(--paper2);transition:background .1s}
       <p style="font-size:13px;color:var(--ink3);margin-bottom:16px;line-height:1.6">You are signed in with Supabase Auth. To change your password, sign out and use the Forgot Password link on the sign-in page.</p>
       <button class="btn bo" onclick="adminLogout()">Sign Out</button>
     </div>
-
-    <div class="card" style="grid-column:1/-1">
-      <div class="ct">Admin Access — Colleagues</div>
-      <p style="font-size:13px;color:var(--ink3);margin-bottom:14px;line-height:1.6">Grant admin-level access to a trusted colleague. They get their own PIN and see everything you see.</p>
-      <div id="admin-list" style="margin-bottom:14px"></div>
-      <button class="btn bgo" onclick="openAddAdminModal()">＋ Add Admin Colleague</button>
-    </div>
   </div>
 </div>
 
@@ -391,53 +384,64 @@ tr:hover td{background:var(--paper2);transition:background .1s}
   </div>
 </div>
 
-<!-- ─── MODAL: RESET PIN ───────────────────── -->
-<div class="modal-bg" id="modal-reset-pin">
+<!-- ─── MODAL: EDIT DISTRIBUTOR ─────────────── -->
+<div class="modal-bg" id="modal-edit-dist">
   <div class="modal">
     <div class="mh">
-      <div class="mh-title">Reset Access PIN</div>
-      <div class="mh-close" onclick="closeModal('modal-reset-pin')">✕</div>
+      <div class="mh-title">Edit Distributor</div>
+      <div class="mh-close" onclick="closeModal('modal-edit-dist')">✕</div>
     </div>
     <div class="mb">
-      <p style="font-size:13px;color:var(--ink3);margin-bottom:18px;line-height:1.6">Generate a new PIN for <strong id="rp-name"></strong>. Share the new PIN with them directly.</p>
-      <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
-        <div class="pin-display" id="rp-pin">——————</div>
-        <button class="btn bo" onclick="genResetPin()">Generate New</button>
+      <div class="frow">
+        <div class="fg" style="flex:1"><label>First Name</label><input type="text" id="ed-first"></div>
+        <div class="fg" style="flex:1"><label>Last Name</label><input type="text" id="ed-last"></div>
       </div>
-      <div style="display:flex;align-items:center;gap:8px;font-size:13px">
-        <label class="tog"><input type="checkbox" id="rp-require" checked><span class="tog-sl"></span></label>
-        Require PIN on every visit
+      <div class="frow">
+        <div class="fg" style="flex:1"><label>Email</label><input type="email" id="ed-email" placeholder="they@example.com"></div>
+      </div>
+      <div class="frow">
+        <div class="fg" style="flex:1">
+          <label>Goal</label>
+          <select id="ed-goal"></select>
+        </div>
+      </div>
+      <div id="ed-email-warn" style="display:none;font-size:12px;color:#92400e;background:#fef3c7;border-radius:8px;padding:10px 12px;margin-top:6px;line-height:1.5">
+        ⚠ This distributor already has a login linked to a different email. Changing the email here only updates the contact record; their existing login still uses the old email. Use <strong>Resend Login Link</strong> to send them a new sign-in setup at the new email.
       </div>
     </div>
     <div class="mf">
-      <button class="btn bo" onclick="closeModal('modal-reset-pin')">Cancel</button>
-      <button class="btn bp" onclick="saveResetPin()">Save New PIN</button>
+      <button class="btn bo" onclick="closeModal('modal-edit-dist')">Cancel</button>
+      <button class="btn bp" onclick="saveEditDist()">Save Changes</button>
     </div>
   </div>
 </div>
 
-<!-- ─── MODAL: ADD ADMIN ───────────────────── -->
-<div class="modal-bg" id="modal-add-admin">
+<!-- ─── MODAL: SEND LOGIN SETUP LINK ────────── -->
+<div class="modal-bg" id="modal-send-login">
   <div class="modal">
     <div class="mh">
-      <div class="mh-title">Add Admin Colleague</div>
-      <div class="mh-close" onclick="closeModal('modal-add-admin')">✕</div>
+      <div class="mh-title">Send Login Setup</div>
+      <div class="mh-close" onclick="closeModal('modal-send-login')">✕</div>
     </div>
-    <div class="mb">
-      <div class="frow"><div class="fg" style="flex:1"><label>Name</label><input type="text" id="aa-name" placeholder="e.g. Sarah Chen"></div></div>
-      <div class="frow">
-        <div class="fg">
-          <label>Admin PIN</label>
-          <div style="display:flex;gap:6px;align-items:center">
-            <input type="text" id="aa-pin" placeholder="Auto" style="width:90px;font-family:'DM Mono',monospace;letter-spacing:2px" maxlength="6" readonly>
-            <button class="btn bo btn-sm" onclick="genAdminPin()">Generate</button>
-          </div>
-        </div>
+    <div class="mb" id="sl-form">
+      <p style="font-size:13px;color:var(--ink3);margin-bottom:14px;line-height:1.6">Sends a magic-link email to <strong id="sl-name"></strong>. They click it, set a password, and from then on can sign in with email + password.</p>
+      <div class="fg" style="margin-bottom:10px">
+        <label>Send to email</label>
+        <input type="email" id="sl-email" placeholder="they@example.com">
+      </div>
+      <div id="sl-relink-warn" style="display:none;font-size:12px;color:#92400e;background:#fef3c7;border-radius:8px;padding:10px 12px;margin-top:8px;line-height:1.5">
+        ⚠ This distributor already has a login linked. Sending a fresh setup link will let them set a new password — useful if they're locked out, or if you're moving them to a different email.
       </div>
     </div>
-    <div class="mf">
-      <button class="btn bo" onclick="closeModal('modal-add-admin')">Cancel</button>
-      <button class="btn bgo" onclick="saveAdminColleague()">Grant Admin Access</button>
+    <div class="mb" id="sl-success" style="display:none;text-align:center;padding:20px 0">
+      <div style="font-size:32px;margin-bottom:12px">✉</div>
+      <div style="font-family:'EB Garamond',serif;font-size:20px;font-weight:500;margin-bottom:8px">Link sent!</div>
+      <p style="font-size:13px;color:var(--ink3);margin-bottom:18px;line-height:1.6">A login setup link was emailed to <strong id="sl-sent-email"></strong>. They have 1 hour to use it.</p>
+      <p style="font-size:12px;color:var(--ink4);line-height:1.6">If they don't get it in a few minutes, check spam, or use the <strong>Resend Login Link</strong> button.</p>
+    </div>
+    <div class="mf" id="sl-footer">
+      <button class="btn bo" onclick="closeModal('modal-send-login')">Cancel</button>
+      <button class="btn bp" id="sl-send-btn" onclick="sendLoginLink()">Send Setup Link</button>
     </div>
   </div>
 </div>
@@ -546,6 +550,9 @@ function distFromRow(row, entries) {
   return {
     id: row.id,
     name: row.name,
+    firstName: row.first_name || '',
+    lastName: row.last_name || '',
+    email: row.email || '',
     slug: row.slug,
     pin: row.pin,
     pinGoal: row.pin_goal,
@@ -553,6 +560,8 @@ function distFromRow(row, entries) {
     requirePin: row.require_pin,
     isAdmin: false,
     active: row.is_active,
+    status: row.status || (row.is_active ? 'active' : 'pending'),
+    authUserId: row.auth_user_id || null,
     createdAt: row.created_at,
     influence_factor: row.influence_factor || 1.32,
     records: (entries || []).filter(e => e.user_slug === row.slug).map(e => ({
@@ -625,7 +634,7 @@ function initSupabase(){
   if(sbClient)return sbClient; // already initialised
   // supabase global loaded via <script> tag — no async import needed
   if(!adminToken)adminToken=SB_KEY; // use anon key until real JWT is obtained
-  sbClient = supabase.createClient(SB_URL, SB_KEY, {auth:{persistSession:true,autoRefreshToken:true}});
+  sbClient = supabase.createClient(SB_URL, SB_KEY, {auth:{persistSession:true,autoRefreshToken:true,flowType:'pkce'}});
   _setupTokenRefresh();
   return sbClient;
 }
@@ -780,18 +789,17 @@ function renderDistGrid() {
         <div style="margin-left:auto;display:flex;flex-direction:column;align-items:flex-end;gap:4px">
 
           <span class="badge ${d.active?'b-active':'b-inactive'}">${d.active?'Active':'Inactive'}</span>
-          ${d.requirePin?'<span class="badge b-pin">PIN</span>':''}
+          ${d.authUserId?'<span class="badge b-active" style="font-size:10px">✓ Login</span>':'<span class="badge" style="background:#fef3c7;color:#92400e;font-size:10px">⚠ No login</span>'}
         </div>
       </div>
       <div class="dc-body">
-        <div class="dc-row"><span>PIN Goal</span><span>Mill ${d.pinGoal}</span></div>
+        <div class="dc-row"><span>Goal</span><span>${goalById(d.pinGoal).label}</span></div>
         <div class="dc-row"><span>This month</span><span>${fmt(last?.org_volume||0)} vol</span></div>
         <div class="dc-row"><span>Goal progress</span><span>${pct}%</span></div>
         <div style="margin-top:8px"><div class="pb-track"><div class="pb-fill" style="width:${pct}%;background:${col}"></div></div></div>
       </div>
       <div class="dc-foot" onclick="event.stopPropagation()">
         <button class="btn bo btn-sm" onclick="viewDist('${d.slug}')">View</button>
-        <button class="btn bo btn-sm" onclick="openResetPin('${d.slug}')">Reset PIN</button>
         <button class="btn ${d.active?'br_':'bg_'} btn-sm" onclick="toggleActive('${d.slug}')">${d.active?'Deactivate':'Activate'}</button>
       </div>
     </div>`;
@@ -817,6 +825,8 @@ function renderDistDetail(d) {
   const last = mr[mr.length-1];
   const dg = PIN_MAP[d.pinGoal]||DV_GOAL;
   const allMonths = [...new Set((d.records||[]).map(r=>r.year+'-'+String(r.month).padStart(2,'0')))].sort();
+  const goalLbl = goalById(d.pinGoal).label;
+  const linked = !!d.authUserId;
 
   const c = document.getElementById('dd-content');
   c.innerHTML = `
@@ -824,11 +834,11 @@ function renderDistDetail(d) {
       <div class="dv-av" style="background:${col};color:#fff">${initials(d.name)}</div>
       <div>
         <div class="dv-name">${d.name}</div>
-        <div class="dv-meta">?user=${d.slug} · Mill ${d.pinGoal} · ${d.active?'Active':'Inactive'}</div>
+        <div class="dv-meta">?user=${d.slug} · ${goalLbl} · ${d.active?'Active':'Inactive'}${d.email?' · '+d.email:''}</div>
       </div>
       <div class="dv-actions">
         <button class="btn bo" onclick="openLogEntry('${d.slug}')">＋ Log Entry</button>
-        <button class="btn bo" onclick="openResetPin('${d.slug}')">Reset PIN</button>
+        <button class="btn ${linked?'bo':'bgo'}" onclick="openSendLoginLink('${d.slug}')">${linked?'Resend Login Link':'Send Login Setup'}</button>
         <button class="btn bgo" onclick="openCreateTemplate('${d.slug}')">＋ Month Template</button>
         <button class="btn bo" onclick="openEditDist('${d.slug}')">Edit Settings</button>
         <button class="btn ${d.active?'br_':'bg_'}" onclick="toggleActive('${d.slug}');renderDistDetail(state.distributors.find(x=>x.slug==='${d.slug}'))">${d.active?'Deactivate':'Activate'}</button>
@@ -873,17 +883,19 @@ function renderDistDetail(d) {
     </div>
     <div class="card" style="margin-top:14px">
       <div class="ct">Account Details</div>
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;font-size:13px">
-        <div><div style="color:var(--ink3);font-size:11px;margin-bottom:4px">URL SLUG</div><div class="url-pill" onclick="copyUrl('${d.slug}')" title="Click to copy">${location.host}/tracker?user=${d.slug}</div></div>
-        <div><div style="color:var(--ink3);font-size:11px;margin-bottom:4px">ACCESS PIN</div><div class="pin-display">${d.pin||'—'}</div></div>
-        <div><div style="color:var(--ink3);font-size:11px;margin-bottom:4px">SETTINGS</div>
-          <div style="display:flex;flex-direction:column;gap:6px">
-            <div style="display:flex;align-items:center;gap:8px">
-              <label class="tog"><input type="checkbox" ${d.requirePin?'checked':''} onchange="toggleRequirePin('${d.slug}',this.checked)"><span class="tog-sl"></span></label>
-              <span>Require PIN every visit</span>
-            </div>
-
+      <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:16px;font-size:13px">
+        <div>
+          <div style="color:var(--ink3);font-size:11px;margin-bottom:4px">EMAIL</div>
+          <div style="font-family:'DM Mono',monospace;font-size:13px;word-break:break-all">${d.email || '<span style="color:var(--ink4)">— not set —</span>'}</div>
+          <div style="margin-top:4px">
+            ${linked
+              ? '<span class="badge b-active" style="font-size:10px">✓ Login linked</span>'
+              : '<span class="badge" style="background:#fef3c7;color:#92400e;font-size:10px">⚠ No login set up</span>'}
           </div>
+        </div>
+        <div>
+          <div style="color:var(--ink3);font-size:11px;margin-bottom:4px">URL SLUG</div>
+          <div class="url-pill" onclick="copyUrl('${d.slug}')" title="Click to copy">${location.host}/tracker?user=${d.slug}</div>
         </div>
       </div>
     </div>
@@ -1061,39 +1073,6 @@ function autoSlug(){}
 function genPin(){}
 
 // ══════════════════════════════════════════
-//  RESET PIN
-// ══════════════════════════════════════════
-function openResetPin(slug) {
-  resetPinTarget = slug;
-  const d = state.distributors.find(x=>x.slug===slug);
-  document.getElementById('rp-name').textContent = d.name;
-  document.getElementById('rp-pin').textContent = d.pin || genPinStr();
-  document.getElementById('rp-require').checked = d.requirePin;
-  openModal('modal-reset-pin');
-}
-function genResetPin() {
-  document.getElementById('rp-pin').textContent = genPinStr();
-}
-async function saveResetPin() {
-  const d = state.distributors.find(x=>x.slug===resetPinTarget);
-  if (!d) return;
-  const newPin = document.getElementById('rp-pin').textContent;
-  const rp = document.getElementById('rp-require').checked;
-  try {
-    await sbFetch('/rest/v1/distributors?id=eq.'+d.id, {
-      method:'PATCH',
-      headers:{...SB_H(),'Prefer':'return=minimal'},
-      body: JSON.stringify({pin: newPin, require_pin: rp})
-    });
-    closeModal('modal-reset-pin');
-    await loadAllData('Refreshing…');
-    toast('PIN reset for ' + d.name);
-    if (viewingDist === d.slug) viewDist(d.slug);
-    else renderDistGrid();
-  } catch(e) { toast('Error: ' + e.message); }
-}
-
-// ══════════════════════════════════════════
 //  LOG ENTRY (admin adding for a distributor)
 // ══════════════════════════════════════════
 function openLogEntry(slug) {
@@ -1148,6 +1127,114 @@ async function saveLogEntry() {
 }
 
 // ══════════════════════════════════════════
+//  EDIT DISTRIBUTOR
+// ══════════════════════════════════════════
+function openEditDist(slug){
+  const d = state.distributors.find(x=>x.slug===slug);
+  if(!d){toast('Distributor not found');return;}
+  document.getElementById('ed-first').value = d.firstName || (d.name||'').split(' ')[0] || '';
+  document.getElementById('ed-last').value  = d.lastName  || (d.name||'').split(' ').slice(1).join(' ') || '';
+  document.getElementById('ed-email').value = d.email || '';
+  document.getElementById('ed-goal').innerHTML = goalOptions(d.pinGoal);
+  // Stash the slug we're editing on the modal element
+  document.getElementById('modal-edit-dist').dataset.slug = slug;
+  // Show the warning if email is being potentially changed for a linked account
+  const warn = document.getElementById('ed-email-warn');
+  warn.style.display = d.authUserId ? 'block' : 'none';
+  openModal('modal-edit-dist');
+}
+
+async function saveEditDist(){
+  const slug = document.getElementById('modal-edit-dist').dataset.slug;
+  const d = state.distributors.find(x=>x.slug===slug);
+  if(!d){toast('Distributor not found');return;}
+  const first = document.getElementById('ed-first').value.trim();
+  const last  = document.getElementById('ed-last').value.trim();
+  const email = document.getElementById('ed-email').value.trim().toLowerCase();
+  const goal  = document.getElementById('ed-goal').value;
+  if(!first){toast('First name is required');return;}
+  if(email && !email.includes('@')){toast('That email doesn\'t look right');return;}
+  const fullName = first + (last?' '+last:'');
+  try{
+    await sbFetch('/rest/v1/distributors?id=eq.'+d.id,{
+      method:'PATCH',
+      headers:{...SB_H(),'Prefer':'return=minimal'},
+      body: JSON.stringify({
+        first_name: first,
+        last_name: last || null,
+        name: fullName,
+        email: email || null,
+        pin_goal: goal,
+        dv_goal: dvForGoal(goal)
+      })
+    });
+    closeModal('modal-edit-dist');
+    await loadAllData('Refreshing…');
+    if(viewingDist) viewDist(viewingDist);
+    toast('Saved changes for ' + fullName);
+  }catch(e){toast('Error: '+e.message);}
+}
+
+// ══════════════════════════════════════════
+//  SEND LOGIN SETUP LINK
+// ══════════════════════════════════════════
+function openSendLoginLink(slug){
+  const d = state.distributors.find(x=>x.slug===slug);
+  if(!d){toast('Distributor not found');return;}
+  document.getElementById('sl-name').textContent = d.name;
+  document.getElementById('sl-email').value = d.email || '';
+  document.getElementById('sl-relink-warn').style.display = d.authUserId ? 'block' : 'none';
+  // Reset modal to form state
+  document.getElementById('sl-form').style.display = 'block';
+  document.getElementById('sl-footer').style.display = 'flex';
+  document.getElementById('sl-success').style.display = 'none';
+  const btn = document.getElementById('sl-send-btn');
+  btn.disabled = false; btn.textContent = 'Send Setup Link';
+  document.getElementById('modal-send-login').dataset.slug = slug;
+  openModal('modal-send-login');
+}
+
+async function sendLoginLink(){
+  const slug = document.getElementById('modal-send-login').dataset.slug;
+  const d = state.distributors.find(x=>x.slug===slug);
+  if(!d){toast('Distributor not found');return;}
+  const email = document.getElementById('sl-email').value.trim().toLowerCase();
+  if(!email || !email.includes('@')){toast('Enter a valid email');return;}
+  const btn = document.getElementById('sl-send-btn');
+  btn.disabled = true; btn.textContent = 'Sending…';
+  try{
+    // 1. Update the distributor row with this email + reset to pending so signup.html
+    //    will show the password setup form when they land there.
+    await sbFetch('/rest/v1/distributors?id=eq.'+d.id,{
+      method:'PATCH',
+      headers:{...SB_H(),'Prefer':'return=minimal'},
+      body: JSON.stringify({
+        email: email,
+        status: 'pending'
+      })
+    });
+    // 2. Send the magic link
+    const redirectTo = window.location.origin + '/signup?slug=' + slug;
+    const sbInv = sbClient || initSupabase();
+    const { error } = await sbInv.auth.signInWithOtp({
+      email,
+      options: { shouldCreateUser: true, emailRedirectTo: redirectTo }
+    });
+    if(error) throw error;
+    // 3. Show success
+    document.getElementById('sl-form').style.display = 'none';
+    document.getElementById('sl-footer').style.display = 'none';
+    document.getElementById('sl-sent-email').textContent = email;
+    document.getElementById('sl-success').style.display = 'block';
+    await loadAllData();
+    toast('Login setup link sent to ' + email);
+  }catch(e){
+    btn.disabled = false; btn.textContent = 'Send Setup Link';
+    toast('Error: ' + e.message);
+  }
+}
+
+// ══════════════════════════════════════════
 //  MONTH TEMPLATE
 // ══════════════════════════════════════════
 function openCreateTemplate(slug) {
@@ -1189,39 +1276,18 @@ async function toggleActive(slug) {
     toast(d.name + ' ' + (newActive ? 'activated' : 'deactivated'));
   } catch(e) { toast('Error: ' + e.message); }
 }
-async function toggleRequirePin(slug, val) {
-  const d = state.distributors.find(x=>x.slug===slug);
-  if (!d) return;
-  try {
-    await sbFetch('/rest/v1/distributors?id=eq.'+d.id, {
-      method:'PATCH',
-      headers:{...SB_H(),'Prefer':'return=minimal'},
-      body: JSON.stringify({require_pin: val})
-    });
-    d.requirePin = val;
-    toast('PIN requirement ' + (val?'enabled':'disabled') + ' for ' + d.name);
-  } catch(e) { toast('Error: ' + e.message); }
-}
-function toggleDistAdmin(slug, val) {
-  const d = state.distributors.find(x=>x.slug===slug);
-  if (!d) return;
-  d.isAdmin = val;
-  saveState();
-  toast('Admin access ' + (val?'granted':'revoked') + ' for ' + d.name);
-}
 function copyUrl(slug) {
   const url = window.location.origin + '/tracker?user=' + slug;
   navigator.clipboard.writeText(url).then(()=>toast('URL copied to clipboard'));
 }
 
 // ══════════════════════════════════════════
-//  ADMIN COLLEAGUES
+//  SETTINGS
 // ══════════════════════════════════════════
 function renderSettings(){
   populateImportDist();
   const el=document.getElementById('pf-influence');
   if(el){el.innerHTML=influenceOptions(GLOBAL_UPLIFT);updatePfInfo();}
-  renderAdminList();
 }
 function updatePfInfo(){
   const v=+document.getElementById('pf-influence').value||1.32;
@@ -1230,37 +1296,6 @@ function updatePfInfo(){
     const ex=Math.round(150000/v);
     el.textContent=`At ${v.toFixed(2)}×: reaching the Millionaire Team Plus goal (150,000 DV) requires ${ex.toLocaleString()} org volume.`;
   }
-}
-function renderAdminList() {
-  const c = document.getElementById('admin-list');
-  const admins = state.admins.filter(a=>!a.isRoot);
-  if (!admins.length) { c.innerHTML='<div style="font-size:13px;color:var(--ink3)">No admin colleagues yet.</div>'; return; }
-  c.innerHTML=`<div class="tw"><table><thead><tr><th>Name</th><th>PIN</th><th></th></tr></thead><tbody>${
-    admins.map(a=>`<tr>
-      <td style="font-weight:500">${a.name}</td>
-      <td class="n">${a.pin}</td>
-      <td><button class="btn br_ btn-sm" onclick="removeAdmin('${a.id}')">Remove</button></td>
-    </tr>`).join('')
-  }</tbody></table></div>`;
-}
-function openAddAdminModal() { genAdminPin(); document.getElementById('aa-name').value=''; openModal('modal-add-admin'); }
-function genAdminPin() { document.getElementById('aa-pin').value = genPinStr(); }
-function saveAdminColleague() {
-  const name = document.getElementById('aa-name').value.trim();
-  const pin  = document.getElementById('aa-pin').value.trim();
-  if (!name||!pin) { toast('Fill in all fields'); return; }
-  state.admins.push({id:Date.now().toString(),name,pin,isRoot:false});
-  saveState();
-  closeModal('modal-add-admin');
-  renderAdminList();
-  toast('Admin access granted to ' + name);
-}
-function removeAdmin(id) {
-  if (!confirm('Remove this admin?')) return;
-  state.admins = state.admins.filter(a=>a.id!==id);
-  saveState();
-  renderAdminList();
-  toast('Admin access removed');
 }
 
 // Supabase config removed — credentials baked in via checkAdminSession
