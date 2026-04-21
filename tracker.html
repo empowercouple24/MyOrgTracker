@@ -7,7 +7,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Manrope:wght@300;400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=Geist:wght@300;400;500;600;700&family=Manrope:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 
@@ -191,7 +191,7 @@ body{font-family:'Geist',system-ui,sans-serif;background:var(--bg);background-at
 .mstrip{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px}
 .met{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;box-shadow:var(--shadow)}
 .met-l{font-size:11px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:var(--text3);margin-bottom:5px}
-.met-v{font-size:24px;font-weight:600;letter-spacing:-.02em;font-family:'DM Mono',monospace;color:var(--text)}
+.met-v{font-size:24px;font-weight:600;letter-spacing:-.02em;font-family:'Geist',sans-serif;color:var(--text);font-variant-numeric:tabular-nums}
 .met-s{font-size:11px;color:var(--text3);margin-top:3px}
 .g2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px}
 .full{margin-bottom:18px}
@@ -206,8 +206,8 @@ table{width:100%;border-collapse:collapse;font-size:12.5px}
 th,td{padding:5px 11px;text-align:left;white-space:nowrap;line-height:1.4}
 th{font-size:10px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:var(--text3);border-bottom:1px solid var(--border);padding-top:8px;padding-bottom:8px}
 td{border-bottom:1px solid var(--divider);color:var(--text)}
-td.n{font-family:'DM Mono',monospace;font-variant-numeric:tabular-nums}
-.badge{padding:2px 7px;border-radius:4px;font-size:11px;font-weight:500;font-family:'DM Mono',monospace}
+td.n{font-family:'Geist',sans-serif;font-variant-numeric:tabular-nums}
+.badge{padding:2px 7px;border-radius:4px;font-size:11px;font-weight:500;font-family:'Geist',sans-serif}
 .bg{background:var(--accent-soft);color:var(--accent)}
 .br{background:var(--red2);color:var(--red)}
 /* Compact in-row buttons for the data table */
@@ -218,7 +218,7 @@ td.n{font-family:'DM Mono',monospace;font-variant-numeric:tabular-nums}
 .fg label{font-size:11px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:var(--text3)}
 .fg input,.fg select{height:36px;padding:0 12px;font-size:14px;border:1px solid var(--border);border-radius:7px;background:var(--surface);color:var(--text);outline:none;font-family:'Geist',sans-serif;transition:.12s}
 .fg input:focus,.fg select:focus{border-color:var(--accent)}
-.fg input[type=number]{font-family:'DM Mono',monospace}
+.fg input[type=number]{font-family:'Geist',sans-serif;font-variant-numeric:tabular-nums}
 .btn{height:36px;padding:0 16px;font-size:13px;font-weight:500;border-radius:7px;cursor:pointer;border:none;transition:.12s;font-family:'Geist',sans-serif}
 .btn.bp{background:var(--accent);color:var(--surface)}
 .btn.bp:hover{opacity:.9}
@@ -229,12 +229,12 @@ td.n{font-family:'DM Mono',monospace;font-variant-numeric:tabular-nums}
 .preview{background:var(--accent-softer);border:1px solid var(--accent-soft);border-radius:8px;padding:14px;margin:16px 0}
 .pgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:8px}
 .plbl{font-size:10px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:var(--text3);margin-bottom:3px}
-.pval{font-family:'DM Mono',monospace;font-size:15px;font-weight:600;color:var(--accent)}
+.pval{font-family:'Geist',sans-serif;font-size:15px;font-weight:600;color:var(--accent);font-variant-numeric:tabular-nums}
 
 /* ── ENTRY PAGE — HERO LAYOUT ── */
 .entry-hero{max-width:600px;margin:32px auto 0;padding:0 16px}
 .entry-card{padding:36px 32px}
-.entry-eyebrow{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--text3);font-weight:500;margin-bottom:8px}
+.entry-eyebrow{font-family:'Geist',sans-serif;font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--text3);font-weight:500;margin-bottom:8px}
 .entry-prompt{font-family:'EB Garamond',serif;font-size:24px;font-weight:400;color:var(--text);margin-bottom:22px;line-height:1.25;letter-spacing:-0.005em}
 .entry-prompt em{font-style:italic}
 .entry-vol{width:100%;background:var(--surface2);border:1.5px solid var(--border);border-radius:14px;outline:none;font-family:'Geist',sans-serif;font-weight:500;font-size:64px;letter-spacing:-0.025em;color:var(--text);text-align:center;padding:26px 16px;transition:border-color .15s,background .15s;-webkit-appearance:none;-moz-appearance:textfield;margin-bottom:24px;display:block}
@@ -245,12 +245,12 @@ td.n{font-family:'DM Mono',monospace;font-variant-numeric:tabular-nums}
 
 .entry-meta{display:flex;flex-direction:column;gap:14px;align-items:stretch}
 .entry-meta-group{display:flex;flex-direction:column;gap:6px}
-.entry-meta-group label{font-family:'DM Mono',monospace;font-size:10px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--text3)}
+.entry-meta-group label{font-family:'Geist',sans-serif;font-size:10px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--text3)}
 
 /* Airline-style date picker */
 .date-picker{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:12px 14px}
 .date-picker-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
-.date-picker-label{font-family:'DM Mono',monospace;font-size:10px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--text3)}
+.date-picker-label{font-family:'Geist',sans-serif;font-size:10px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--text3)}
 .date-picker-controls{display:flex;align-items:center;gap:8px}
 .date-picker-month{font-family:'Geist',sans-serif;font-size:11px;font-weight:500;color:var(--text2);letter-spacing:0.02em}
 .date-picker-cal-btn{width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:7px;border:1px solid var(--border);background:transparent;color:var(--text2);cursor:pointer;transition:.12s;padding:0}
@@ -259,8 +259,8 @@ td.n{font-family:'DM Mono',monospace;font-variant-numeric:tabular-nums}
 .date-chips::-webkit-scrollbar{height:0}
 .date-chip{flex-shrink:0;min-width:48px;padding:8px 6px;border-radius:9px;border:1px solid var(--border);text-align:center;background:var(--surface);cursor:pointer;transition:.12s;user-select:none}
 .date-chip:hover{border-color:var(--border2)}
-.date-chip-dow{font-family:'DM Mono',monospace;font-size:9px;font-weight:500;letter-spacing:.1em;color:var(--text3);text-transform:uppercase;margin-bottom:2px}
-.date-chip-day{font-family:'DM Mono',monospace;font-size:16px;font-weight:500;color:var(--text);line-height:1}
+.date-chip-dow{font-family:'Geist',sans-serif;font-size:9px;font-weight:500;letter-spacing:.1em;color:var(--text3);text-transform:uppercase;margin-bottom:2px}
+.date-chip-day{font-family:'Geist',sans-serif;font-size:16px;font-weight:500;color:var(--text);line-height:1}
 .date-chip.has-entry::after{content:'';display:block;width:4px;height:4px;border-radius:50%;background:var(--accent);margin:3px auto 0}
 .date-chip.on{background:var(--accent);border-color:var(--accent)}
 .date-chip.on .date-chip-dow,.date-chip.on .date-chip-day{color:var(--surface)}
@@ -268,8 +268,8 @@ td.n{font-family:'DM Mono',monospace;font-variant-numeric:tabular-nums}
 .date-chip.on::after{background:var(--surface)}
 .date-popover{position:absolute;top:38px;right:0;background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:14px;z-index:50;box-shadow:0 8px 24px rgba(0,0,0,0.12);min-width:260px}
 .date-popover-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-top:8px}
-.date-popover-dow{font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);text-align:center;letter-spacing:.06em;padding:4px 0}
-.date-popover-day{font-family:'DM Mono',monospace;font-size:13px;color:var(--text);text-align:center;padding:7px 0;border-radius:6px;cursor:pointer;transition:.1s;background:transparent;border:none}
+.date-popover-dow{font-family:'Geist',sans-serif;font-size:9px;color:var(--text3);text-align:center;letter-spacing:.06em;padding:4px 0}
+.date-popover-day{font-family:'Geist',sans-serif;font-size:13px;color:var(--text);text-align:center;padding:7px 0;border-radius:6px;cursor:pointer;transition:.1s;background:transparent;border:none}
 .date-popover-day:hover{background:var(--surface2)}
 .date-popover-day.empty{cursor:default;color:transparent}
 .date-popover-day.on{background:var(--accent);color:var(--surface)}
@@ -284,16 +284,16 @@ td.n{font-family:'DM Mono',monospace;font-variant-numeric:tabular-nums}
 .goal-locked:hover{border-color:var(--border2)}
 .goal-b-pin{position:absolute;top:12px;right:12px;width:44px;height:44px;background-position:center;background-size:contain;background-repeat:no-repeat;pointer-events:none}
 .goal-b-eyebrow{display:flex;align-items:center;gap:6px;margin-bottom:10px;padding-right:54px}
-.goal-b-eyebrow-label{font-family:'DM Mono',monospace;font-size:10px;font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:var(--text3)}
+.goal-b-eyebrow-label{font-family:'Geist',sans-serif;font-size:10px;font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:var(--text3)}
 .goal-b-eyebrow-dot{width:3px;height:3px;border-radius:50%;background:var(--text3);opacity:0.4}
-.goal-b-pace{font-family:'DM Mono',monospace;font-size:10px;font-weight:500;letter-spacing:.06em;text-transform:uppercase}
+.goal-b-pace{font-family:'Geist',sans-serif;font-size:10px;font-weight:500;letter-spacing:.06em;text-transform:uppercase}
 .goal-b-pace.ahead{color:#3aac77}
 .goal-b-pace.behind{color:#c65d3a}
 .goal-b-pace.ontrack{color:var(--text2)}
 .goal-b-value-row{display:flex;align-items:baseline;gap:6px;margin-bottom:4px}
-.goal-b-value-hero{font-family:'DM Mono',monospace;font-size:28px;font-weight:500;color:var(--text);letter-spacing:-0.02em;line-height:1}
-.goal-b-value-of{font-family:'DM Mono',monospace;font-size:14px;color:var(--text3)}
-.goal-b-value-meta{font-family:'DM Mono',monospace;font-size:10px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);margin-bottom:10px}
+.goal-b-value-hero{font-family:'Geist',sans-serif;font-size:28px;font-weight:500;color:var(--text);letter-spacing:-0.02em;line-height:1}
+.goal-b-value-of{font-family:'Geist',sans-serif;font-size:14px;color:var(--text3)}
+.goal-b-value-meta{font-family:'Geist',sans-serif;font-size:10px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);margin-bottom:10px}
 .goal-b-progress{height:5px;background:var(--surface3);border-radius:3px;overflow:hidden;margin-bottom:14px}
 .goal-b-progress-fill{height:100%;background:var(--accent);transition:width .4s}
 .goal-b-callout{padding:8px 10px;border-radius:0 8px 8px 0;border-left:3px solid;margin-bottom:12px}
@@ -309,7 +309,7 @@ td.n{font-family:'DM Mono',monospace;font-variant-numeric:tabular-nums}
 .goal-b-level-pill{font-family:'Geist',sans-serif;font-size:10px;font-weight:500;padding:2px 8px;border-radius:999px;letter-spacing:0.02em}
 .goal-b-level-name{font-family:'Geist',sans-serif;font-size:12px;font-weight:500;color:var(--text)}
 .goal-b-presave-copy{font-family:'Geist',sans-serif;font-size:11px;color:var(--text3);line-height:1.5;margin-bottom:12px}
-.goal-b-uplift{font-family:'DM Mono',monospace;font-size:10px;color:var(--text3);padding-top:8px;border-top:1px solid var(--divider);letter-spacing:0.02em}
+.goal-b-uplift{font-family:'Geist',sans-serif;font-size:10px;color:var(--text3);padding-top:8px;border-top:1px solid var(--divider);letter-spacing:0.02em}
 
 .entry-actions{margin-top:28px;display:flex;gap:10px}
 .entry-save{flex:1;height:56px;background:var(--accent);color:var(--surface);border:none;border-radius:12px;font-family:'Geist',sans-serif;font-weight:500;font-size:15px;letter-spacing:0.005em;cursor:pointer;transition:opacity .12s,transform .12s}
@@ -323,11 +323,11 @@ td.n{font-family:'DM Mono',monospace;font-variant-numeric:tabular-nums}
 .data-filter:focus{border-color:var(--accent)}
 
 /* ── ENTRY HINT (enter yesterday's ending DV) ── */
-.entry-hint{font-family:'DM Mono',monospace;font-size:11px;color:var(--text3);letter-spacing:.02em;margin:-14px 0 18px 2px;display:flex;align-items:center;gap:6px}
-.entry-hint::before{content:'↳';color:var(--accent);font-weight:600}
+.entry-hint{font-family:'EB Garamond',serif;font-style:italic;font-size:17px;font-weight:400;color:var(--accent);margin:-12px 0 20px 0;display:flex;align-items:center;gap:8px;letter-spacing:-0.005em;line-height:1.35}
+.entry-hint::before{content:'↳';color:var(--accent);font-weight:600;font-style:normal;font-size:16px;opacity:0.85}
 .entry-hint.amber{color:var(--amber)}
 .entry-hint.amber::before{color:var(--amber)}
-.entry-hint.disabled{color:var(--text3);opacity:.6}
+.entry-hint.disabled{color:var(--text3);opacity:.7}
 .entry-hint.disabled::before{color:var(--text3)}
 
 /* ── ENTRY HISTORICAL (amber) MODE ── */
@@ -365,8 +365,8 @@ td.n{font-family:'DM Mono',monospace;font-variant-numeric:tabular-nums}
 /* ── INLINE "Today" pill (variant 3: inside date-picker card, above chips) ── */
 .today-pill-inline{display:none;align-items:center;justify-content:space-between;padding:6px 12px;background:var(--accent-softer);border-radius:999px;margin-bottom:10px}
 .today-pill-inline.on{display:flex}
-.today-pill-inline .tpi-left{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);font-weight:700}
-.today-pill-inline .tpi-right{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:5px}
+.today-pill-inline .tpi-left{font-family:'Geist',sans-serif;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);font-weight:700}
+.today-pill-inline .tpi-right{font-family:'Geist',sans-serif;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:5px}
 .today-pill-inline .tpi-right::before{content:'↻';font-size:13px;display:inline-block;transform:scaleX(-1)}
 
 /* ── CALENDAR POPOVER: logged dots, disabled days, today ring ── */
@@ -384,7 +384,7 @@ td.n{font-family:'DM Mono',monospace;font-variant-numeric:tabular-nums}
 .inactivity-icon{font-size:28px;margin-bottom:6px;color:var(--amber)}
 .inactivity-title{font-family:'EB Garamond',serif;font-size:22px;font-weight:500;color:var(--text);margin-bottom:8px;letter-spacing:-.01em}
 .inactivity-body{font-size:13.5px;color:var(--text2);line-height:1.55;margin-bottom:18px}
-.inactivity-body strong{color:var(--text);font-family:'DM Mono',monospace}
+.inactivity-body strong{color:var(--text);font-family:'Geist',sans-serif}
 .inactivity-actions{display:flex;gap:10px;flex-direction:column}
 .inactivity-btn{padding:12px 18px;border-radius:10px;border:none;font-family:'Geist',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:.12s}
 .inactivity-btn.stay{background:var(--accent);color:var(--surface)}
@@ -394,7 +394,7 @@ td.n{font-family:'DM Mono',monospace;font-variant-numeric:tabular-nums}
 
 /* ── GOAL MATH CARD (Settings) ── */
 .goal-math-card{background:var(--surface2);border-radius:12px;padding:14px 16px;margin-top:14px;border:1px solid var(--border)}
-.goal-math-row{display:flex;justify-content:space-between;align-items:baseline;padding:7px 0;font-family:'DM Mono',monospace;font-size:12px;color:var(--text2);border-bottom:1px dashed var(--divider)}
+.goal-math-row{display:flex;justify-content:space-between;align-items:baseline;padding:7px 0;font-family:'Geist',sans-serif;font-size:12px;color:var(--text2);border-bottom:1px dashed var(--divider)}
 .goal-math-row:last-child{border-bottom:0}
 .goal-math-row .gml{font-size:10px;color:var(--text3);letter-spacing:.12em;text-transform:uppercase;font-weight:500}
 .goal-math-row .gmv{font-family:'EB Garamond',serif;font-size:16px;color:var(--text);font-weight:500}
@@ -409,7 +409,7 @@ td.n{font-family:'DM Mono',monospace;font-variant-numeric:tabular-nums}
 .goal-picker-item-pin{width:38px;height:38px;flex-shrink:0;object-fit:contain}
 .goal-picker-item-info{flex:1;min-width:0}
 .goal-picker-item-name{font-family:'EB Garamond',serif;font-size:15px;font-weight:500;color:var(--text);letter-spacing:-.005em}
-.goal-picker-item-meta{font-family:'DM Mono',monospace;font-size:10px;color:var(--text3);letter-spacing:.04em;margin-top:2px}
+.goal-picker-item-meta{font-family:'Geist',sans-serif;font-size:10px;color:var(--text3);letter-spacing:.04em;margin-top:2px}
 .goal-picker-item.selected .goal-picker-item-meta{color:var(--accent);font-weight:600}
 .goal-picker-item-check{color:var(--accent);font-size:18px;font-weight:700;flex-shrink:0;opacity:0;transition:.12s}
 .goal-picker-item.selected .goal-picker-item-check{opacity:1}
@@ -418,7 +418,7 @@ td.n{font-family:'DM Mono',monospace;font-variant-numeric:tabular-nums}
 /* Year strip at top of Data tab */
 .data-year-strip{display:flex;gap:6px;padding:4px 0 14px;overflow-x:auto;border-bottom:1px solid var(--border);margin-bottom:14px;-webkit-overflow-scrolling:touch}
 .data-year-strip::-webkit-scrollbar{height:0}
-.year-chip{flex:0 0 auto;padding:7px 14px;background:var(--surface2);border-radius:999px;font-family:'DM Mono',monospace;font-size:12px;font-weight:600;letter-spacing:0.04em;color:var(--text2);cursor:pointer;border:1px solid transparent;transition:.12s;user-select:none}
+.year-chip{flex:0 0 auto;padding:7px 14px;background:var(--surface2);border-radius:999px;font-family:'Geist',sans-serif;font-size:12px;font-weight:600;letter-spacing:0.04em;color:var(--text2);cursor:pointer;border:1px solid transparent;transition:.12s;user-select:none}
 .year-chip:hover:not(.on){border-color:var(--border2);color:var(--text)}
 .year-chip.on{background:var(--text);color:var(--surface)}
 .year-chip .yc-meta{font-size:9px;opacity:0.65;letter-spacing:0.08em;font-weight:500;margin-left:6px}
@@ -427,7 +427,7 @@ td.n{font-family:'DM Mono',monospace;font-variant-numeric:tabular-nums}
 .data-topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px}
 .data-topbar-right{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .data-crumb{display:flex;align-items:center;gap:8px;min-height:30px}
-.data-crumb .crumb-year{display:inline-flex;align-items:center;gap:6px;padding:4px 12px 4px 6px;background:var(--surface2);border-radius:999px;font-family:'DM Mono',monospace;font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:var(--text2);cursor:pointer;transition:.12s}
+.data-crumb .crumb-year{display:inline-flex;align-items:center;gap:6px;padding:4px 12px 4px 6px;background:var(--surface2);border-radius:999px;font-family:'Geist',sans-serif;font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:var(--text2);cursor:pointer;transition:.12s}
 .data-crumb .crumb-year:hover{background:var(--surface3);color:var(--text)}
 .data-crumb .crumb-year::before{content:"‹";font-size:15px;color:var(--accent);font-weight:700;margin-right:2px}
 .data-crumb .crumb-title{font-family:'EB Garamond',serif;font-style:italic;font-size:17px;color:var(--text);letter-spacing:-0.01em}
@@ -435,7 +435,7 @@ td.n{font-family:'DM Mono',monospace;font-variant-numeric:tabular-nums}
 
 /* View toggle pill */
 .data-view-toggle{display:inline-flex;padding:3px;background:var(--surface2);border-radius:9px;gap:2px}
-.data-view-toggle button{padding:6px 13px;border:0;background:transparent;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--text3);border-radius:7px;cursor:pointer;font-weight:600;transition:.12s}
+.data-view-toggle button{padding:6px 13px;border:0;background:transparent;font-family:'Geist',sans-serif;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--text3);border-radius:7px;cursor:pointer;font-weight:600;transition:.12s}
 .data-view-toggle button.on{background:var(--surface);color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,0.04)}
 .data-view-toggle button:hover:not(.on){color:var(--text2)}
 
@@ -443,7 +443,7 @@ td.n{font-family:'DM Mono',monospace;font-variant-numeric:tabular-nums}
 .mg-year-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;padding:0 2px;flex-wrap:wrap;gap:8px}
 .mg-year-title{font-family:'EB Garamond',serif;font-style:italic;font-size:22px;color:var(--text)}
 .mg-year-title strong{font-style:normal;font-weight:500;color:var(--accent)}
-.mg-year-meta{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--text3)}
+.mg-year-meta{font-family:'Geist',sans-serif;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--text3)}
 .mg-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:12px}
 .mg-card{background:var(--surface2);border:1px solid transparent;border-radius:12px;padding:14px 16px;cursor:pointer;transition:.15s;position:relative;user-select:none}
 .mg-card:hover{border-color:var(--border2);transform:translateY(-1px)}
@@ -453,14 +453,14 @@ td.n{font-family:'DM Mono',monospace;font-variant-numeric:tabular-nums}
 .mg-card.future:hover{transform:none}
 .mg-head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:8px}
 .mg-month{font-family:'EB Garamond',serif;font-size:15px;font-weight:500;letter-spacing:-0.005em;color:var(--text)}
-.mg-hit{font-family:'DM Mono',monospace;font-size:8px;letter-spacing:0.1em;font-weight:700;padding:2px 6px;border-radius:999px}
+.mg-hit{font-family:'Geist',sans-serif;font-size:8px;letter-spacing:0.1em;font-weight:700;padding:2px 6px;border-radius:999px}
 .mg-hit.yes{background:#3aac77;color:#fff}
 .mg-hit.no{background:#c65d3a;color:#fff}
 .mg-hit.partial{background:#d4a74a;color:#3a2a0a}
 .mg-hit.none{background:var(--surface3);color:var(--text3)}
 .mg-final{font-family:'EB Garamond',serif;font-size:24px;font-weight:500;line-height:1;letter-spacing:-0.02em;margin-bottom:2px;color:var(--text)}
 .mg-card.current .mg-final{color:var(--surface)}
-.mg-meta{font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);letter-spacing:0.04em}
+.mg-meta{font-family:'Geist',sans-serif;font-size:9px;color:var(--text3);letter-spacing:0.04em}
 .mg-card.current .mg-meta{color:rgba(255,255,255,0.7)}
 .mg-progress{height:3px;background:var(--surface3);border-radius:999px;overflow:hidden;margin-top:8px}
 .mg-card.current .mg-progress{background:rgba(255,255,255,0.15)}
@@ -478,22 +478,22 @@ td.n{font-family:'DM Mono',monospace;font-variant-numeric:tabular-nums}
 .md-hero-left{display:flex;flex-direction:column;gap:4px}
 .md-hero-month{font-family:'EB Garamond',serif;font-size:30px;font-weight:500;letter-spacing:-0.02em;line-height:1.1;color:var(--text)}
 .md-hero-month em{font-style:italic;color:var(--accent)}
-.md-hero-sub{font-family:'DM Mono',monospace;font-size:11px;color:var(--text3);letter-spacing:0.08em;text-transform:uppercase}
+.md-hero-sub{font-family:'Geist',sans-serif;font-size:11px;color:var(--text3);letter-spacing:0.08em;text-transform:uppercase}
 .md-hero-right{text-align:right}
 .md-hero-num{font-family:'EB Garamond',serif;font-size:34px;font-weight:500;letter-spacing:-0.02em;line-height:1;color:var(--text)}
-.md-hero-goal{font-family:'DM Mono',monospace;font-size:10px;color:var(--text3);margin-top:3px;letter-spacing:0.04em}
+.md-hero-goal{font-family:'Geist',sans-serif;font-size:10px;color:var(--text3);margin-top:3px;letter-spacing:0.04em}
 .md-hero-goal .hit-pill{display:inline-block;padding:2px 7px;background:#3aac77;color:#fff;border-radius:999px;font-weight:700;letter-spacing:0.06em;margin-left:5px;font-size:9px}
 .md-hero-goal .miss-pill{display:inline-block;padding:2px 7px;background:#c65d3a;color:#fff;border-radius:999px;font-weight:700;letter-spacing:0.06em;margin-left:5px;font-size:9px}
 
 .md-metric-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
 @media(max-width:640px){.md-metric-strip{grid-template-columns:repeat(2,1fr)}}
 .md-metric{background:var(--surface2);border-radius:10px;padding:11px 13px}
-.md-metric .lbl{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:0.12em;text-transform:uppercase;color:var(--text3);margin-bottom:4px}
+.md-metric .lbl{font-family:'Geist',sans-serif;font-size:9px;letter-spacing:0.12em;text-transform:uppercase;color:var(--text3);margin-bottom:4px}
 .md-metric .val{font-family:'EB Garamond',serif;font-size:19px;font-weight:500;color:var(--text);letter-spacing:-0.01em;line-height:1.1}
-.md-metric .sub{font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);margin-top:3px}
+.md-metric .sub{font-family:'Geist',sans-serif;font-size:9px;color:var(--text3);margin-top:3px}
 
 .md-chart-card{background:var(--surface2);border-radius:12px;padding:14px 16px;margin-bottom:14px}
-.md-chart-title{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--text3);margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
+.md-chart-title{font-family:'Geist',sans-serif;font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--text3);margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
 .md-chart-legend{display:inline-flex;gap:10px;font-weight:500}
 .md-chart-legend span{display:inline-flex;align-items:center;gap:4px}
 .md-chart-legend .dot{width:8px;height:8px;border-radius:2px;display:inline-block}
@@ -506,10 +506,10 @@ td.n{font-family:'DM Mono',monospace;font-variant-numeric:tabular-nums}
 .md-bar.today{background:#d4a74a;box-shadow:0 0 0 1px #d4a74a}
 .md-bar:hover{background:var(--text)}
 .md-bar.empty{background:var(--surface3);opacity:.5;cursor:default}
-.md-axis{display:flex;justify-content:space-between;font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);padding:4px 0 0}
+.md-axis{display:flex;justify-content:space-between;font-family:'Geist',sans-serif;font-size:9px;color:var(--text3);padding:4px 0 0}
 
 .md-day-list{display:flex;flex-direction:column;gap:1px}
-.md-day-head{display:grid;grid-template-columns:110px 1fr 110px 120px 36px;padding:8px 14px 10px;font-family:'DM Mono',monospace;font-size:9px;letter-spacing:0.12em;text-transform:uppercase;color:var(--text3);font-weight:600;gap:14px;border-bottom:1px solid var(--border)}
+.md-day-head{display:grid;grid-template-columns:110px 1fr 110px 120px 36px;padding:8px 14px 10px;font-family:'Geist',sans-serif;font-size:9px;letter-spacing:0.12em;text-transform:uppercase;color:var(--text3);font-weight:600;gap:14px;border-bottom:1px solid var(--border)}
 .md-day-head .n{text-align:right}
 .md-row{display:grid;grid-template-columns:110px 1fr 110px 120px 36px;align-items:center;padding:8px 14px;border-radius:8px;gap:14px;font-size:13px;cursor:pointer;transition:background .1s}
 .md-row:hover{background:var(--surface2)}
@@ -517,9 +517,9 @@ td.n{font-family:'DM Mono',monospace;font-variant-numeric:tabular-nums}
 .md-row.hit-row:hover{background:var(--accent-soft)}
 .md-row.expanded{background:var(--surface);border:1px solid var(--border2);box-shadow:0 1px 3px rgba(0,0,0,0.04)}
 .md-row .day-num{font-family:'EB Garamond',serif;font-size:16px;color:var(--text);font-weight:500;line-height:1}
-.md-row .day-meta{font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);letter-spacing:0.06em;text-transform:uppercase;margin-top:3px}
-.md-row .md-row-vol{text-align:right;font-family:'DM Mono',monospace;color:var(--text);font-weight:600}
-.md-row .md-row-chg{text-align:right;font-family:'DM Mono',monospace;font-size:12px;white-space:nowrap}
+.md-row .day-meta{font-family:'Geist',sans-serif;font-size:9px;color:var(--text3);letter-spacing:0.06em;text-transform:uppercase;margin-top:3px}
+.md-row .md-row-vol{text-align:right;font-family:'Geist',sans-serif;color:var(--text);font-weight:600}
+.md-row .md-row-chg{text-align:right;font-family:'Geist',sans-serif;font-size:12px;white-space:nowrap}
 .md-row .md-row-chg.pos{color:#3aac77}
 .md-row .md-row-chg.neg{color:#c65d3a}
 .md-row .hit-badge{display:inline-block;padding:1px 6px;background:#3aac77;color:#fff;border-radius:999px;font-size:9px;font-weight:700;letter-spacing:0.06em;margin-right:4px}
@@ -535,19 +535,19 @@ td.n{font-family:'DM Mono',monospace;font-variant-numeric:tabular-nums}
   .md-row .md-row-chg{display:none}
   .md-row-expand{grid-template-columns:repeat(2,1fr)}
 }
-.md-row-expand .lbl{font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);letter-spacing:0.12em;text-transform:uppercase}
+.md-row-expand .lbl{font-family:'Geist',sans-serif;font-size:9px;color:var(--text3);letter-spacing:0.12em;text-transform:uppercase}
 .md-row-expand .val{font-family:'EB Garamond',serif;font-size:15px;color:var(--text);margin-top:2px}
 .md-row-expand .actions{grid-column:1 / -1;display:flex;gap:8px;justify-content:flex-end;padding-top:8px;border-top:1px solid var(--border);margin-top:4px}
 
 /* Edit Mode inline inputs inside day rows */
-.md-row .ei-inline{height:26px;padding:0 8px;border:1px solid var(--accent);border-radius:6px;font-size:12px;font-family:'DM Mono',monospace;width:100px;outline:none;background:var(--surface);color:var(--text);text-align:right}
+.md-row .ei-inline{height:26px;padding:0 8px;border:1px solid var(--accent);border-radius:6px;font-size:12px;font-family:'Geist',sans-serif;width:100px;outline:none;background:var(--surface);color:var(--text);text-align:right}
 
 .drop{border:2px dashed var(--border2);border-radius:12px;padding:36px;text-align:center;cursor:pointer;transition:.15s;background:var(--surface2)}
 .drop:hover,.drop.drag{border-color:var(--accent);background:var(--accent-softer)}
 .drop p{color:var(--text2);font-size:13px;line-height:1.65;margin-top:6px}
 .drop strong{color:var(--text)}
-.ei{height:26px;padding:0 8px;border:1px solid var(--accent);border-radius:6px;font-size:12px;font-family:'DM Mono',monospace;width:105px;outline:none;background:var(--surface);color:var(--text)}
-.code{background:#15150d;color:#a0d8b3;font-family:'DM Mono',monospace;font-size:12px;padding:14px;border-radius:8px;overflow-x:auto;white-space:pre;line-height:1.75;margin:8px 0}
+.ei{height:26px;padding:0 8px;border:1px solid var(--accent);border-radius:6px;font-size:12px;font-family:'Geist',sans-serif;width:105px;outline:none;background:var(--surface);color:var(--text)}
+.code{background:#15150d;color:#a0d8b3;font-family:'Geist',sans-serif;font-size:12px;padding:14px;border-radius:8px;overflow-x:auto;white-space:pre;line-height:1.75;margin:8px 0}
 .step{display:flex;align-items:flex-start;gap:8px;margin-bottom:12px;font-size:13px;color:var(--text2);line-height:1.6}
 .sn{flex-shrink:0;width:20px;height:20px;border-radius:50%;background:var(--accent);color:var(--surface);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center}
 
@@ -676,7 +676,7 @@ html,body{background:var(--bg,#fafaf8);background-attachment:fixed}
       </div>
       <div class="card" style="padding:22px;margin-bottom:14px">
         <div class="fg" style="margin-bottom:14px">
-          <label style="font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);font-weight:600;display:block;margin-bottom:8px">Goal Tier</label>
+          <label style="font-family:'Geist',sans-serif;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);font-weight:600;display:block;margin-bottom:8px">Goal Tier</label>
           <select id="onb-goal-select" onchange="onbUpdateGoalInfo()" style="width:100%;height:46px;padding:0 14px;font-size:14px;border:1px solid var(--border2);border-radius:10px;background:var(--surface);color:var(--text);font-family:inherit;outline:none">
           </select>
         </div>
@@ -2129,7 +2129,7 @@ function renderLockedGoal(){
   if(isPreData){
     card.innerHTML = pinEl + `
       <div class="goal-b-eyebrow"><div class="goal-b-eyebrow-label" style="color:var(--text3);opacity:.7">Goal</div></div>
-      <div class="goal-b-value-hero" style="color:var(--text3);opacity:.7">${kFmt(orgTarget)}</div>
+      <div class="goal-b-value-hero" style="color:var(--text3);opacity:.7">${fmt(orgTarget)}</div>
       <div class="goal-b-value-meta">Org volume target</div>
       <div class="goal-b-level-row">
         <span class="goal-b-level-pill" style="background:${colors.bg};color:${colors.text}">${abbrevLevel(g.label)}</span>
@@ -2144,7 +2144,7 @@ function renderLockedGoal(){
     // ── PRE-SAVE STATE (for the selected date) ──
     card.innerHTML = pinEl + `
       <div class="goal-b-eyebrow"><div class="goal-b-eyebrow-label">Goal</div></div>
-      <div class="goal-b-value-hero">${kFmt(orgTarget)}</div>
+      <div class="goal-b-value-hero">${fmt(orgTarget)}</div>
       <div class="goal-b-value-meta">Org volume target</div>
       <div class="goal-b-level-row">
         <span class="goal-b-level-pill" style="background:${colors.bg};color:${colors.text}">${abbrevLevel(g.label)}</span>
@@ -2170,7 +2170,7 @@ function renderLockedGoal(){
   if(currentDV>=goalDV){
     paceClass='ahead';paceLabel=isHistorical?'Goal Hit (snapshot)':'Goal Hit';
     calloutClass='ahead';
-    calloutText=`Goal reached — ${kFmt(currentDV-goalDV)} DV over target`;
+    calloutText=`Goal reached — ${fmt(currentDV-goalDV)} DV over target`;
     calloutSub=`${daysLeft} day${daysLeft===1?'':'s'} remaining in month`;
   }else if(currentDV>=expectedDV*0.98){
     paceClass='ahead';paceLabel=isHistorical?'On Pace (snapshot)':'On Pace';
@@ -2191,8 +2191,8 @@ function renderLockedGoal(){
       <div class="goal-b-pace ${paceClass}">${paceLabel}</div>
     </div>
     <div class="goal-b-value-row">
-      <div class="goal-b-value-hero">${kFmt(currentDV)}</div>
-      <div class="goal-b-value-of">/ ${kFmt(goalDV)}</div>
+      <div class="goal-b-value-hero">${fmt(currentDV)}</div>
+      <div class="goal-b-value-of">/ ${fmt(goalDV)}</div>
     </div>
     <div class="goal-b-value-meta">DV · ${Math.round(progressPct)}% of goal</div>
     <div class="goal-b-progress"><div class="goal-b-progress-fill" style="width:${progressPct}%"></div></div>
