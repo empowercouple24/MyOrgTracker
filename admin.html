@@ -65,6 +65,8 @@ body{font-family:'Geist',system-ui,sans-serif;background:var(--paper);color:var(
 .tn-user{font-size:11px;color:var(--ink3);font-family:'DM Mono',monospace;letter-spacing:0.06em}
 .tn-logout{font-size:12px;color:var(--ink3);cursor:pointer;padding:5px 10px;border:1px solid var(--border2);border-radius:7px;transition:.12s;font-weight:500;background:transparent}
 .tn-logout:hover{color:var(--ink);border-color:var(--ink);background:var(--paper3)}
+.tn-mytrack{font-size:12px;color:var(--green);cursor:pointer;padding:5px 10px;border:1px solid var(--green);border-radius:7px;transition:.12s;font-weight:500;background:transparent;text-decoration:none;white-space:nowrap}
+.tn-mytrack:hover{background:var(--green);color:#fff}
 
 /* ── PAGES ── */
 .pg{display:none;padding:24px;max-width:1160px;margin:0 auto}
@@ -247,6 +249,7 @@ tr:hover td{background:var(--paper2);transition:background .1s}
   <div class="tn-tab" onclick="goPage('settings')">Settings</div>
   <div class="tn-right">
     <button class="btn bo btn-sm" onclick="loadAllData('Refreshing…').then(()=>{renderOverview();toast('✓ Refreshed')})" title="Refresh data" style="padding:0 10px;height:28px;font-size:11px">↻ Refresh</button>
+    <a id="tn-mytracker" href="/tracker" class="tn-mytrack" style="display:none">My Tracker →</a>
     <div id="gh-check" class="gh-check checking">···</div>
     <span class="tn-user" id="admin-user-label"></span>
     <span class="tn-logout" onclick="adminLogout()">Log out</span>
@@ -518,7 +521,7 @@ const COLORS = ['#1a5c3a','#1a3a6c','#6c1a3a','#3a1a6c','#6c3a1a','#1a6c5c','#5c
 // ══════════════════════════════════════════
 //  STATE — backed by Supabase
 // ══════════════════════════════════════════
-let state = { distributors: [] };
+let state = { distributors: [], adminIds: new Set() };
 let currentUser = null;
 let viewingDist = null;
 let resetPinTarget = null;
@@ -546,7 +549,7 @@ function hideLoading() {
 }
 
 // Maps Supabase distributor row → internal format (preserves all render functions)
-function distFromRow(row, entries) {
+function distFromRow(row, entries, adminIds) {
   return {
     id: row.id,
     name: row.name,
@@ -558,7 +561,7 @@ function distFromRow(row, entries) {
     pinGoal: row.pin_goal,
     dv_goal: row.dv_goal,
     requirePin: row.require_pin,
-    isAdmin: false,
+    isAdmin: !!(adminIds && row.auth_user_id && adminIds.has(row.auth_user_id)),
     active: row.is_active,
     status: row.status || (row.is_active ? 'active' : 'pending'),
     authUserId: row.auth_user_id || null,
@@ -602,11 +605,14 @@ async function savePlatformInfluence(){
 async function loadAllData(msg='Loading…') {
   showLoading(msg);
   try {
-    const [dists, entries] = await Promise.all([
+    const [dists, entries, admins] = await Promise.all([
       sbFetch('/rest/v1/distributors?select=*&order=created_at.asc'),
-      sbFetch('/rest/v1/org_volume?select=*&order=entry_date.asc')
+      sbFetch('/rest/v1/org_volume?select=*&order=entry_date.asc'),
+      sbFetch('/rest/v1/profiles?select=id&role=eq.admin')
     ]);
-    state.distributors = (dists || []).map(row => distFromRow(row, entries || []));
+    const adminIds = new Set((admins || []).map(p => p.id));
+    state.adminIds = adminIds;
+    state.distributors = (dists || []).map(row => distFromRow(row, entries || [], adminIds));
     hideLoading();
   } catch(e) {
     hideLoading();
@@ -659,10 +665,15 @@ async function checkAdminSession(){
     }
     // Admin verified — store JWT for RLS-authenticated requests
     adminToken = session.access_token;
-    currentUser = { name: profile.display_name || session.user.email, id: session.user.id };
+    currentUser = { name: profile.display_name || session.user.email, id: session.user.id, slug: profile.slug || null };
     document.getElementById('auth-gate').style.display = 'none';
     document.getElementById('topnav').style.display = 'flex';
     document.getElementById('admin-user-label').textContent = currentUser.name;
+    // If this admin is also a distributor (has a slug), show the "My Tracker" shortcut
+    if(currentUser.slug){
+      const mt = document.getElementById('tn-mytracker');
+      if(mt) mt.style.display = 'inline-flex';
+    }
     initFieldEnhancements();
     startGhChecker();
     await Promise.all([loadAllData('Loading dashboard…'), loadPlatformSettings()]);
@@ -833,7 +844,7 @@ function renderDistDetail(d) {
     <div class="dv-header">
       <div class="dv-av" style="background:${col};color:#fff">${initials(d.name)}</div>
       <div>
-        <div class="dv-name">${d.name}</div>
+        <div class="dv-name">${d.name}${d.isAdmin?' <span style="display:inline-block;font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;background:var(--ink);color:var(--paper);padding:2px 7px;border-radius:20px;vertical-align:middle;margin-left:6px;font-family:\'DM Mono\',monospace">ADMIN</span>':''}</div>
         <div class="dv-meta">?user=${d.slug} · ${goalLbl} · ${d.active?'Active':'Inactive'}${d.email?' · '+d.email:''}</div>
       </div>
       <div class="dv-actions">
@@ -841,6 +852,7 @@ function renderDistDetail(d) {
         <button class="btn ${linked?'bo':'bgo'}" onclick="openSendLoginLink('${d.slug}')">${linked?'Resend Login Link':'Send Login Setup'}</button>
         <button class="btn bgo" onclick="openCreateTemplate('${d.slug}')">＋ Month Template</button>
         <button class="btn bo" onclick="openEditDist('${d.slug}')">Edit Settings</button>
+        ${linked?`<button class="btn ${d.isAdmin?'br_':'bgo'}" onclick="togglePromoteAdmin('${d.slug}')">${d.isAdmin?'Revoke Admin':'Promote to Admin'}</button>`:''}
         <button class="btn ${d.active?'br_':'bg_'}" onclick="toggleActive('${d.slug}');renderDistDetail(state.distributors.find(x=>x.slug==='${d.slug}'))">${d.active?'Deactivate':'Activate'}</button>
       </div>
     </div>
@@ -1275,6 +1287,40 @@ async function toggleActive(slug) {
     renderDistGrid();
     toast(d.name + ' ' + (newActive ? 'activated' : 'deactivated'));
   } catch(e) { toast('Error: ' + e.message); }
+}
+async function togglePromoteAdmin(slug) {
+  const d = state.distributors.find(x=>x.slug===slug);
+  if (!d) return;
+  if (!d.authUserId) { toast('Cannot change — user has not signed up yet'); return; }
+  // Self-demote guard: prevent an admin from locking themselves out
+  if (d.isAdmin && d.authUserId === currentUser.id) {
+    toast('You cannot revoke your own admin status. Ask another admin to do it.');
+    return;
+  }
+  const makeAdmin = !d.isAdmin;
+  const msg = makeAdmin
+    ? 'Promote ' + d.name + ' to admin?\n\nThey will have full access to every distributor\'s data and settings, and can add or remove other admins.'
+    : 'Revoke admin from ' + d.name + '?\n\nThey will lose access to all other distributors and return to a regular distributor role.';
+  if (!confirm(msg)) return;
+  try {
+    await sbFetch('/rest/v1/profiles?id=eq.'+d.authUserId, {
+      method:'PATCH',
+      headers:{...SB_H(),'Prefer':'return=minimal'},
+      body: JSON.stringify({ role: makeAdmin ? 'admin' : 'distributor' })
+    });
+    // Update local state immediately, then refresh authoritative data in background
+    d.isAdmin = makeAdmin;
+    if (state.adminIds) {
+      if (makeAdmin) state.adminIds.add(d.authUserId);
+      else state.adminIds.delete(d.authUserId);
+    }
+    renderDistDetail(d);
+    toast(makeAdmin ? (d.name + ' is now an admin') : (d.name + ' is no longer an admin'));
+    loadAllData('Refreshing…').then(()=>{ const fresh = state.distributors.find(x=>x.slug===slug); if(fresh) renderDistDetail(fresh); });
+  } catch(e) {
+    toast('Failed: ' + e.message);
+    console.error(e);
+  }
 }
 function copyUrl(slug) {
   const url = window.location.origin + '/tracker?user=' + slug;
