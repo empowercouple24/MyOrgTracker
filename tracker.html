@@ -424,25 +424,30 @@ td.n{font-family:'Geist',sans-serif;font-variant-numeric:tabular-nums}
 .inactivity-btn.leave{background:transparent;color:var(--text3);border:1px solid var(--border)}
 .inactivity-btn.leave:hover{color:var(--text);border-color:var(--border2)}
 
-/* ── GOAL MATH CARD (Settings) ── */
-.goal-math-card{background:var(--surface2);border-radius:12px;padding:14px 16px;margin-top:14px;border:1px solid var(--border)}
-.goal-math-row{display:flex;justify-content:space-between;align-items:baseline;padding:7px 0;font-family:'Geist',sans-serif;font-size:12px;color:var(--text2);border-bottom:1px dashed var(--divider)}
+/* ── GOAL MATH CARD (Settings) — RO hero on top, math flow underneath ── */
+.goal-math-card{background:var(--surface2);border-radius:12px;padding:16px 18px;margin-top:14px;border:1px solid var(--border)}
+.goal-math-hero{text-align:center;padding:4px 0 14px;border-bottom:1px solid var(--border);margin-bottom:4px}
+.goal-math-hero-num{font-family:'EB Garamond',serif;font-size:36px;font-weight:500;color:var(--accent);letter-spacing:-0.02em;font-variant-numeric:tabular-nums;line-height:1}
+.goal-math-hero-num .dollar{font-size:22px;color:var(--text3);margin-right:2px;font-weight:400}
+.goal-math-hero-lbl{font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--text3);font-weight:600;margin-top:6px}
+.goal-math-row{display:flex;justify-content:space-between;align-items:baseline;padding:8px 0;font-family:'Geist',sans-serif;font-size:12px;color:var(--text2);border-bottom:1px dashed var(--divider)}
 .goal-math-row:last-child{border-bottom:0}
 .goal-math-row .gml{font-size:10px;color:var(--text3);letter-spacing:.12em;text-transform:uppercase;font-weight:500}
-.goal-math-row .gmv{font-family:'EB Garamond',serif;font-size:16px;color:var(--text);font-weight:500}
-.goal-math-row.total .gmv{font-size:22px;color:var(--accent)}
+.goal-math-row .gmv{font-family:'EB Garamond',serif;font-size:16px;color:var(--text);font-weight:500;font-variant-numeric:tabular-nums}
+.goal-math-row.total .gmv{font-size:20px;color:var(--accent)}
 
 /* ── GOAL PICKER LIST (Settings, replaces dropdown) ── */
 .goal-picker-list{display:flex;flex-direction:column;border:1px solid var(--border);border-radius:12px;overflow:hidden;background:var(--surface)}
-.goal-picker-item{display:flex;align-items:center;gap:12px;padding:11px 13px;border-bottom:1px solid var(--divider);cursor:pointer;transition:.12s}
+.goal-picker-item{display:flex;align-items:center;gap:12px;padding:12px 13px;border-bottom:1px solid var(--divider);cursor:pointer;transition:.12s}
 .goal-picker-item:last-child{border-bottom:0}
 .goal-picker-item:hover{background:var(--surface2)}
 .goal-picker-item.selected{background:var(--accent-softer);box-shadow:inset 3px 0 0 var(--accent)}
 .goal-picker-item-pin{width:38px;height:38px;flex-shrink:0;object-fit:contain}
 .goal-picker-item-info{flex:1;min-width:0}
-.goal-picker-item-name{font-family:'EB Garamond',serif;font-size:15px;font-weight:500;color:var(--text);letter-spacing:-.005em}
+.goal-picker-item-name{font-family:'EB Garamond',serif;font-size:15px;font-weight:500;color:var(--text);letter-spacing:-.005em;line-height:1.2}
+.goal-picker-item-ro{font-family:'Geist',sans-serif;font-size:14px;font-weight:600;color:var(--accent);letter-spacing:-.005em;font-variant-numeric:tabular-nums;margin-top:3px;line-height:1.15}
 .goal-picker-item-meta{font-family:'Geist',sans-serif;font-size:10px;color:var(--text3);letter-spacing:.04em;margin-top:2px}
-.goal-picker-item.selected .goal-picker-item-meta{color:var(--accent);font-weight:600}
+.goal-picker-item.selected .goal-picker-item-meta{color:var(--accent);font-weight:500;opacity:.8}
 .goal-picker-item-check{color:var(--accent);font-size:18px;font-weight:700;flex-shrink:0;opacity:0;transition:.12s}
 .goal-picker-item.selected .goal-picker-item-check{opacity:1}
 
@@ -939,7 +944,7 @@ html,body{background:var(--bg,#fafaf8);background-attachment:fixed}
 
     <div class="card" style="margin-bottom:16px">
       <div class="ct">Goal Setting</div>
-      <p style="font-size:13px;color:var(--text2);margin-bottom:14px;line-height:1.6">Your goal tier drives all DV calculations and progress tracking. Change it here anytime.</p>
+      <p style="font-size:13px;color:var(--text2);margin-bottom:14px;line-height:1.6">Your goal tier drives all progress tracking and Royalty Override estimates. Change it here anytime.</p>
       <div class="goal-picker-list" id="goal-picker-list"></div>
       <!-- Hidden legacy select: kept so saveGoalSetting() / populateGoalDropdowns() don't break; value mirrors picker selection -->
       <select id="goal-select" style="display:none" onchange="saveGoalSetting()"></select>
@@ -1491,32 +1496,44 @@ function updateGoalInfo(){
   const currentId=(currentDist&&currentDist.pinGoal)||'mtp';
   const selEl=document.getElementById('goal-select');
   if(selEl)selEl.value=currentId;
-  // Build picker list with pin + name + DV/org on each row
+  // Build picker list with pin + name + RO (hero) + org volume / DV (meta)
+  // Terminology (per Jeff): the tier threshold is "org volume". Dividing by
+  // the uplift gives "DV" (what the user inputs daily in Bizworks). RO is 5%
+  // of org volume.
   const listEl=document.getElementById('goal-picker-list');
   if(listEl){
     listEl.innerHTML=GOAL_OPTIONS.map(g=>{
       const cleanLbl=g.label.replace(/\s*\(.*?\)\s*$/,'').trim();
-      const orgTarget=Math.round(g.dv/UPLIFT);
+      const orgVol=g.dv;                       // threshold value = org volume
+      const dv=Math.round(g.dv/UPLIFT);        // Bizworks-input DV needed
+      const ro=Math.round(g.dv*0.05);          // Royalty Override = 5% of org vol
       const isSel=g.id===currentId;
       return `<div class="goal-picker-item${isSel?' selected':''}" onclick="pickGoal('${g.id}')">
         <img class="goal-picker-item-pin" src="/pins/${g.id}.png" alt="${cleanLbl} pin" onerror="this.style.display='none'">
         <div class="goal-picker-item-info">
           <div class="goal-picker-item-name">${cleanLbl}</div>
-          <div class="goal-picker-item-meta">${g.dv.toLocaleString()} DV · ${orgTarget.toLocaleString()} org volume</div>
+          <div class="goal-picker-item-ro">$${ro.toLocaleString()} RO</div>
+          <div class="goal-picker-item-meta">${orgVol.toLocaleString()} org volume · ${dv.toLocaleString()} DV</div>
         </div>
         <div class="goal-picker-item-check">✓</div>
       </div>`;
     }).join('');
   }
-  // Build Goal math card (current selection)
+  // Build Goal math card (current selection) — RO hero + math flow
   const mathEl=document.getElementById('goal-math-card');
   if(mathEl){
     const g=goalById(currentId);
-    const orgTarget=Math.round(g.dv/UPLIFT);
+    const orgVol=g.dv;
+    const dv=Math.round(g.dv/UPLIFT);
+    const ro=Math.round(g.dv*0.05);
     mathEl.innerHTML=`
-      <div class="goal-math-row"><span class="gml">DV goal</span><span class="gmv">${g.dv.toLocaleString()}</span></div>
-      <div class="goal-math-row"><span class="gml">÷ Uplift factor</span><span class="gmv">${UPLIFT}×</span></div>
-      <div class="goal-math-row total"><span class="gml">= Org volume target</span><span class="gmv">${orgTarget.toLocaleString()}</span></div>`;
+      <div class="goal-math-hero">
+        <div class="goal-math-hero-num"><span class="dollar">$</span>${ro.toLocaleString()}</div>
+        <div class="goal-math-hero-lbl">Royalty Override Goal</div>
+      </div>
+      <div class="goal-math-row"><span class="gml">Org Volume Goal</span><span class="gmv">${orgVol.toLocaleString()}</span></div>
+      <div class="goal-math-row"><span class="gml">÷ Uplift Factor</span><span class="gmv">${UPLIFT}×</span></div>
+      <div class="goal-math-row total"><span class="gml">= DV Target</span><span class="gmv">${dv.toLocaleString()}</span></div>`;
   }
 }
 function pickGoal(id){
