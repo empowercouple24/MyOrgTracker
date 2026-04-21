@@ -218,6 +218,40 @@ td.n{font-family:'DM Mono',monospace;font-variant-numeric:tabular-nums}
 .plbl{font-size:10px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:var(--text3);margin-bottom:3px}
 .pval{font-family:'DM Mono',monospace;font-size:15px;font-weight:600;color:var(--accent)}
 
+/* ── ENTRY PAGE — HERO LAYOUT ── */
+.entry-hero{max-width:600px;margin:32px auto 0;padding:0 16px}
+.entry-card{padding:36px 32px}
+.entry-eyebrow{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--text3);font-weight:500;margin-bottom:8px}
+.entry-prompt{font-family:'EB Garamond',serif;font-size:24px;font-weight:400;color:var(--text);margin-bottom:22px;line-height:1.25;letter-spacing:-0.005em}
+.entry-prompt em{font-style:italic}
+.entry-vol{width:100%;background:var(--surface2);border:1.5px solid var(--border);border-radius:14px;outline:none;font-family:'Geist',sans-serif;font-weight:500;font-size:64px;letter-spacing:-0.025em;color:var(--text);text-align:center;padding:26px 16px;transition:border-color .15s,background .15s;-webkit-appearance:none;-moz-appearance:textfield;margin-bottom:24px;display:block}
+.entry-vol::-webkit-outer-spin-button,.entry-vol::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.entry-vol:focus{border-color:var(--accent);background:var(--surface)}
+.entry-vol::placeholder{color:var(--text3);font-weight:300;opacity:0.45}
+@media (max-width:560px){.entry-vol{font-size:48px;padding:22px 12px}.entry-card{padding:24px 20px}.entry-prompt{font-size:20px}}
+
+.entry-meta{display:flex;justify-content:space-between;gap:18px;flex-wrap:wrap;align-items:flex-end}
+.entry-meta-group{display:flex;flex-direction:column;gap:6px;flex:0 1 auto}
+.entry-meta-group label{font-family:'DM Mono',monospace;font-size:10px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--text3)}
+.entry-meta-row{display:flex;gap:6px;align-items:center}
+.entry-meta-select{height:38px;padding:0 10px;font-size:14px;border:1px solid var(--border);border-radius:8px;background:var(--surface);color:var(--text);font-family:'Geist',sans-serif;outline:none;transition:.12s;cursor:pointer}
+.entry-meta-select:focus{border-color:var(--accent)}
+.entry-meta-day{width:56px;height:38px;padding:0 10px;font-size:14px;text-align:center;border:1px solid var(--border);border-radius:8px;background:var(--surface);color:var(--text);font-family:'DM Mono',monospace;outline:none;transition:.12s;-moz-appearance:textfield}
+.entry-meta-day:focus{border-color:var(--accent)}
+.entry-meta-day::-webkit-outer-spin-button,.entry-meta-day::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.goal-select{min-width:200px}
+
+.entry-actions{margin-top:28px;display:flex;gap:10px}
+.entry-save{flex:1;height:56px;background:var(--accent);color:var(--surface);border:none;border-radius:12px;font-family:'Geist',sans-serif;font-weight:500;font-size:15px;letter-spacing:0.005em;cursor:pointer;transition:opacity .12s,transform .12s}
+.entry-save:hover{opacity:0.92}
+.entry-save:active{transform:translateY(1px)}
+.entry-clear{height:56px;padding:0 22px;background:transparent;color:var(--text3);border:1px solid var(--border);border-radius:12px;font-family:'Geist',sans-serif;font-weight:500;font-size:14px;cursor:pointer;transition:.12s}
+.entry-clear:hover{color:var(--text);border-color:var(--border2)}
+
+/* Data page filter spacing */
+.data-filter{height:32px;padding:0 12px;font-size:13px;border:1px solid var(--border);border-radius:7px;background:var(--surface);color:var(--text);font-family:inherit;cursor:pointer;outline:none;transition:.12s}
+.data-filter:focus{border-color:var(--accent)}
+
 .drop{border:2px dashed var(--border2);border-radius:12px;padding:36px;text-align:center;cursor:pointer;transition:.15s;background:var(--surface2)}
 .drop:hover,.drop.drag{border-color:var(--accent);background:var(--accent-softer)}
 .drop p{color:var(--text2);font-size:13px;line-height:1.65;margin-top:6px}
@@ -389,9 +423,9 @@ html,body{background:var(--bg,#fafaf8);background-attachment:fixed}
 <!-- ── NAV ── -->
 <nav class="nav" id="main-nav" style="display:none">
   <div class="brand">MyOrgTracker <em id="nav-name"></em></div>
-  <div class="tab on" onclick="go('dash')">Dashboard</div>
+  <div class="tab on" onclick="go('entry')">Log Entry</div>
+  <div class="tab" onclick="go('dash')">Dashboard</div>
   <div class="tab" onclick="go('data')">Data</div>
-  <div class="tab" onclick="go('entry')">Log Entry</div>
   <div class="tab" onclick="go('import')">Import</div>
   <div class="tab" onclick="go('settings')">Settings</div>
   <div class="nav-right">
@@ -424,7 +458,8 @@ html,body{background:var(--bg,#fafaf8);background-attachment:fixed}
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:10px">
       <div class="ct" style="margin:0">All Entries</div>
       <div style="display:flex;gap:8px">
-        <select id="fmonth" style="height:30px;padding:0 10px;font-size:12px;border:1px solid var(--border);border-radius:7px;background:var(--surface);color:var(--text)" onchange="renderTable()"><option value="">All months</option></select>
+        <select id="fyear" class="data-filter" onchange="renderTable()"><option value="">All years</option></select>
+        <select id="fmonth" class="data-filter" onchange="renderTable()"><option value="">All months</option></select>
         <button class="btn bo bsm" onclick="exportCSV()">Export CSV</button>
       </div>
     </div>
@@ -434,34 +469,50 @@ html,body{background:var(--bg,#fafaf8);background-attachment:fixed}
 
 <!-- ── ENTRY ── -->
 <div id="pg-entry" class="pg">
-  <div style="max-width:620px">
-    <div class="card">
-      <div class="ct">Log Daily Org Volume</div>
-      <p style="font-size:13px;color:var(--text2);margin-bottom:18px;line-height:1.65">Enter today's cumulative <strong>Org Volume</strong>. All other values are calculated automatically.</p>
-      <div class="frow">
-        <div class="fg"><label>Month</label><select id="em"><option value="1">January</option><option value="2">February</option><option value="3">March</option><option value="4">April</option><option value="5">May</option><option value="6">June</option><option value="7">July</option><option value="8">August</option><option value="9">September</option><option value="10">October</option><option value="11">November</option><option value="12">December</option></select></div>
-        <div class="fg"><label>Year</label><input type="number" id="ey" value="2026" style="width:85px"></div>
-        <div class="fg"><label>Day</label><input type="number" id="ed" min="1" max="31" style="width:75px"></div>
-        <div class="fg"><label>Org Volume</label><input type="number" id="ev" placeholder="e.g. 45000" style="width:145px"></div>
-      </div>
-      <div class="frow">
-        <div class="fg"><label>PIN Goal</label>
-          <select id="epin" onchange="onPinChange()" style="min-width:220px">
-          </select>
+  <div class="entry-hero">
+    <div class="entry-card card">
+      <div class="entry-eyebrow">Today's entry</div>
+      <h1 class="entry-prompt">What's your <em>cumulative org volume</em>?</h1>
+
+      <input class="entry-vol" type="number" id="ev" placeholder="0" inputmode="numeric" autocomplete="off">
+
+      <div class="entry-meta">
+        <div class="entry-meta-group">
+          <label>Date</label>
+          <div class="entry-meta-row">
+            <select id="em" class="entry-meta-select">
+              <option value="1">January</option><option value="2">February</option><option value="3">March</option>
+              <option value="4">April</option><option value="5">May</option><option value="6">June</option>
+              <option value="7">July</option><option value="8">August</option><option value="9">September</option>
+              <option value="10">October</option><option value="11">November</option><option value="12">December</option>
+            </select>
+            <input type="number" id="ed" class="entry-meta-day" min="1" max="31">
+            <select id="ey" class="entry-meta-select"></select>
+          </div>
         </div>
-        <div class="fg" id="cdvw" style="display:none"><label>Custom DV Goal</label><input type="number" id="edv" placeholder="e.g. 90000" style="width:130px"></div>
+        <div class="entry-meta-group">
+          <label>Goal</label>
+          <select id="epin" class="entry-meta-select goal-select" onchange="onPinChange()"></select>
+        </div>
       </div>
+
+      <div class="fg" id="cdvw" style="display:none;margin-top:14px">
+        <label>Custom DV Goal</label>
+        <input type="number" id="edv" placeholder="e.g. 90000">
+      </div>
+
       <div class="preview" id="eprev" style="display:none">
-        <div class="ct" style="color:var(--accent)">Calculated Values</div>
+        <div class="ct" style="color:var(--accent);font-size:10px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;margin:0 0 4px 0">Calculated</div>
         <div class="pgrid">
           <div><div class="plbl">Org Increase</div><div class="pval" id="pi">—</div></div>
           <div><div class="plbl">DV Remaining</div><div class="pval" id="pd" style="color:var(--text)">—</div></div>
           <div><div class="plbl">Need Per Day</div><div class="pval" id="pn" style="color:var(--text)">—</div></div>
         </div>
       </div>
-      <div style="display:flex;gap:9px">
-        <button class="btn bp" onclick="saveEntry()">Save Entry</button>
-        <button class="btn bo" onclick="clearEntry()">Clear</button>
+
+      <div class="entry-actions">
+        <button class="entry-save" onclick="saveEntry()">Save Entry</button>
+        <button class="entry-clear" onclick="clearEntry()">Clear</button>
       </div>
     </div>
   </div>
@@ -896,7 +947,7 @@ function showApp(name){
   appStyleView=theme.style||'minimal';
   buildAppearanceGrid();
   updateAppearanceUI(theme.style||'minimal',theme.color||'paper');
-  go('dash',null);
+  go('entry',null);
   if(sbCfg)pullSB();
 }
 
@@ -925,7 +976,7 @@ function go(name,evt){
   if(e&&e.currentTarget)e.currentTarget.classList.add('on');
   else{
     const tabs=document.querySelectorAll('.tab');
-    const idx={'dash':0,'data':1,'entry':2,'import':3,'settings':4}[name];
+    const idx={'entry':0,'dash':1,'data':2,'import':3,'settings':4}[name];
     if(idx!==undefined&&tabs[idx])tabs[idx].classList.add('on');
   }
   if(name==='data'){buildFilter();renderTable()}
@@ -1026,13 +1077,20 @@ function renderGoalBars(){
 
 // ═══════════════════ TABLE ═══════════════════
 function buildFilter(){
-  const sel=document.getElementById('fmonth');const cur=sel.value;
-  sel.innerHTML='<option value="">All months</option>'+monthKeys().map(k=>{const{year,month}=mk(k);return`<option value="${k}"${k===cur?' selected':''}>${MO[month-1]} ${year}</option>`}).join('');
+  const fy=document.getElementById('fyear'),fm=document.getElementById('fmonth');
+  const yPrev=fy.value, mPrev=fm.value;
+  const cur=new Date().getFullYear();
+  const yearsInData=[...new Set(recs.map(r=>r.year))].sort((a,b)=>b-a);
+  const years=yearsInData.length?yearsInData:[cur];
+  fy.innerHTML='<option value="">All years</option>'+years.map(y=>`<option value="${y}"${String(y)===yPrev?' selected':''}>${y}</option>`).join('');
+  fm.innerHTML='<option value="">All months</option>'+MO.map((m,i)=>`<option value="${i+1}"${String(i+1)===mPrev?' selected':''}>${m}</option>`).join('');
 }
 function renderTable(){
-  const sel=document.getElementById('fmonth').value;
+  const yVal=document.getElementById('fyear').value;
+  const mVal=document.getElementById('fmonth').value;
   let rows=[...recs].sort((a,b)=>key(b)<key(a)?-1:1);
-  if(sel){const{year,month}=mk(sel);rows=rows.filter(r=>r.year===year&&r.month===month)}
+  if(yVal) rows=rows.filter(r=>r.year===+yVal);
+  if(mVal) rows=rows.filter(r=>r.month===+mVal);
   const body=document.getElementById('tbody');
   if(!rows.length){body.innerHTML=`<tr><td colspan="9"><div class="empty"><p>No data yet.</p></div></td></tr>`;return}
   body.innerHTML=rows.map(r=>{
@@ -1200,7 +1258,13 @@ function renderAll(){buildPills();renderDash();buildFilter();renderTable()}
 
 const now=new Date();
 document.getElementById('em').value=now.getMonth()+1;
-document.getElementById('ey').value=now.getFullYear();
+// Year dropdown: 2024 → current year + 1, newest first
+const _curYr=now.getFullYear();
+const _eySel=document.getElementById('ey');
+let _yOpts='';
+for(let y=_curYr+1;y>=2024;y--) _yOpts+='<option value="'+y+'">'+y+'</option>';
+_eySel.innerHTML=_yOpts;
+_eySel.value=_curYr;
 document.getElementById('ed').value=now.getDate();
 // Supabase credentials baked in — Settings config removed
 initAuth().catch(e=>{console.error(e);document.getElementById("inactive-screen").classList.add("on");});
