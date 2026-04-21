@@ -195,6 +195,44 @@ body{font-family:'Geist',system-ui,sans-serif;background:var(--bg);background-at
 .met-s{font-size:11px;color:var(--text3);margin-top:3px}
 .g2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px}
 .full{margin-bottom:18px}
+
+/* ── DASHBOARD DIRECTION A ── */
+.dash-yoy-row{display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid var(--divider)}
+.dash-yoy-row:last-child{border-bottom:0}
+.dash-yoy-year{font-size:11px;font-weight:600;color:var(--text3);width:34px;flex-shrink:0;font-variant-numeric:tabular-nums}
+.dash-yoy-year.current{color:var(--accent)}
+.dash-yoy-track{flex:1;height:7px;background:var(--surface2);border-radius:4px;overflow:hidden}
+.dash-yoy-fill{height:100%;border-radius:4px;background:var(--accent);transition:width .6s cubic-bezier(.22,1,.36,1)}
+.dash-yoy-fill.current{background:var(--accent)}
+.dash-yoy-fill.past{opacity:.55}
+.dash-yoy-val{font-size:12px;color:var(--text2);font-variant-numeric:tabular-nums;width:60px;text-align:right;flex-shrink:0}
+.dash-yoy-val.current{color:var(--accent);font-weight:600}
+
+.dash-hm-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:14px}
+.dash-hm-tile{border-radius:9px;padding:10px 8px;text-align:center;border:1.5px solid transparent;cursor:default;transition:.15s}
+.dash-hm-tile.hit{background:rgba(58,172,119,.1);border-color:rgba(58,172,119,.28)}
+.dash-hm-tile.miss{background:var(--red2,rgba(181,43,43,.06));border-color:rgba(181,43,43,.18)}
+.dash-hm-tile.in-progress{background:var(--accent-softer);border-color:var(--accent)}
+.dash-hm-tile.future{background:var(--surface2);border-color:var(--border)}
+.dash-hm-tile.no-data{background:var(--surface2);border-color:var(--border);opacity:.5}
+.dash-hm-name{font-size:9px;letter-spacing:.08em;text-transform:uppercase;font-weight:600;margin-bottom:4px}
+.dash-hm-name.hit{color:#2d7a5c}
+.dash-hm-name.miss{color:var(--red,#b52b2b)}
+.dash-hm-name.in-progress{color:var(--accent)}
+.dash-hm-name.future,.dash-hm-name.no-data{color:var(--text3)}
+.dash-hm-icon{font-size:14px;line-height:1.1;margin-bottom:3px}
+.dash-hm-pct{font-size:10px;font-variant-numeric:tabular-nums;font-weight:600}
+.dash-hm-pct.hit{color:#2d7a5c}
+.dash-hm-pct.miss{color:var(--red,#b52b2b)}
+.dash-hm-pct.in-progress{color:var(--accent)}
+.dash-hm-pct.future,.dash-hm-pct.no-data{color:var(--text3)}
+
+.dash-streak{padding-top:12px;border-top:1px solid var(--divider)}
+.dash-streak-row{display:flex;gap:6px;flex-wrap:wrap}
+.dash-streak-chip{font-size:11px;padding:4px 10px;border-radius:6px;font-variant-numeric:tabular-nums}
+.dash-streak-chip.green{background:rgba(58,172,119,.1);color:#2d7a5c;font-weight:500}
+.dash-streak-chip.amber{background:var(--accent-softer);color:var(--accent);font-weight:500}
+.dash-streak-chip.neutral{background:var(--surface2);color:var(--text2)}
 .ch{position:relative;height:200px}
 .pb{margin-bottom:14px}
 .pb-top{display:flex;justify-content:space-between;font-size:12px;font-weight:500;color:var(--text2);margin-bottom:5px}
@@ -804,20 +842,26 @@ html,body{background:var(--bg,#fafaf8);background-attachment:fixed}
 
 <!-- ── DASHBOARD ── -->
 <div id="pg-dash" class="pg">
-  <div id="mpills" style="flex-wrap:wrap;gap:6px" class="pills"></div>
   <div class="mstrip">
-    <div class="met"><div class="met-l">DV</div><div class="met-v" id="mv">—</div><div class="met-s">Cumulative MTD</div></div>
-    <div class="met"><div class="met-l">Daily Avg Inc.</div><div class="met-v" id="ma">—</div><div class="met-s">Avg daily delta</div></div>
-    <div class="met"><div class="met-l">Best Day</div><div class="met-v" id="mb">—</div><div class="met-s" id="mbd">—</div></div>
+    <div class="met"><div class="met-l">DV</div><div class="met-v" id="mv">—</div><div class="met-s" id="mvs">Cumulative MTD</div></div>
+    <div class="met"><div class="met-l">Est. Org Volume</div><div class="met-v" id="meo">—</div><div class="met-s" id="meos">× 1.32 uplift</div></div>
+    <div class="met"><div class="met-l">Est. RO</div><div class="met-v" id="mro">—</div><div class="met-s">Org vol × 5%</div></div>
     <div class="met"><div class="met-l">Goal Progress</div><div class="met-v" id="mp">—</div><div class="met-s" id="mps">—</div></div>
   </div>
-  <div class="full card">
-    <div class="ct">DV — Cumulative Growth</div>
-    <div class="ch"><canvas id="cv"></canvas></div>
+  <div class="g2" style="margin-bottom:14px">
+    <div class="card">
+      <div class="ct" id="dash-yoy-title">— year over year</div>
+      <div id="dash-yoy"></div>
+    </div>
+    <div class="card">
+      <div class="ct" id="dash-heatmap-title">— monthly goal hits</div>
+      <div id="dash-heatmap"></div>
+      <div id="dash-streak"></div>
+    </div>
   </div>
-  <div class="g2">
-    <div class="card"><div class="ct">Daily Increases</div><div class="ch"><canvas id="ci"></canvas></div></div>
-    <div class="card"><div class="ct">Monthly Goal Progress</div><div id="gp"></div></div>
+  <div class="full card">
+    <div class="ct" id="dash-cv-title">DV — Cumulative Growth</div>
+    <div class="ch"><canvas id="cv"></canvas></div>
   </div>
 </div>
 
@@ -1837,86 +1881,156 @@ function allMonthsFrom2019(){
   return keys.reverse(); // newest first
 }
 function buildPills(){
-  const allKeys=allMonthsFrom2019();
-  const dataKeys=new Set(monthKeys());
-  const c=document.getElementById('mpills');c.innerHTML='';
-  const now=new Date();
-  const curKey=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
-  if(!active)active=mk(curKey);
-  // Group by year for header separators
-  let lastYear=null;
-  allKeys.forEach(k=>{
-    const{year,month}=mk(k);
-    if(year!==lastYear){
-      const yr=document.createElement('div');
-      yr.style.cssText='font-family:"DM Mono",monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);width:100%;margin-top:8px;margin-bottom:2px;padding:0 2px;flex-basis:100%';
-      yr.textContent=year;c.appendChild(yr);lastYear=year;
-    }
-    const hasData=dataKeys.has(k);
-    const on=active&&active.year===year&&active.month===month;
-    const isCur=k===curKey;
-    const p=document.createElement('div');
-    p.className='pill'+(on?' on':'')+(hasData?' has-data':'')+(isCur?' cur-month':'');
-    p.textContent=MO[month-1];
-    if(!hasData&&!isCur)p.style.opacity='0.45';
-    p.onclick=()=>{active={year,month};buildPills();renderDash()};
-    c.appendChild(p);
-  });
+  // Month pills removed from Dashboard — Data tab handles per-month nav.
+  // Keep active pointing to the most recent month with data (or current month).
+  const keys=monthKeys();
+  if(!active){
+    const now=new Date();
+    const curKey=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
+    active=keys.includes(curKey)?mk(curKey):keys.length?mk(keys[keys.length-1]):null;
+  }
 }
 
 // ═══════════════════ DASHBOARD ═══════════════════
 function renderDash(){
-  if(!active){buildPills();return}
+  if(!active){buildPills();if(!active)return;}
   const{year,month}=active;
   const ms=recs.filter(r=>r.year===year&&r.month===month).sort((a,b)=>a.day-b.day);
   if(!ms.length){renderCharts([],[],[]);return}
   const last=ms[ms.length-1];
-  const incs=ms.map(r=>r.org_increase||0).filter(x=>x>0);
-  const avg=incs.length?Math.round(incs.reduce((a,b)=>a+b,0)/incs.length):0;
-  const best=ms.reduce((a,b)=>(b.org_increase||0)>(a.org_increase||0)?b:a,ms[0]);
   const dg=last.dv_goal||DV_GOAL;
-  const pct=Math.min(100,Math.round((last.est_org_dv||0)/dg*100));
-  document.getElementById('mv').textContent=fmt(last.org_volume);
-  document.getElementById('ma').textContent=fmt(avg);
-  document.getElementById('mb').textContent=fmt(best.org_increase);
-  document.getElementById('mbd').textContent='Day '+best.day+' · '+MO[month-1];
-  document.getElementById('mp').textContent=pct+'%';
-  document.getElementById('mps').textContent='Est. Org Vol: '+fmt(last.est_org_dv)+' / '+fmt(dg);
-  renderCharts(ms.map(r=>r.day),ms.map(r=>r.org_volume),ms.map(r=>r.org_increase||0));
-  renderGoalBars();
+  const estOV=last.est_org_dv||Math.round(last.org_volume*UPLIFT);
+  const estRO=Math.round(estOV*0.05);
+  const pct=Math.min(100,Math.round(estOV/dg*100));
+
+  // Metric strip
+  const el=id=>document.getElementById(id);
+  if(el('mv'))el('mv').textContent=fmt(last.org_volume);
+  if(el('meo'))el('meo').textContent=fmt(estOV);
+  if(el('meos'))el('meos').textContent='×'+UPLIFT+' uplift';
+  if(el('mro'))el('mro').textContent='$'+fmt(estRO);
+  if(el('mp'))el('mp').textContent=pct+'%';
+  if(el('mps'))el('mps').textContent=fmt(estOV)+' / '+fmt(dg);
+
+  // Chart title + line chart
+  if(el('dash-cv-title'))el('dash-cv-title').textContent='DV — Cumulative Growth · '+MO[month-1]+' '+year;
+  renderCharts(ms.map(r=>r.day),ms.map(r=>r.org_volume),[]);
+
+  // Direction A panels
+  renderDashYoY(month,year);
+  renderDashHeatmap(year);
+  renderDashStreak();
 }
+
+function renderDashYoY(month,currentYear){
+  const titleEl=document.getElementById('dash-yoy-title');
+  const bodyEl=document.getElementById('dash-yoy');
+  if(!titleEl||!bodyEl)return;
+  titleEl.textContent=MO[month-1]+' — year over year';
+
+  // Gather final DV (org_volume) for each year that has data in this month
+  const years=[...new Set(recs.filter(r=>r.month===month).map(r=>r.year))].sort().reverse();
+  if(!years.length){bodyEl.innerHTML='<div style="font-size:13px;color:var(--text3);padding:10px 0;font-family:\'EB Garamond\',serif;font-style:italic">No data yet</div>';return;}
+  const rows=years.map(y=>{
+    const mrs=recs.filter(r=>r.year===y&&r.month===month).sort((a,b)=>a.day-b.day);
+    const last=mrs[mrs.length-1];
+    return{year:y,dv:last?last.org_volume:0,isCurrent:y===currentYear};
+  });
+  const maxDV=Math.max(...rows.map(r=>r.dv))||1;
+  bodyEl.innerHTML=rows.map(r=>`
+    <div class="dash-yoy-row">
+      <div class="dash-yoy-year${r.isCurrent?' current':''}">${r.year}</div>
+      <div class="dash-yoy-track"><div class="dash-yoy-fill${r.isCurrent?'':' past'}" style="width:${Math.round(r.dv/maxDV*100)}%"></div></div>
+      <div class="dash-yoy-val${r.isCurrent?' current':''}">${fmt(r.dv)}</div>
+    </div>`).join('');
+}
+
+function renderDashHeatmap(year){
+  const titleEl=document.getElementById('dash-heatmap-title');
+  const bodyEl=document.getElementById('dash-heatmap');
+  if(!titleEl||!bodyEl)return;
+  titleEl.textContent=year+' — monthly goal hits';
+  const now=new Date();
+  const cm=now.getMonth()+1,cy=now.getFullYear();
+
+  const tiles=Array.from({length:12},(_,i)=>{
+    const m=i+1;
+    const mrs=recs.filter(r=>r.year===year&&r.month===m).sort((a,b)=>a.day-b.day);
+    const last=mrs[mrs.length-1];
+    const isCur=(m===cm&&year===cy);
+    const isPast=(year<cy)||(year===cy&&m<cm);
+    if(!last){
+      const status=isCur?'no-data':isPast?'no-data':'future';
+      return`<div class="dash-hm-tile ${status}"><div class="dash-hm-name ${status}">${MO[m-1]}</div><div class="dash-hm-icon" style="opacity:.3">—</div><div class="dash-hm-pct ${status}">—</div></div>`;
+    }
+    const dg=last.dv_goal||DV_GOAL;
+    const estOV=last.est_org_dv||Math.round(last.org_volume*UPLIFT);
+    const pct=Math.min(100,Math.round(estOV/dg*100));
+    const hit=last.hit||estOV>=dg;
+    let status=isCur?'in-progress':(hit?'hit':'miss');
+    const icon=isCur?`${pct}%`:(hit?'✓':'✗');
+    return`<div class="dash-hm-tile ${status}"><div class="dash-hm-name ${status}">${MO[m-1]}</div><div class="dash-hm-icon">${icon}</div><div class="dash-hm-pct ${status}">${fmt(last.org_volume)}</div></div>`;
+  });
+  bodyEl.innerHTML=tiles.join('');
+}
+
+function renderDashStreak(){
+  const el=document.getElementById('dash-streak');
+  if(!el)return;
+  // Count consecutive hit months backwards from most recent complete month
+  let cy=new Date().getFullYear(),cm=new Date().getMonth()+1;
+  // Step back to last complete month
+  cm--;if(cm<1){cm=12;cy--;}
+  let streak=0;
+  for(let i=0;i<84;i++){// max 7 years back
+    const mrs=recs.filter(r=>r.year===cy&&r.month===cm).sort((a,b)=>a.day-b.day);
+    const last=mrs[mrs.length-1];
+    if(!last)break;
+    const dg=last.dv_goal||DV_GOAL;
+    const estOV=last.est_org_dv||Math.round(last.org_volume*UPLIFT);
+    if(!(last.hit||estOV>=dg))break;
+    streak++;
+    cm--;if(cm<1){cm=12;cy--;}
+    if(cy<2019)break;
+  }
+  // Hit rate: last 12 complete months
+  let hitCount=0,totalCount=0;
+  let sy=new Date().getFullYear(),sm=new Date().getMonth()+1;
+  sm--;if(sm<1){sm=12;sy--;}
+  for(let i=0;i<12;i++){
+    const mrs=recs.filter(r=>r.year===sy&&r.month===sm);
+    if(mrs.length){
+      totalCount++;
+      const last=mrs.sort((a,b)=>a.day-b.day)[mrs.length-1];
+      const dg=last.dv_goal||DV_GOAL;
+      const estOV=last.est_org_dv||Math.round(last.org_volume*UPLIFT);
+      if(last.hit||estOV>=dg)hitCount++;
+    }
+    sm--;if(sm<1){sm=12;sy--;}
+  }
+  const hitRate=totalCount>0?Math.round(hitCount/totalCount*100):0;
+  const chips=[];
+  if(streak>0)chips.push(`<span class="dash-streak-chip green">🔥 ${streak} in a row</span>`);
+  if(totalCount>0)chips.push(`<span class="dash-streak-chip amber">${hitCount} / ${totalCount} hits · last 12 mo</span>`);
+  if(totalCount>0)chips.push(`<span class="dash-streak-chip neutral">${hitRate}% hit rate</span>`);
+  el.innerHTML=chips.length?`<div class="ct" style="margin-top:12px;margin-bottom:8px">Streaks</div><div class="dash-streak-row">${chips.join('')}</div>`:''
+;}
 function hexToRgba(hex,a){
   hex=hex.replace('#','');
   if(hex.length===3)hex=hex.split('').map(c=>c+c).join('');
   const r=parseInt(hex.substr(0,2),16),g=parseInt(hex.substr(2,2),16),b=parseInt(hex.substr(4,2),16);
   return`rgba(${r},${g},${b},${a})`;
 }
-function renderCharts(labels,vols,incs){
-  if(cVol){cVol.destroy();cVol=null} if(cInc){cInc.destroy();cInc=null}
+function renderCharts(labels,vols){
+  if(cVol){cVol.destroy();cVol=null}
+  if(cInc){cInc.destroy();cInc=null}
   if(!labels.length)return;
-  const ac=accentColor(),rc=redColor();
+  const cvEl=document.getElementById('cv');
+  if(!cvEl)return;
+  const ac=accentColor();
   const acSoft=hexToRgba(ac,0.12);
-  cVol=new Chart(document.getElementById('cv'),{type:'line',data:{labels,datasets:[{data:vols,borderColor:ac,backgroundColor:acSoft,fill:true,tension:.38,pointRadius:2.5,pointHoverRadius:5,borderWidth:2}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{color:'rgba(0,0,0,.04)'},ticks:{font:{size:11}}},y:{grid:{color:'rgba(0,0,0,.04)'},ticks:{font:{size:11},callback:v=>v>=1000?(v/1000).toFixed(0)+'k':v}}}}});
-  cInc=new Chart(document.getElementById('ci'),{type:'bar',data:{labels,datasets:[{data:incs,backgroundColor:incs.map(v=>v>=0?ac:rc),borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false},ticks:{font:{size:11}}},y:{grid:{color:'rgba(0,0,0,.04)'},ticks:{font:{size:11},callback:v=>v>=1000?(v/1000).toFixed(0)+'k':v}}}}});
+  cVol=new Chart(cvEl,{type:'line',data:{labels,datasets:[{data:vols,borderColor:ac,backgroundColor:acSoft,fill:true,tension:.38,pointRadius:2.5,pointHoverRadius:5,borderWidth:2}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{color:'rgba(0,0,0,.04)'},ticks:{font:{size:11}}},y:{grid:{color:'rgba(0,0,0,.04)'},ticks:{font:{size:11},callback:v=>v>=1000?(v/1000).toFixed(0)+'k':v}}}}});
 }
-function renderGoalBars(){
-  const c=document.getElementById('gp');
-  const keys=monthKeys().slice(-6);
-  if(!keys.length){c.innerHTML='<div class="empty"><p>No data</p></div>';return}
-  const ac=accentColor(),am=amberColor();
-  c.innerHTML=keys.map(k=>{
-    const{year,month}=mk(k);
-    const ms=recs.filter(r=>r.year===year&&r.month===month);
-    if(!ms.length)return'';
-    const last=ms.reduce((a,b)=>b.day>a.day?b:a,ms[0]);
-    const dg=last.dv_goal||DV_GOAL;
-    const est=last.est_org_dv||Math.round(last.org_volume*UPLIFT);
-    const pct=Math.min(100,Math.round(est/dg*100));
-    const col=pct>=70?ac:am;
-    return`<div class="pb"><div class="pb-top"><span>${MO[month-1]} ${year}</span><span>${pct}% · ${fmt(est)} / ${fmt(dg)}</span></div><div class="pb-track"><div class="pb-fill" style="width:${pct}%;background:${col}"></div></div></div>`;
-  }).join('');
-}
-
 // ═══════════════════ TABLE ═══════════════════
 // ═══════════════════ DATA TAB STATE (mashup) ═══════════════════
 // View flow:
