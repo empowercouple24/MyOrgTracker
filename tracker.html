@@ -414,6 +414,134 @@ td.n{font-family:'DM Mono',monospace;font-variant-numeric:tabular-nums}
 .goal-picker-item-check{color:var(--accent);font-size:18px;font-weight:700;flex-shrink:0;opacity:0;transition:.12s}
 .goal-picker-item.selected .goal-picker-item-check{opacity:1}
 
+/* ═══════════════════ DATA TAB MASHUP (month grid + drill-in detail) ═══════════════════ */
+/* Year strip at top of Data tab */
+.data-year-strip{display:flex;gap:6px;padding:4px 0 14px;overflow-x:auto;border-bottom:1px solid var(--border);margin-bottom:14px;-webkit-overflow-scrolling:touch}
+.data-year-strip::-webkit-scrollbar{height:0}
+.year-chip{flex:0 0 auto;padding:7px 14px;background:var(--surface2);border-radius:999px;font-family:'DM Mono',monospace;font-size:12px;font-weight:600;letter-spacing:0.04em;color:var(--text2);cursor:pointer;border:1px solid transparent;transition:.12s;user-select:none}
+.year-chip:hover:not(.on){border-color:var(--border2);color:var(--text)}
+.year-chip.on{background:var(--text);color:var(--surface)}
+.year-chip .yc-meta{font-size:9px;opacity:0.65;letter-spacing:0.08em;font-weight:500;margin-left:6px}
+
+/* Top bar: crumb (left) + controls (right) */
+.data-topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px}
+.data-topbar-right{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.data-crumb{display:flex;align-items:center;gap:8px;min-height:30px}
+.data-crumb .crumb-year{display:inline-flex;align-items:center;gap:6px;padding:4px 12px 4px 6px;background:var(--surface2);border-radius:999px;font-family:'DM Mono',monospace;font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:var(--text2);cursor:pointer;transition:.12s}
+.data-crumb .crumb-year:hover{background:var(--surface3);color:var(--text)}
+.data-crumb .crumb-year::before{content:"‹";font-size:15px;color:var(--accent);font-weight:700;margin-right:2px}
+.data-crumb .crumb-title{font-family:'EB Garamond',serif;font-style:italic;font-size:17px;color:var(--text);letter-spacing:-0.01em}
+.data-crumb .crumb-title strong{font-style:normal;font-weight:500}
+
+/* View toggle pill */
+.data-view-toggle{display:inline-flex;padding:3px;background:var(--surface2);border-radius:9px;gap:2px}
+.data-view-toggle button{padding:6px 13px;border:0;background:transparent;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--text3);border-radius:7px;cursor:pointer;font-weight:600;transition:.12s}
+.data-view-toggle button.on{background:var(--surface);color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,0.04)}
+.data-view-toggle button:hover:not(.on){color:var(--text2)}
+
+/* Month grid */
+.mg-year-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;padding:0 2px;flex-wrap:wrap;gap:8px}
+.mg-year-title{font-family:'EB Garamond',serif;font-style:italic;font-size:22px;color:var(--text)}
+.mg-year-title strong{font-style:normal;font-weight:500;color:var(--accent)}
+.mg-year-meta{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--text3)}
+.mg-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:12px}
+.mg-card{background:var(--surface2);border:1px solid transparent;border-radius:12px;padding:14px 16px;cursor:pointer;transition:.15s;position:relative;user-select:none}
+.mg-card:hover{border-color:var(--border2);transform:translateY(-1px)}
+.mg-card.current{background:var(--text);color:var(--surface)}
+.mg-card.current .mg-month{color:var(--surface)}
+.mg-card.future{opacity:.35;cursor:not-allowed;background:transparent;border:1px dashed var(--border2)}
+.mg-card.future:hover{transform:none}
+.mg-head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:8px}
+.mg-month{font-family:'EB Garamond',serif;font-size:15px;font-weight:500;letter-spacing:-0.005em;color:var(--text)}
+.mg-hit{font-family:'DM Mono',monospace;font-size:8px;letter-spacing:0.1em;font-weight:700;padding:2px 6px;border-radius:999px}
+.mg-hit.yes{background:#3aac77;color:#fff}
+.mg-hit.no{background:#c65d3a;color:#fff}
+.mg-hit.partial{background:#d4a74a;color:#3a2a0a}
+.mg-hit.none{background:var(--surface3);color:var(--text3)}
+.mg-final{font-family:'EB Garamond',serif;font-size:24px;font-weight:500;line-height:1;letter-spacing:-0.02em;margin-bottom:2px;color:var(--text)}
+.mg-card.current .mg-final{color:var(--surface)}
+.mg-meta{font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);letter-spacing:0.04em}
+.mg-card.current .mg-meta{color:rgba(255,255,255,0.7)}
+.mg-progress{height:3px;background:var(--surface3);border-radius:999px;overflow:hidden;margin-top:8px}
+.mg-card.current .mg-progress{background:rgba(255,255,255,0.15)}
+.mg-progress-fill{height:100%;background:var(--accent);border-radius:999px;transition:width .4s}
+.mg-card.current .mg-progress-fill{background:var(--surface)}
+.mg-progress-fill.hit{background:#3aac77}
+.mg-card.current .mg-progress-fill.hit{background:#86d4aa}
+
+/* Empty year state */
+.mg-empty{text-align:center;padding:44px 20px;color:var(--text3)}
+.mg-empty p{font-size:13px;line-height:1.7;margin-top:8px}
+
+/* Month detail — hero + metrics + chart + day list */
+.md-hero{background:var(--surface2);border-radius:12px;padding:18px 22px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.md-hero-left{display:flex;flex-direction:column;gap:4px}
+.md-hero-month{font-family:'EB Garamond',serif;font-size:30px;font-weight:500;letter-spacing:-0.02em;line-height:1.1;color:var(--text)}
+.md-hero-month em{font-style:italic;color:var(--accent)}
+.md-hero-sub{font-family:'DM Mono',monospace;font-size:11px;color:var(--text3);letter-spacing:0.08em;text-transform:uppercase}
+.md-hero-right{text-align:right}
+.md-hero-num{font-family:'EB Garamond',serif;font-size:34px;font-weight:500;letter-spacing:-0.02em;line-height:1;color:var(--text)}
+.md-hero-goal{font-family:'DM Mono',monospace;font-size:10px;color:var(--text3);margin-top:3px;letter-spacing:0.04em}
+.md-hero-goal .hit-pill{display:inline-block;padding:2px 7px;background:#3aac77;color:#fff;border-radius:999px;font-weight:700;letter-spacing:0.06em;margin-left:5px;font-size:9px}
+.md-hero-goal .miss-pill{display:inline-block;padding:2px 7px;background:#c65d3a;color:#fff;border-radius:999px;font-weight:700;letter-spacing:0.06em;margin-left:5px;font-size:9px}
+
+.md-metric-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
+@media(max-width:640px){.md-metric-strip{grid-template-columns:repeat(2,1fr)}}
+.md-metric{background:var(--surface2);border-radius:10px;padding:11px 13px}
+.md-metric .lbl{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:0.12em;text-transform:uppercase;color:var(--text3);margin-bottom:4px}
+.md-metric .val{font-family:'EB Garamond',serif;font-size:19px;font-weight:500;color:var(--text);letter-spacing:-0.01em;line-height:1.1}
+.md-metric .sub{font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);margin-top:3px}
+
+.md-chart-card{background:var(--surface2);border-radius:12px;padding:14px 16px;margin-bottom:14px}
+.md-chart-title{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--text3);margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
+.md-chart-legend{display:inline-flex;gap:10px;font-weight:500}
+.md-chart-legend span{display:inline-flex;align-items:center;gap:4px}
+.md-chart-legend .dot{width:8px;height:8px;border-radius:2px;display:inline-block}
+.md-chart-legend .dot.coffee{background:var(--accent)}
+.md-chart-legend .dot.sage{background:#3aac77}
+.md-chart-legend .dot.amber{background:#d4a74a}
+.md-timeline{display:flex;align-items:flex-end;gap:2px;height:100px;padding-bottom:4px;border-bottom:1px solid var(--border)}
+.md-bar{flex:1;background:var(--accent);border-radius:2px 2px 0 0;min-height:2px;transition:background .12s;cursor:pointer;position:relative}
+.md-bar.hit{background:#3aac77}
+.md-bar.today{background:#d4a74a;box-shadow:0 0 0 1px #d4a74a}
+.md-bar:hover{background:var(--text)}
+.md-bar.empty{background:var(--surface3);opacity:.5;cursor:default}
+.md-axis{display:flex;justify-content:space-between;font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);padding:4px 0 0}
+
+.md-day-list{display:flex;flex-direction:column;gap:1px}
+.md-day-head{display:grid;grid-template-columns:110px 1fr 110px 120px 36px;padding:8px 14px 10px;font-family:'DM Mono',monospace;font-size:9px;letter-spacing:0.12em;text-transform:uppercase;color:var(--text3);font-weight:600;gap:14px;border-bottom:1px solid var(--border)}
+.md-day-head .n{text-align:right}
+.md-row{display:grid;grid-template-columns:110px 1fr 110px 120px 36px;align-items:center;padding:8px 14px;border-radius:8px;gap:14px;font-size:13px;cursor:pointer;transition:background .1s}
+.md-row:hover{background:var(--surface2)}
+.md-row.hit-row{background:var(--accent-softer)}
+.md-row.hit-row:hover{background:var(--accent-soft)}
+.md-row.expanded{background:var(--surface);border:1px solid var(--border2);box-shadow:0 1px 3px rgba(0,0,0,0.04)}
+.md-row .day-num{font-family:'EB Garamond',serif;font-size:16px;color:var(--text);font-weight:500;line-height:1}
+.md-row .day-meta{font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);letter-spacing:0.06em;text-transform:uppercase;margin-top:3px}
+.md-row .md-row-vol{text-align:right;font-family:'DM Mono',monospace;color:var(--text);font-weight:600}
+.md-row .md-row-chg{text-align:right;font-family:'DM Mono',monospace;font-size:12px;white-space:nowrap}
+.md-row .md-row-chg.pos{color:#3aac77}
+.md-row .md-row-chg.neg{color:#c65d3a}
+.md-row .hit-badge{display:inline-block;padding:1px 6px;background:#3aac77;color:#fff;border-radius:999px;font-size:9px;font-weight:700;letter-spacing:0.06em;margin-right:4px}
+.md-row .mini-bar{height:12px;background:linear-gradient(to right,var(--accent) var(--pct),var(--surface3) var(--pct));border-radius:3px}
+.md-row.hit-row .mini-bar{background:linear-gradient(to right,#3aac77 var(--pct),rgba(255,255,255,0.5) var(--pct))}
+.md-row .chev{color:var(--text3);font-size:14px;text-align:right;transition:transform .15s}
+.md-row.expanded .chev{transform:rotate(90deg)}
+.md-row-expand{grid-column:1 / -1;padding:12px 16px 14px;background:var(--surface2);border-radius:8px;margin:8px 0 2px;display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+@media(max-width:640px){
+  .md-day-head{grid-template-columns:90px 1fr 90px 36px;gap:10px}
+  .md-day-head .hide-sm{display:none}
+  .md-row{grid-template-columns:90px 1fr 90px 36px;gap:10px}
+  .md-row .md-row-chg{display:none}
+  .md-row-expand{grid-template-columns:repeat(2,1fr)}
+}
+.md-row-expand .lbl{font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);letter-spacing:0.12em;text-transform:uppercase}
+.md-row-expand .val{font-family:'EB Garamond',serif;font-size:15px;color:var(--text);margin-top:2px}
+.md-row-expand .actions{grid-column:1 / -1;display:flex;gap:8px;justify-content:flex-end;padding-top:8px;border-top:1px solid var(--border);margin-top:4px}
+
+/* Edit Mode inline inputs inside day rows */
+.md-row .ei-inline{height:26px;padding:0 8px;border:1px solid var(--accent);border-radius:6px;font-size:12px;font-family:'DM Mono',monospace;width:100px;outline:none;background:var(--surface);color:var(--text);text-align:right}
+
 .drop{border:2px dashed var(--border2);border-radius:12px;padding:36px;text-align:center;cursor:pointer;transition:.15s;background:var(--surface2)}
 .drop:hover,.drop.drag{border-color:var(--accent);background:var(--accent-softer)}
 .drop p{color:var(--text2);font-size:13px;line-height:1.65;margin-top:6px}
@@ -615,21 +743,42 @@ html,body{background:var(--bg,#fafaf8);background-attachment:fixed}
   </div>
 </div>
 
-<!-- ── DATA ── -->
+<!-- ── DATA (mashup: year strip → month grid → month detail / flat day view) ── -->
 <div id="pg-data" class="pg">
-  <div class="card">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:10px">
-      <div class="ct" style="margin:0">All Entries</div>
-      <div style="display:flex;gap:8px" id="data-controls">
-        <select id="fyear" class="data-filter" onchange="onDataFilterChange()"><option value="">All years</option></select>
-        <select id="fmonth" class="data-filter" onchange="onDataFilterChange()"><option value="">All months</option></select>
-        <button class="btn bo bsm" onclick="exportCSV()" id="btn-export-csv">Export CSV</button>
-        <button class="btn bo bsm" onclick="toggleBulkEdit()" id="btn-bulk-edit">Edit Mode</button>
-        <button class="btn bp bsm" onclick="saveAllBulk()" id="btn-bulk-save" style="display:none">Save All</button>
-        <button class="btn bo bsm" onclick="cancelBulkEdit()" id="btn-bulk-cancel" style="display:none">Cancel</button>
+  <!-- Year chip strip — persistent at top -->
+  <div id="data-year-strip" class="data-year-strip"></div>
+
+  <!-- Top bar: crumb + view toggle + export/edit -->
+  <div class="data-topbar">
+    <div id="data-crumb" class="data-crumb"></div>
+    <div class="data-topbar-right">
+      <div class="data-view-toggle">
+        <button type="button" id="btn-view-month" class="on" onclick="setDataView('month')">Month View</button>
+        <button type="button" id="btn-view-day" onclick="setDataView('day')">Day View</button>
       </div>
+      <button class="btn bo bsm" onclick="exportCSV()" id="btn-export-csv">Export</button>
+      <button class="btn bo bsm" onclick="toggleBulkEdit()" id="btn-bulk-edit" style="display:none">Edit Mode</button>
+      <button class="btn bp bsm" onclick="saveAllBulk()" id="btn-bulk-save" style="display:none">Save All</button>
+      <button class="btn bo bsm" onclick="cancelBulkEdit()" id="btn-bulk-cancel" style="display:none">Cancel</button>
     </div>
-    <div class="tw"><table><thead><tr><th>Date</th><th>Day</th><th>Org Volume</th><th>Increase</th><th>DV Rem.</th><th>Avg Needed/Day</th><th>Est. Org DV</th><th>Uplift/Day</th><th></th></tr></thead><tbody id="tbody"></tbody></table></div>
+  </div>
+
+  <!-- Hidden legacy filter selects kept for backward-compat with any external callers;
+       filters are now driven by year strip + data view state. -->
+  <select id="fyear" class="data-filter" onchange="onDataFilterChange()" style="display:none"><option value="">All years</option></select>
+  <select id="fmonth" class="data-filter" onchange="onDataFilterChange()" style="display:none"><option value="">All months</option></select>
+
+  <!-- View A: Month Grid (default, macro) -->
+  <div id="data-month-grid" class="data-view"></div>
+
+  <!-- View B: Month Detail (drill-in, micro) -->
+  <div id="data-month-detail" class="data-view" style="display:none"></div>
+
+  <!-- View C: Flat Day List (fallback "Day View") -->
+  <div id="data-day-list" class="data-view" style="display:none">
+    <div class="card" style="padding:0;overflow:hidden">
+      <div class="tw"><table><thead><tr><th>Date</th><th>Day</th><th>Org Volume</th><th>Increase</th><th>DV Rem.</th><th>Avg Needed/Day</th><th>Est. Org DV</th><th>Uplift/Day</th><th></th></tr></thead><tbody id="tbody"></tbody></table></div>
+    </div>
   </div>
 </div>
 
@@ -1558,52 +1707,315 @@ function renderGoalBars(){
 }
 
 // ═══════════════════ TABLE ═══════════════════
-function buildFilter(){
-  const fy=document.getElementById('fyear'),fm=document.getElementById('fmonth');
-  const yearsInData=[...new Set(recs.map(r=>r.year))].sort((a,b)=>b-a);
-  const cur=new Date();
-  const curYear=cur.getFullYear(),curMonth=cur.getMonth()+1;
+// ═══════════════════ DATA TAB STATE (mashup) ═══════════════════
+// View flow:
+//   'month'  → year strip + 12 month tiles for selected year (default)
+//   'detail' → drilled into a specific month: hero + metrics + chart + day list
+//   'day'    → flat chronological list across all months (legacy "Day View")
+let dataView='month';          // 'month' | 'detail' | 'day'
+let dataSelectedYear=null;     // null = current year at first render
+let dataSelectedMonth=null;    // only used in 'detail' view
+let dataExpandedDayKey=null;   // "YYYY-M-D" when a row is expanded in detail view
 
-  // First time we build the filters, restore the user's last-used filter from
-  // profiles.settings (if any), else default to the current month. Subsequent
-  // rebuilds preserve whatever the user picked in the current session.
-  if(!fy.dataset.initialized){
-    fy.dataset.initialized='1';
-    const saved=getSetting('last_data_filter',null);  // "YYYY-MM" or "all-all" or "YYYY-all"
-    let defY=String(curYear),defM=String(curMonth);
-    if(saved){
-      const parts=String(saved).split('-');
-      defY=(parts[0]==='all')?'':parts[0];
-      defM=(parts[1]==='all')?'':parts[1];
-    }
-    const years=yearsInData.length?yearsInData:[curYear];
-    fy.innerHTML='<option value="">All years</option>'+years.map(y=>`<option value="${y}"${String(y)===defY?' selected':''}>${y}</option>`).join('');
-    fm.innerHTML='<option value="">All months</option>'+MO.map((m,i)=>`<option value="${i+1}"${String(i+1)===defM?' selected':''}>${m}</option>`).join('');
-  } else {
-    const yPrev=fy.value, mPrev=fm.value;
-    const years=yearsInData.length?yearsInData:[curYear];
-    fy.innerHTML='<option value="">All years</option>'+years.map(y=>`<option value="${y}"${String(y)===yPrev?' selected':''}>${y}</option>`).join('');
-    fm.innerHTML='<option value="">All months</option>'+MO.map((m,i)=>`<option value="${i+1}"${String(i+1)===mPrev?' selected':''}>${m}</option>`).join('');
+function setDataView(v){
+  if(v==='month'){dataView='month';dataSelectedMonth=null;dataExpandedDayKey=null}
+  else if(v==='day'){dataView='day'}
+  else if(v==='detail'){dataView='detail'}
+  renderDataTab();
+}
+function drillToMonth(y,m){
+  dataSelectedYear=y;dataSelectedMonth=m;dataView='detail';dataExpandedDayKey=null;
+  renderDataTab();
+}
+function popToMonthGrid(){
+  dataView='month';dataSelectedMonth=null;dataExpandedDayKey=null;
+  renderDataTab();
+}
+function selectYear(y){
+  dataSelectedYear=y;
+  if(dataView==='detail'){dataSelectedMonth=null;dataView='month'}
+  renderDataTab();
+}
+function toggleDayRow(dk){
+  dataExpandedDayKey=(dataExpandedDayKey===dk)?null:dk;
+  renderMonthDetail();
+}
+
+// Master render for the Data tab — figures out which sub-view to show
+function renderDataTab(){
+  if(!document.getElementById('data-year-strip'))return;
+  buildYearStrip();
+  renderDataCrumb();
+  // Reveal the appropriate sub-view div, hide others
+  const mg=document.getElementById('data-month-grid');
+  const md=document.getElementById('data-month-detail');
+  const dl=document.getElementById('data-day-list');
+  const editBtn=document.getElementById('btn-bulk-edit');
+  if(dataView==='month'){
+    mg.style.display='';md.style.display='none';dl.style.display='none';
+    if(editBtn)editBtn.style.display='none';
+    renderMonthGrid();
+  }else if(dataView==='detail'){
+    mg.style.display='none';md.style.display='';dl.style.display='none';
+    if(editBtn)editBtn.style.display=bulkEditMode?'none':'';
+    renderMonthDetail();
+  }else{
+    mg.style.display='none';md.style.display='none';dl.style.display='';
+    if(editBtn)editBtn.style.display=bulkEditMode?'none':'';
+    renderTable();
+  }
+  // Toggle pill state
+  const btnM=document.getElementById('btn-view-month');
+  const btnD=document.getElementById('btn-view-day');
+  if(btnM&&btnD){
+    btnM.classList.toggle('on',dataView==='month'||dataView==='detail');
+    btnD.classList.toggle('on',dataView==='day');
   }
 }
-// Persist current Data tab filter to profiles.settings. Called from onchange.
+
+function buildYearStrip(){
+  const host=document.getElementById('data-year-strip');
+  if(!host)return;
+  const years=[...new Set(recs.map(r=>r.year))].sort((a,b)=>a-b);
+  const now=new Date();
+  const curY=now.getFullYear();
+  if(dataSelectedYear===null){
+    // Default: current year if present, else latest
+    dataSelectedYear=years.includes(curY)?curY:(years[years.length-1]||curY);
+  }
+  if(!years.length){host.innerHTML='';return}
+  const counts={};years.forEach(y=>{counts[y]=recs.filter(r=>r.year===y).length});
+  host.innerHTML=years.map(y=>`<div class="year-chip${y===dataSelectedYear?' on':''}" onclick="selectYear(${y})">${y}<span class="yc-meta">${counts[y]}</span></div>`).join('');
+}
+
+function renderDataCrumb(){
+  const host=document.getElementById('data-crumb');
+  if(!host)return;
+  if(dataView==='detail'&&dataSelectedYear&&dataSelectedMonth){
+    host.innerHTML=`<span class="crumb-year" onclick="popToMonthGrid()">${dataSelectedYear}</span><span class="crumb-title"><strong>${MO[dataSelectedMonth-1]}</strong> <em style="font-style:italic;color:var(--accent)">${dataSelectedYear}</em></span>`;
+  }else if(dataView==='month'){
+    host.innerHTML=`<span class="crumb-title">Viewing <em style="font-style:italic">all of</em> <strong>${dataSelectedYear||''}</strong></span>`;
+  }else{
+    host.innerHTML=`<span class="crumb-title">All entries <em style="font-style:italic">· chronological</em></span>`;
+  }
+}
+
+function renderMonthGrid(){
+  const host=document.getElementById('data-month-grid');
+  if(!host)return;
+  const y=dataSelectedYear;
+  const yearRecs=recs.filter(r=>r.year===y);
+  if(!yearRecs.length){host.innerHTML='<div class="mg-empty"><p>No entries for '+y+'.</p></div>';return}
+  // Find monthly final org volumes + hit status
+  const monthData={};
+  yearRecs.forEach(r=>{
+    const m=r.month;
+    if(!monthData[m])monthData[m]={lastDay:0,finalVol:0,count:0,goal:r.dv_goal||200000,hit:false};
+    monthData[m].count++;
+    if(r.day>=monthData[m].lastDay){monthData[m].lastDay=r.day;monthData[m].finalVol=r.org_volume;monthData[m].goal=r.dv_goal||monthData[m].goal}
+    if(r.hit)monthData[m].hit=true;
+  });
+  const now=new Date();
+  const curY=now.getFullYear(),curM=now.getMonth()+1;
+  const totalHits=Object.values(monthData).filter(d=>d.hit).length;
+  const totalMonthsWithData=Object.keys(monthData).length;
+  const avgFinal=totalMonthsWithData?Math.round(Object.values(monthData).reduce((s,d)=>s+d.finalVol,0)/totalMonthsWithData):0;
+  const yearHead=`<div class="mg-year-head"><div class="mg-year-title"><strong>${y}</strong></div><div class="mg-year-meta">${totalHits} of ${totalMonthsWithData} months hit goal · avg ${fmt(avgFinal)}</div></div>`;
+  const cards=[];
+  for(let m=1;m<=12;m++){
+    const d=monthData[m];
+    const isCurrent=(y===curY&&m===curM);
+    const isFuture=(y>curY)||(y===curY&&m>curM);
+    if(!d&&isFuture){
+      cards.push(`<div class="mg-card future"><div class="mg-head"><div class="mg-month">${MO[m-1]}</div><div class="mg-hit none">—</div></div><div class="mg-final">—</div><div class="mg-meta">no data yet</div><div class="mg-progress"></div></div>`);
+      continue;
+    }
+    if(!d){
+      cards.push(`<div class="mg-card" onclick="drillToMonth(${y},${m})"><div class="mg-head"><div class="mg-month">${MO[m-1]}</div><div class="mg-hit none">—</div></div><div class="mg-final">—</div><div class="mg-meta">no entries</div><div class="mg-progress"></div></div>`);
+      continue;
+    }
+    const estDV=d.finalVol*UPLIFT;
+    const pctOfGoal=d.goal>0?(estDV/d.goal)*100:0;
+    let hitClass='no',hitLbl='MISS';
+    if(d.hit){hitClass='yes';hitLbl='HIT'}
+    else if(pctOfGoal>=80){hitClass='partial';hitLbl='CLOSE'}
+    const fillClass=d.hit?'hit':'';
+    const fillWidth=Math.min(100,Math.max(0,pctOfGoal));
+    const currentCls=isCurrent?' current':'';
+    cards.push(`<div class="mg-card${currentCls}" onclick="drillToMonth(${y},${m})">
+      <div class="mg-head"><div class="mg-month">${MO[m-1]}</div><div class="mg-hit ${hitClass}">${hitLbl}</div></div>
+      <div class="mg-final">${fmt(d.finalVol)}</div>
+      <div class="mg-meta">${d.count} day${d.count===1?'':'s'} · ${Math.round(pctOfGoal)}%${isCurrent?' · CURRENT':''}</div>
+      <div class="mg-progress"><div class="mg-progress-fill ${fillClass}" style="width:${fillWidth}%"></div></div>
+    </div>`);
+  }
+  host.innerHTML=yearHead+'<div class="mg-grid">'+cards.join('')+'</div>';
+}
+
+function renderMonthDetail(){
+  const host=document.getElementById('data-month-detail');
+  if(!host)return;
+  const y=dataSelectedYear,m=dataSelectedMonth;
+  const monthRecs=recs.filter(r=>r.year===y&&r.month===m).sort((a,b)=>a.day-b.day);
+  if(!monthRecs.length){host.innerHTML='<div class="mg-empty"><p>No entries for '+MO[m-1]+' '+y+'.</p></div>';return}
+  const final=monthRecs[monthRecs.length-1];
+  const finalVol=final.org_volume;
+  const goalDV=final.dv_goal||200000;
+  const estDV=finalVol*UPLIFT;
+  const pctOfGoal=goalDV>0?(estDV/goalDV)*100:0;
+  const hit=final.hit||estDV>=goalDV;
+  // Daily avg increase
+  const avgInc=monthRecs.length?Math.round(monthRecs.reduce((s,r)=>s+(r.org_increase||0),0)/monthRecs.length):0;
+  // Best day
+  let best=monthRecs[0];monthRecs.forEach(r=>{if((r.org_increase||0)>(best.org_increase||0))best=r});
+  // Goal-hit day
+  const hitDay=monthRecs.find(r=>r.hit);
+  const now=new Date();
+  const isCurrentMonth=(y===now.getFullYear()&&m===now.getMonth()+1);
+  const todayNum=isCurrentMonth?now.getDate():null;
+
+  // Bar chart: build bars for every day of the month (empty for days with no entry)
+  const dimsMonth=new Date(y,m,0).getDate();
+  const maxVol=Math.max(...monthRecs.map(r=>r.org_volume),1);
+  const bars=[];
+  for(let d=1;d<=dimsMonth;d++){
+    const r=monthRecs.find(x=>x.day===d);
+    if(!r){bars.push(`<div class="md-bar empty" style="height:2%" title="${MO[m-1]} ${d}: no entry"></div>`);continue}
+    const h=Math.max(2,Math.round((r.org_volume/maxVol)*100));
+    const cls=(d===todayNum)?'today':(r.hit?'hit':'');
+    bars.push(`<div class="md-bar ${cls}" style="height:${h}%" title="${MO[m-1]} ${d}: ${fmt(r.org_volume)}${r.hit?' · HIT':''}" onclick="toggleDayRow('${y}-${m}-${d}')"></div>`);
+  }
+
+  // Day list rows (newest first for easy scanning)
+  const maxInc=Math.max(...monthRecs.map(r=>r.org_increase||0),1);
+  const rows=[...monthRecs].reverse().map(r=>{
+    const dk=y+'-'+m+'-'+r.day;
+    const expanded=(dataExpandedDayKey===dk);
+    const dowName=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][new Date(r.year,r.month-1,r.day).getDay()];
+    const sign=(r.org_increase||0)>=0?'+':'';
+    const changeCls=(r.org_increase||0)>=0?'pos':'neg';
+    const pct=Math.max(2,Math.round(((r.org_increase||0)/maxInc)*100));
+    const hitRow=r.hit?' hit-row':'';
+    const expandedCls=expanded?' expanded':'';
+    const volCell=bulkEditMode
+      ? `<input class="ei-inline" data-k="${dk}" value="${r.org_volume}" type="number" step="0.01" onclick="event.stopPropagation()">`
+      : fmt(r.org_volume);
+    const hitBadge=r.hit?`<span class="hit-badge">HIT</span>`:'';
+    const bulkDel=bulkEditMode?`<button class="btn bdng bsm" onclick="event.stopPropagation();delBulk('${dk}')">Del</button>`:'';
+    let rowHtml=`<div class="md-row${hitRow}${expandedCls}" ${bulkEditMode?'':`onclick="toggleDayRow('${dk}')"`}>
+      <div><div class="day-num">${MO[r.month-1]} ${r.day}</div><div class="day-meta">${dowName} · ${r.day}</div></div>
+      <div class="mini-bar" style="--pct:${pct}%"></div>
+      <div class="md-row-vol">${volCell}</div>
+      <div class="md-row-chg ${changeCls}">${hitBadge}${sign}${fmt(r.org_increase)}</div>
+      <div class="chev">${bulkEditMode?bulkDel:'›'}</div>`;
+    if(expanded&&!bulkEditMode){
+      rowHtml+=`<div class="md-row-expand">
+        <div><div class="lbl">DV Remaining</div><div class="val">${r.hit?'🎯 Hit':fmt(r.dv_remaining)}</div></div>
+        <div><div class="lbl">Avg Needed/Day</div><div class="val">${fmt(r.org_daily_avg)}</div></div>
+        <div><div class="lbl">Est Org DV</div><div class="val">${fmt(r.est_org_dv)}</div></div>
+        <div><div class="lbl">Uplift/Day</div><div class="val">${fmt(r.uplift_per_day)}</div></div>
+        <div class="actions">
+          <button class="btn bo bsm" onclick="event.stopPropagation();jumpToLogEntry(${r.year},${r.month},${r.day})">Edit in Log Entry</button>
+          <button class="btn bdng bsm" onclick="event.stopPropagation();delBulk('${dk}')">Delete</button>
+        </div>
+      </div>`;
+    }
+    rowHtml+=`</div>`;
+    return rowHtml;
+  }).join('');
+
+  const hitOnCopy=hitDay?`${MO[hitDay.month-1]} ${hitDay.day}`:'—';
+  const hitOnSub=hitDay?`day ${hitDay.day} of ${dimsMonth}`:(hit?'goal hit':'not yet');
+  const overTxt=hit?`+${fmt(estDV-goalDV)} over target`:`${fmt(goalDV-estDV)} short`;
+
+  host.innerHTML=`
+    <div class="md-hero">
+      <div class="md-hero-left">
+        <div class="md-hero-month">${MO[m-1]} <em>${y}</em></div>
+        <div class="md-hero-sub">${monthRecs.length} entries · days ${monthRecs[0].day} – ${final.day}</div>
+      </div>
+      <div class="md-hero-right">
+        <div class="md-hero-num">${fmt(finalVol)}</div>
+        <div class="md-hero-goal">final org volume ${hit?`<span class="hit-pill">🎯 HIT</span>`:`<span class="miss-pill">MISS</span>`}</div>
+      </div>
+    </div>
+    <div class="md-metric-strip">
+      <div class="md-metric"><div class="lbl">Daily Avg Inc.</div><div class="val">${fmt(avgInc)}</div><div class="sub">across ${monthRecs.length} days</div></div>
+      <div class="md-metric"><div class="lbl">Best Day</div><div class="val">+${fmt(best.org_increase||0)}</div><div class="sub">${MO[m-1]} ${best.day}</div></div>
+      <div class="md-metric"><div class="lbl">Goal Hit On</div><div class="val">${hitOnCopy}</div><div class="sub">${hitOnSub}</div></div>
+      <div class="md-metric"><div class="lbl">Final % of Goal</div><div class="val">${Math.round(pctOfGoal)}%</div><div class="sub">${overTxt}</div></div>
+    </div>
+    <div class="md-chart-card">
+      <div class="md-chart-title">
+        <span>Daily Org Volume</span>
+        <span class="md-chart-legend">
+          <span><span class="dot coffee"></span>Pre-goal</span>
+          <span><span class="dot sage"></span>Goal hit</span>
+          <span><span class="dot amber"></span>Today</span>
+        </span>
+      </div>
+      <div class="md-timeline">${bars.join('')}</div>
+      <div class="md-axis"><span>${MO[m-1]} 1</span><span>${MO[m-1]} ${Math.round(dimsMonth*0.33)}</span><span>${MO[m-1]} ${Math.round(dimsMonth*0.66)}</span><span>${MO[m-1]} ${dimsMonth}</span></div>
+    </div>
+    <div class="card" style="padding:10px 10px 12px">
+      <div class="md-day-head">
+        <div>Day</div>
+        <div>Progress <span class="hide-sm">(vs best day)</span></div>
+        <div class="n">Org Vol</div>
+        <div class="n">Change</div>
+        <div></div>
+      </div>
+      <div class="md-day-list">${rows}</div>
+    </div>
+  `;
+}
+
+// Helper: from detail view, jump to Log Entry pre-filled with a date
+function jumpToLogEntry(y,m,d){
+  setPickerDate(y,m,d);
+  go('entry');
+  buildDateChips();
+}
+
+// Flat chronological table (legacy "Day View" fallback)
+function buildFilter(){
+  // Year/month selects used by the legacy flat table — default to selected year + current month
+  const fy=document.getElementById('fyear'),fm=document.getElementById('fmonth');
+  if(!fy||!fm)return;
+  const yearsInData=[...new Set(recs.map(r=>r.year))].sort((a,b)=>b-a);
+  const cur=new Date();
+  const curMonth=cur.getMonth()+1;
+  if(!fy.dataset.initialized){
+    fy.dataset.initialized='1';
+    const saved=getSetting('last_data_filter',null);
+    let defY=String(dataSelectedYear||cur.getFullYear()),defM=String(curMonth);
+    if(saved){const parts=String(saved).split('-');defY=(parts[0]==='all')?'':parts[0];defM=(parts[1]==='all')?'':parts[1]}
+    const years=yearsInData.length?yearsInData:[cur.getFullYear()];
+    fy.innerHTML='<option value="">All years</option>'+years.map(y=>`<option value="${y}"${String(y)===defY?' selected':''}>${y}</option>`).join('');
+    fm.innerHTML='<option value="">All months</option>'+MO.map((mn,i)=>`<option value="${i+1}"${String(i+1)===defM?' selected':''}>${mn}</option>`).join('');
+  }else{
+    const yPrev=fy.value,mPrev=fm.value;
+    const years=yearsInData.length?yearsInData:[cur.getFullYear()];
+    fy.innerHTML='<option value="">All years</option>'+years.map(y=>`<option value="${y}"${String(y)===yPrev?' selected':''}>${y}</option>`).join('');
+    fm.innerHTML='<option value="">All months</option>'+MO.map((mn,i)=>`<option value="${i+1}"${String(i+1)===mPrev?' selected':''}>${mn}</option>`).join('');
+  }
+}
 function onDataFilterChange(){
   const fy=document.getElementById('fyear'),fm=document.getElementById('fmonth');
   const yVal=fy.value||'all',mVal=fm.value||'all';
   setSetting('last_data_filter',yVal+'-'+mVal);
   renderTable();
 }
-// Whole-tab bulk edit mode: one toggle flips every Org Volume cell into an input.
-// Derived columns (Increase, DV Rem, Avg Needed/Day, etc.) stay read-only — only Org Volume is user-supplied.
-// Del button appears per row in edit mode only; no per-row Edit button anymore.
+
 let bulkEditMode=false;
 function renderTable(){
-  const yVal=document.getElementById('fyear').value;
-  const mVal=document.getElementById('fmonth').value;
+  const fy=document.getElementById('fyear'),fm=document.getElementById('fmonth');
+  const yVal=fy?fy.value:'',mVal=fm?fm.value:'';
   let rows=[...recs].sort((a,b)=>key(b)<key(a)?-1:1);
   if(yVal) rows=rows.filter(r=>r.year===+yVal);
   if(mVal) rows=rows.filter(r=>r.month===+mVal);
   const body=document.getElementById('tbody');
+  if(!body)return;
   if(!rows.length){body.innerHTML=`<tr><td colspan="9"><div class="empty"><p>No data yet.</p></div></td></tr>`;return}
   body.innerHTML=rows.map(r=>{
     const dk=key(r),sign=(r.org_increase||0)>=0?'+':'';
@@ -1621,17 +2033,19 @@ function toggleBulkEdit(){
   document.getElementById('btn-bulk-edit').style.display='none';
   document.getElementById('btn-bulk-save').style.display='';
   document.getElementById('btn-bulk-cancel').style.display='';
-  renderTable();
+  // Re-render whichever view is active so inputs show up
+  renderDataTab();
 }
 function cancelBulkEdit(){
   bulkEditMode=false;
   document.getElementById('btn-bulk-edit').style.display='';
   document.getElementById('btn-bulk-save').style.display='none';
   document.getElementById('btn-bulk-cancel').style.display='none';
-  renderTable();
+  renderDataTab();
 }
 function saveAllBulk(){
-  const inputs=document.querySelectorAll('#tbody input.ei[data-k]');
+  // Edit Mode inputs live in different DOM nodes depending on active view
+  const inputs=document.querySelectorAll('input.ei[data-k], input.ei-inline[data-k]');
   let changed=0,invalid=0;
   const changedRecs=[];
   inputs.forEach(inp=>{
@@ -1657,7 +2071,7 @@ function delBulk(k){
   const[y,m,d]=k.split('-').map(Number);
   const gone=recs.find(r=>r.year===y&&r.month===m&&r.day===d);
   recs=recs.filter(r=>!(r.year===y&&r.month===m&&r.day===d));
-  recalcAll();renderTable();
+  recalcAll();renderDataTab();
   if(gone&&sbCfg)deleteSB(gone);
   toast('Entry deleted');
 }
@@ -2191,7 +2605,7 @@ function syncAllSB(){
 }
 
 function toast(msg,ms=2800){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('on');setTimeout(()=>t.classList.remove('on'),ms)}
-function renderAll(){recomputeHistoryStart();buildPills();renderDash();buildFilter();renderTable();renderLockedGoal();if(document.getElementById('date-chips')){buildDateChips();applyDateModes();updateSaveButton()}}
+function renderAll(){recomputeHistoryStart();buildPills();renderDash();buildFilter();renderDataTab();renderLockedGoal();if(document.getElementById('date-chips')){buildDateChips();applyDateModes();updateSaveButton()}}
 
 // Airline date picker now owns date state; em/ed/ey are hidden inputs populated by setPickerDate()
 // (Year dropdown deprecated — picker covers ±18-day window with full-month popover for arbitrary dates.)
