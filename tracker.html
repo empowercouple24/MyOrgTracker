@@ -364,10 +364,10 @@ td.n{font-family:'Geist',sans-serif;font-variant-numeric:tabular-nums}
 
 .calc-placeholder{display:none;background:var(--surface2);border:1px dashed var(--border2);border-radius:10px;padding:14px 16px;margin:16px 0;text-align:center;color:var(--text3);font-size:12px;font-style:italic;font-family:'EB Garamond',serif}
 
-.ro-hero{display:none;background:linear-gradient(180deg,var(--surface) 0%,var(--bg) 100%);border:1px solid var(--border);border-radius:14px;padding:18px;text-align:center;position:relative;overflow:hidden;margin:16px 0}
-.ro-hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at top,rgba(58,172,119,.05) 0%,transparent 60%);pointer-events:none}
+.ro-hero{display:none;background:linear-gradient(180deg,var(--surface) 0%,var(--accent-softer) 100%);border:1px solid var(--border);border-radius:14px;padding:18px;text-align:center;position:relative;overflow:hidden;margin:16px 0}
+.ro-hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at top,var(--accent-soft) 0%,transparent 60%);opacity:.35;pointer-events:none}
 .ro-hero-eyebrow{font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--text3);font-weight:600;margin-bottom:8px;position:relative}
-.ro-hero-eyebrow .ro-est{color:#3aac77;font-weight:600}
+.ro-hero-eyebrow .ro-est{color:var(--accent);font-weight:600}
 .ro-hero-num{font-family:'EB Garamond',serif;font-size:36px;font-weight:500;letter-spacing:-0.02em;line-height:1;color:var(--text);font-variant-numeric:tabular-nums;position:relative}
 .ro-hero-num .currency{color:var(--text3);font-weight:400;margin-right:3px;font-size:24px}
 .ro-hero-formula{font-family:'EB Garamond',serif;font-style:italic;font-size:11px;color:var(--text3);margin-top:8px;position:relative}
@@ -383,6 +383,7 @@ td.n{font-family:'Geist',sans-serif;font-variant-numeric:tabular-nums}
 .entry-hero.historical .vol-locked-overlay{border-color:var(--amber);background:var(--amber2)}
 .entry-hero.historical .vol-locked-num{color:var(--amber)}
 .entry-hero.historical .ro-hero-eyebrow .ro-est{color:var(--amber)}
+.entry-hero.historical .ro-hero{background:linear-gradient(180deg,var(--surface) 0%,var(--amber2) 100%);border-color:rgba(184,138,31,.2)}
 
 /* ── DATE CHIP: Option 2a — serif number + dark inversion + today ring ── */
 .date-chip-day{font-family:'EB Garamond',serif;font-size:20px;font-weight:500}
@@ -1089,6 +1090,31 @@ function levelGroup(level){
 const DV_GOAL=150000;
 const PIN_MAP={'7.5':113636,'5':75757,'3':45454,'1':15151};
 let UPLIFT=1.32; // per-distributor influence factor loaded on auth
+
+// ── Stale-today detection ──────────────────────────────────────────────
+// Bizworks shows yesterday's ending DV until the next morning. If a record
+// exists for TODAY and its value is identical to yesterday's (+0.00 increase),
+// it almost certainly wasn't logged — it's the pre-existing yesterday-value
+// that got copied. Treat it as unlogged (empty form, "Save Entry" button) so
+// Jeff enters tomorrow morning's fresh number without the UI pretending today
+// is already done.
+// `todaySavedInSession` flips true when Jeff explicitly saves today in this
+// session — after that, trust the record even if it matches yesterday (legit
+// zero-increase day).
+let todaySavedInSession=false;
+function isTodayStale(){
+  if(todaySavedInSession)return false;
+  if(datePickerYear==null)return false;
+  const now=new Date();
+  const isToday=(datePickerYear===now.getFullYear()&&datePickerMonth===now.getMonth()+1&&datePickerDay===now.getDate());
+  if(!isToday)return false;
+  const rec=recs.find(r=>r.year===datePickerYear&&r.month===datePickerMonth&&r.day===datePickerDay);
+  if(!rec)return false;
+  const prev=recs.filter(r=>r.year===datePickerYear&&r.month===datePickerMonth&&r.day<datePickerDay)
+                 .sort((a,b)=>b.day-a.day)[0];
+  if(!prev)return false;
+  return Math.abs(rec.org_volume-prev.org_volume)<0.005;
+}
 
 const MO=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 const fmt=n=>{
@@ -2439,7 +2465,10 @@ function renderLockedGoal(){
   const isPreData=(sy&&sm&&sd&&(new Date(sy,sm-1,sd)<HISTORY_START));
 
   // Find the record for the SELECTED date (today's OR the historical date)
-  const selectedRec=(sy&&sm&&sd)?recs.find(r=>r.year===sy&&r.month===sm&&r.day===sd):null;
+  // — but suppress it when today's value is stale (unlogged), so the card shows
+  // the pre-save prompt instead of a false pace snapshot
+  const _staleRec=(typeof isTodayStale==='function'&&isTodayStale());
+  const selectedRec=(_staleRec?null:((sy&&sm&&sd)?recs.find(r=>r.year===sy&&r.month===sm&&r.day===sd):null));
 
   const pinEl=`<div class="goal-b-pin" style="background-image:url('${pinUrl}')" aria-label="${cleanLabel} pin"></div>`;
   const orgTarget=Math.round(g.dv/UPLIFT);
@@ -2477,7 +2506,8 @@ function renderLockedGoal(){
   // ── POST-SAVE STATE (pace snapshot for the selected date) ──
   const dimsMonth=new Date(sy,sm,0).getDate();
   const daysLeft=dimsMonth-sd;
-  const currentDV=selectedRec.org_volume*UPLIFT;
+  const currentOrg=selectedRec.org_volume;
+  const currentDV=currentOrg*UPLIFT;
   const goalDV=g.dv;
   const dvRemaining=Math.max(0,goalDV-currentDV);
   const progressPct=Math.min(100,Math.max(0,(currentDV/goalDV)*100));
@@ -2510,10 +2540,10 @@ function renderLockedGoal(){
       <div class="goal-b-pace ${paceClass}">${paceLabel}</div>
     </div>
     <div class="goal-b-value-row">
-      <div class="goal-b-value-hero">${fmt(currentDV)}</div>
-      <div class="goal-b-value-of">/ ${fmt(goalDV)}</div>
+      <div class="goal-b-value-hero">${fmt(currentOrg)}</div>
+      <div class="goal-b-value-of">/ ${fmt(orgTarget)}</div>
     </div>
-    <div class="goal-b-value-meta">DV · ${Math.round(progressPct)}% of goal</div>
+    <div class="goal-b-value-meta">Org · ${Math.round(progressPct)}% of goal</div>
     <div class="goal-b-progress"><div class="goal-b-progress-fill" style="width:${progressPct}%"></div></div>
     <div class="goal-b-callout ${calloutClass}">
       <div class="goal-b-callout-main ${calloutClass}">${calloutText}</div>
@@ -2618,7 +2648,7 @@ function syncVolumeFromSelectedDate(){
   if(!ev)return;
   if(datePickerYear==null)return;
   const rec=recs.find(r=>r.year===datePickerYear&&r.month===datePickerMonth&&r.day===datePickerDay);
-  if(rec){
+  if(rec&&!isTodayStale()){
     ev.value=formatVol(rec.org_volume);
     ev._savedValue=rec.org_volume;
   }else{
@@ -2774,6 +2804,12 @@ function saveEntry(){
   recalcAll();active={year,month};renderAll();
   const saved=recs.find(r=>r.year===year&&r.month===month&&r.day===day);
   if(saved&&sbCfg)pushSB(saved);
+  // If we just saved TODAY's entry, remember it — overrides the stale-today
+  // heuristic so legit zero-increase days still lock after save.
+  const _now=new Date();
+  if(year===_now.getFullYear()&&month===_now.getMonth()+1&&day===_now.getDate()){
+    todaySavedInSession=true;
+  }
   // Remember saved value so button stays "Saved ✓" until input changes
   const ev=document.getElementById('ev');
   if(ev){ev._savedValue=volRound;ev.value=formatVol(volRound)}
@@ -2805,7 +2841,8 @@ function updateSaveButton(){
   const now=new Date();
   const ty=now.getFullYear(),tm=now.getMonth()+1,td=now.getDate();
   const isToday=(datePickerYear===ty&&datePickerMonth===tm&&datePickerDay===td);
-  const rec=recs.find(r=>r.year===datePickerYear&&r.month===datePickerMonth&&r.day===datePickerDay);
+  const _staleRec=isTodayStale();
+  const rec=_staleRec?null:recs.find(r=>r.year===datePickerYear&&r.month===datePickerMonth&&r.day===datePickerDay);
   const ev=document.getElementById('ev');
   const currentVal=ev?(parseVol(ev.value)||0):0;
   const savedVal=(ev&&ev._savedValue!=null)?ev._savedValue:(rec?rec.org_volume:null);
@@ -2841,7 +2878,8 @@ function updateEntryView(){
   }
   const val=parseVol(ev.value);
   const hasVal=!isNaN(val)&&val>0;
-  const rec=recs.find(r=>r.year===datePickerYear&&r.month===datePickerMonth&&r.day===datePickerDay);
+  const _staleRec=isTodayStale();
+  const rec=_staleRec?null:recs.find(r=>r.year===datePickerYear&&r.month===datePickerMonth&&r.day===datePickerDay);
   const savedVal=(ev._savedValue!=null)?ev._savedValue:(rec?rec.org_volume:null);
   const isSaved=hasVal&&savedVal!=null&&Math.abs(val-savedVal)<0.005;
   hero.classList.toggle('is-saved',isSaved);
