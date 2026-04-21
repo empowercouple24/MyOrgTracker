@@ -1503,19 +1503,39 @@ async function resolveSlug(){
   const access=session&&session.access_token;
   const userId=session&&session.user&&session.user.id;
   if(!access||!userId){
-    // No valid session — bounce home
+    // No valid session — bounce home to sign in
     window.location.href='/';
     return null;
   }
-  // Look up this user's profile (slug + role)
+  // Look up this user's profile (slug + role). Distinguish between:
+  //   · fetch failed / 401 / session expired   → bounce to login (not "inactive")
+  //   · fetch succeeded but profile row missing → show inactive screen (genuine edge case)
   let profile=null;
+  let fetchFailed=false;
   try{
     const r=await fetch(SB_URL+'/rest/v1/profiles?select=slug,role&id=eq.'+userId,{
       headers:{'apikey':SB_KEY,'Authorization':'Bearer '+access}
     });
-    if(r.ok){const arr=await r.json();profile=arr&&arr[0];}
-  }catch(e){console.error('profile lookup failed',e);}
+    if(!r.ok){
+      // 401 usually means token expired. Any non-OK = treat as session issue.
+      console.warn('profile lookup returned',r.status,'- redirecting to login');
+      fetchFailed=true;
+    }else{
+      const arr=await r.json();
+      profile=arr&&arr[0];
+    }
+  }catch(e){
+    console.error('profile lookup failed',e);
+    fetchFailed=true;
+  }
+  if(fetchFailed){
+    // Clear any stale auth tokens and redirect to login so the user can re-auth
+    try{Object.keys(localStorage).forEach(k=>{if(k.startsWith('sb-'))localStorage.removeItem(k)})}catch(e){}
+    window.location.href='/';
+    return null;
+  }
   if(!profile){
+    // Session was valid but user has no profile row — rare, but genuinely inactive
     document.getElementById('inactive-screen').classList.add('on');
     return null;
   }
@@ -1529,17 +1549,23 @@ async function resolveSlug(){
 
 async function initAuth(){
   const slug=await resolveSlug();
-  if(!slug){return;}  // resolveSlug already bounced or showed inactive screen
+  if(!slug){return;}  // resolveSlug handled the error
   setSlug(slug);
   // Load persistent user settings before rendering anything theme-dependent
   await loadUserSettings();
   const dist=await fetchDistributorFromDB(userSlug);
   if(!dist){
-    document.getElementById('inactive-screen').classList.add('on');
+    // Distributor row couldn't be loaded. Could be a transient fetch issue or
+    // a legitimately deleted profile. Err on the side of "try again" rather
+    // than "your account is dead" — bounce to login and let them retry.
+    console.warn('distributor lookup returned null for slug',userSlug);
+    try{Object.keys(localStorage).forEach(k=>{if(k.startsWith('sb-'))localStorage.removeItem(k)})}catch(e){}
+    window.location.href='/';
     return;
   }
   currentDist=dist;
   await loadPlatformInfluence();
+  // The ONE genuine "Account Inactive" case: admin explicitly deactivated them
   if(!dist.active){document.getElementById('inactive-screen').classList.add('on');return;}
   // Show back-to-admin arrow only when the current session is an admin viewing
   // someone else via ?user=X override (i.e. profile.slug !== resolved slug)
@@ -2818,7 +2844,14 @@ function renderAll(){recomputeHistoryStart();buildPills();renderDash();buildFilt
 // Build chips after auth + records load via renderAll() → page open. Defer until DOM ready:
 document.addEventListener('DOMContentLoaded',()=>{ if(document.getElementById('date-chips')) buildDateChips(); });
 // Supabase credentials baked in — Settings config removed
-initAuth().catch(e=>{console.error(e);document.getElementById("inactive-screen").classList.add("on");});
+// Top-level catch. If initAuth throws something unexpected, log it and bounce
+// to login rather than showing "Account Inactive" (which is misleading — the
+// account isn't actually inactive, something broke). User can re-auth and retry.
+initAuth().catch(e=>{
+  console.error('initAuth failed:',e);
+  try{Object.keys(localStorage).forEach(k=>{if(k.startsWith('sb-'))localStorage.removeItem(k)})}catch(_){}
+  window.location.href='/';
+});
 </script>
 </body>
 </html>
