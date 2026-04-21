@@ -213,6 +213,65 @@ tr:hover td{background:var(--paper2);transition:background .1s}
 /* ── SECTION DIVIDER ── */
 .divider{height:1px;background:var(--border);margin:20px 0}
 
+/* ══ DISTRIBUTOR DETAIL — DIRECTION A ══════════════════════════════════ */
+.dd-header{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px 22px;margin-bottom:12px;display:flex;align-items:flex-start;gap:14px;box-shadow:0 1px 3px rgba(61,46,31,0.05)}
+.dd-av{width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px;color:#fff;flex-shrink:0}
+.dd-info{flex:1;min-width:0}
+.dd-name{font-family:'EB Garamond',serif;font-size:22px;font-weight:500;letter-spacing:-0.01em;line-height:1.15;color:var(--ink)}
+.dd-meta{font-size:12px;color:var(--ink3);margin-top:4px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.dd-badge{display:inline-flex;align-items:center;gap:3px;font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;padding:2px 8px;border-radius:999px}
+.dd-badge.active{background:rgba(45,107,66,.1);color:var(--green,#2d6b42)}
+.dd-badge.inactive{background:var(--paper3);color:var(--ink4)}
+.dd-badge.login{background:rgba(45,107,66,.1);color:var(--green,#2d6b42)}
+.dd-badge.nologin{background:#fef3c7;color:#92400e}
+.dd-actions{display:flex;gap:7px;flex-wrap:wrap;align-items:flex-start;flex-shrink:0}
+.dd-btn{font-family:'Geist',sans-serif;font-size:11px;font-weight:500;padding:6px 12px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--ink2);cursor:pointer;transition:.12s;white-space:nowrap;line-height:1.3}
+.dd-btn:hover{border-color:var(--border2);background:var(--paper2)}
+.dd-btn.primary{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.dd-btn.primary:hover{opacity:.88}
+.dd-btn.warn{color:#92400e;border-color:rgba(146,64,14,.25);background:#fef3c7}
+.dd-btn.danger{color:var(--red,#c0392b);border-color:rgba(192,57,43,.22);background:var(--red2,#fdf0ee)}
+
+.dd-progress{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px 22px;margin-bottom:12px}
+.dd-progress-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px;gap:12px;flex-wrap:wrap}
+.dd-progress-label{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink4);font-weight:600}
+.dd-progress-nums{font-size:12px;color:var(--ink3);font-variant-numeric:tabular-nums;text-align:right}
+.dd-progress-nums strong{font-family:'EB Garamond',serif;font-size:20px;font-weight:500;color:var(--ink);letter-spacing:-0.01em;margin-right:4px}
+.dd-progress-bar-track{height:8px;background:var(--paper3);border-radius:4px;overflow:hidden}
+.dd-progress-bar-fill{height:100%;border-radius:4px;background:var(--ink);transition:.4s ease}
+.dd-progress-sub{display:flex;justify-content:space-between;margin-top:7px;font-size:11px;color:var(--ink4);flex-wrap:wrap;gap:4px}
+
+.dd-metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:12px}
+.dd-met{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px}
+.dd-met-l{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink4);font-weight:600;margin-bottom:6px}
+.dd-met-v{font-family:'EB Garamond',serif;font-size:26px;font-weight:500;color:var(--ink);letter-spacing:-0.015em;line-height:1;font-variant-numeric:tabular-nums}
+.dd-met-s{font-size:11px;color:var(--ink4);margin-top:4px}
+
+.dd-tabs-bar{display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:0}
+.dd-tab{padding:10px 18px;font-size:12px;font-weight:500;color:var(--ink3);cursor:pointer;border-bottom:2px solid transparent;transition:.12s;user-select:none}
+.dd-tab:hover{color:var(--ink)}
+.dd-tab.on{color:var(--ink);border-bottom-color:var(--ink);font-weight:600}
+
+.dd-tab-pane{display:none}
+.dd-tab-pane.on{display:block}
+
+.dd-bottom{display:grid;grid-template-columns:1fr 260px;gap:12px;padding:16px}
+.dd-chart-card{background:transparent}
+.dd-ct{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink4);font-weight:600;margin-bottom:12px}
+
+.dd-month-pills{display:flex;flex-wrap:wrap;gap:5px}
+.dd-month-pill{font-size:11px;padding:5px 10px;background:var(--paper2);border:1px solid var(--border);border-radius:7px;cursor:pointer;font-variant-numeric:tabular-nums;color:var(--ink2);transition:.12s;user-select:none;font-family:'Geist',sans-serif;font-weight:500}
+.dd-month-pill:hover{border-color:var(--border2);background:var(--paper3)}
+.dd-month-pill.on{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.dd-month-pill.hit{border-color:rgba(45,107,66,.4);color:var(--green,#2d6b42)}
+.dd-month-pill.on.hit{background:var(--green,#2d6b42);border-color:var(--green,#2d6b42);color:#fff}
+
+.dd-history-pane{padding:16px}
+.dd-account-pane{padding:16px;display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.dd-account-field-l{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink4);font-weight:600;margin-bottom:5px}
+.dd-account-field-v{font-size:13px;color:var(--ink2);word-break:break-all}
+.dd-tabbed-body{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:0}
+
 @media(max-width:700px){.mstrip{grid-template-columns:1fr 1fr}.dgrid{grid-template-columns:1fr}.dv-actions{flex-wrap:wrap;gap:6px}.pg{padding:16px}.ph{flex-direction:column;gap:10px}}
 
 
@@ -838,86 +897,165 @@ function renderDistDetail(d) {
   const now = new Date(); const cm=now.getMonth()+1; const cy=now.getFullYear();
   const mr = (d.records||[]).filter(r=>r.month===cm&&r.year===cy).sort((a,b)=>a.day-b.day);
   const last = mr[mr.length-1];
-  const dg = dvForGoal(d.pinGoal);
-  const allMonths = [...new Set((d.records||[]).map(r=>r.year+'-'+String(r.month).padStart(2,'0')))].sort();
-  const goalLbl = goalById(d.pinGoal).label;
+  const dg = dvForGoal(d.pinGoal);   // org volume goal (e.g. 80,000 for MT)
+  const allMonths = [...new Set((d.records||[]).map(r=>r.year+'-'+String(r.month).padStart(2,'0')))].sort().reverse();
+  const goalLbl = goalById(d.pinGoal).label.replace(/\s*\(.*?\)\s*$/,'').trim();
   const linked = !!d.authUserId;
+
+  // Derived numbers — current month
+  const currentDV   = last ? (last.org_volume||0) : null;
+  const estOrgVol   = currentDV!=null ? Math.round(currentDV*GLOBAL_UPLIFT) : null;
+  const estRO       = estOrgVol!=null ? (estOrgVol*0.05) : null;
+  const orgVolRem   = (estOrgVol!=null) ? Math.max(0, dg-estOrgVol) : null;
+  const pct         = estOrgVol!=null ? Math.min(100,Math.round(estOrgVol/dg*100)) : 0;
+  const daysLeft    = new Date(cy,cm,0).getDate() - (last?last.day:0);
+  const neededPerDay= (orgVolRem!=null&&daysLeft>0) ? Math.round(orgVolRem/daysLeft) : null;
+  const incs        = mr.map(r=>r.org_increase||0).filter(x=>x>0);
+  const bestInc     = incs.length ? Math.max(...incs) : null;
+  const bestDay     = bestInc!=null ? mr.find(r=>r.org_increase===bestInc) : null;
+  const ro_goal     = Math.round(dg*0.05);
+
+  // Build month pills grouped loosely by year — sorted newest first
+  const monthPillsHtml = allMonths.map(mk=>{
+    const [y,m]=mk.split('-').map(Number);
+    const isCur=(m===cm&&y===cy);
+    const mrs=(d.records||[]).filter(r=>r.month===m&&r.year===y);
+    const lastRec=mrs.sort((a,b)=>b.day-a.day)[0];
+    const mEst=lastRec?Math.round(lastRec.org_volume*GLOBAL_UPLIFT):0;
+    const isHit=lastRec?.hit||mEst>=dg;
+    return `<div class="dd-month-pill${isCur?' on':''}${isHit&&!isCur?' hit':''}" onclick="switchDetailMonth('${d.slug}','${mk}')" data-mk="${mk}">${MO[m-1]} ${y}</div>`;
+  }).join('');
 
   const c = document.getElementById('dd-content');
   c.innerHTML = `
-    <div class="dv-header">
-      <div class="dv-av" style="background:${col};color:#fff">${initials(d.name)}</div>
-      <div>
-        <div class="dv-name">${d.name}${d.isAdmin?' <span style="display:inline-block;font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;background:var(--ink);color:var(--paper);padding:2px 7px;border-radius:20px;vertical-align:middle;margin-left:6px;font-family:\'DM Mono\',monospace">ADMIN</span>':''}</div>
-        <div class="dv-meta">${goalLbl} · ${d.active?'Active':'Inactive'}${d.email?' · '+d.email:''}</div>
-      </div>
-      <div class="dv-actions">
-        <button class="btn bo" onclick="openLogEntry('${d.slug}')">＋ Log Entry</button>
-        <button class="btn ${linked?'bo':'bgo'}" onclick="openSendLoginLink('${d.slug}')">${linked?'Resend Login Link':'Send Login Setup'}</button>
-        <button class="btn bgo" onclick="openCreateTemplate('${d.slug}')">＋ Month Template</button>
-        <button class="btn bo" onclick="openEditDist('${d.slug}')">Edit Settings</button>
-        ${linked?`<button class="btn ${d.isAdmin?'br_':'bgo'}" onclick="togglePromoteAdmin('${d.slug}')">${d.isAdmin?'Revoke Admin':'Promote to Admin'}</button>`:''}
-        <button class="btn ${d.active?'br_':'bg_'}" onclick="toggleActive('${d.slug}');renderDistDetail(state.distributors.find(x=>x.slug==='${d.slug}'))">${d.active?'Deactivate':'Activate'}</button>
-        <button class="btn btn-delete" onclick="confirmDeleteDist('${d.slug}')">Delete</button>
-      </div>
-    </div>
-    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px">
-      <div class="met"><div class="met-l">Current DV</div><div class="met-v">${fmt(last?.org_volume)}</div><div class="met-s">${MO[cm-1]} ${cy}</div></div>
-      <div class="met"><div class="met-l">Est. Org Volume</div><div class="met-v">${fmt(last?Math.round(last.org_volume*GLOBAL_UPLIFT):null)}</div><div class="met-s">×${getUplift(d)} uplift</div></div>
-      <div class="met"><div class="met-l">Org Vol Remaining</div><div class="met-v">${fmt(last?.dv_remaining)}</div><div class="met-s">To ${fmt(dg)} org vol goal</div></div>
-      <div class="met"><div class="met-l">Days Logged</div><div class="met-v">${mr.length}</div><div class="met-s">This month</div></div>
-    </div>
-    <div style="display:grid;grid-template-columns:2fr 1fr;gap:14px;margin-bottom:18px">
-      <div class="card">
-        <div class="ct">Volume Growth — ${MO[cm-1]} ${cy}</div>
-        <div class="ch"><canvas id="dd-chart"></canvas></div>
-      </div>
-      <div class="card">
-        <div class="ct">Month Selector</div>
-        <div style="font-size:12px;color:var(--ink3);margin-bottom:10px">Click a month to view that period's data below</div>
-        ${allMonths.length ? allMonths.map(mk=>{
-          const [y,m]=mk.split('-').map(Number);
-          const mrs=(d.records||[]).filter(r=>r.month===m&&r.year===y);
-          const isCur=m===cm&&y===cy;
-          return `<div style="display:flex;align-items:center;justify-content:space-between;padding:7px 10px;border-radius:7px;margin-bottom:5px;cursor:pointer;${isCur?'background:var(--green2);':'background:var(--paper2);'}" onclick="filterDetailMonth('${d.slug}','${mk}')">
-            <span style="font-size:13px;font-weight:${isCur?'500':'400'};color:${isCur?'var(--green)':'var(--ink2)'}">${MO[m-1]} ${y}</span>
-            <span style="font-size:11px;font-family:'DM Mono',monospace;color:var(--ink3)">${mrs.length}d</span>
-          </div>`;
-        }).join('') : '<div style="font-size:13px;color:var(--ink4)">No data yet</div>'}
-      </div>
-    </div>
-    <div class="card">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
-        <div class="ct" style="margin:0">Entry Log</div>
-        <div style="display:flex;gap:8px">
-          <select id="dd-month-filter" style="height:28px;padding:0 9px;font-size:12px;border:1px solid var(--border);border-radius:7px;background:var(--surface)" onchange="renderDetailTable('${d.slug}')">
-            <option value="">All months</option>
-            ${allMonths.map(mk=>{const[y,m]=mk.split('-').map(Number);return`<option value="${mk}">${MO[m-1]} ${y}</option>`;}).join('')}
-          </select>
+    <!-- HEADER -->
+    <div class="dd-header">
+      <div class="dd-av" style="background:${col}">${initials(d.name)}</div>
+      <div class="dd-info">
+        <div class="dd-name">${d.name}${d.isAdmin?` <span style="display:inline-block;font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;background:var(--ink);color:var(--paper);padding:2px 7px;border-radius:20px;vertical-align:middle;margin-left:6px">ADMIN</span>`:''}
+        </div>
+        <div class="dd-meta">
+          <span class="dd-badge ${d.active?'active':'inactive'}">${d.active?'● Active':'● Inactive'}</span>
+          <span class="dd-badge ${linked?'login':'nologin'}">${linked?'✓ Login':'⚠ No login'}</span>
+          <span>${goalLbl} · $${ro_goal.toLocaleString()} RO goal</span>
+          ${d.email?`<span style="color:var(--ink4)">${d.email}</span>`:''}
         </div>
       </div>
-      <div id="dd-table" class="tw"></div>
+      <div class="dd-actions">
+        <button class="dd-btn primary" onclick="openLogEntry('${d.slug}')">+ Log Entry</button>
+        <button class="dd-btn" onclick="openEditDist('${d.slug}')">Edit</button>
+        <button class="dd-btn" onclick="openSendLoginLink('${d.slug}')">${linked?'Resend Login':'Send Login Setup'}</button>
+        <button class="dd-btn" onclick="openCreateTemplate('${d.slug}')">+ Template</button>
+        ${linked?`<button class="dd-btn" onclick="togglePromoteAdmin('${d.slug}')">${d.isAdmin?'Revoke Admin':'Make Admin'}</button>`:''}
+        <button class="dd-btn warn" onclick="toggleActive('${d.slug}');renderDistDetail(state.distributors.find(x=>x.slug==='${d.slug}'))">${d.active?'Deactivate':'Activate'}</button>
+        <button class="dd-btn danger" onclick="confirmDeleteDist('${d.slug}')">Delete</button>
+      </div>
     </div>
-    <div class="card" style="margin-top:14px">
-      <div class="ct">Account Details</div>
-      <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:16px;font-size:13px">
-        <div>
-          <div style="color:var(--ink3);font-size:11px;margin-bottom:4px">EMAIL</div>
-          <div style="font-family:'DM Mono',monospace;font-size:13px;word-break:break-all">${d.email || '<span style="color:var(--ink4)">— not set —</span>'}</div>
-          <div style="margin-top:4px">
-            ${linked
-              ? '<span class="badge b-active" style="font-size:10px">✓ Login linked</span>'
-              : '<span class="badge" style="background:#fef3c7;color:#92400e;font-size:10px">⚠ No login set up</span>'}
+
+    <!-- GOAL PROGRESS BAR -->
+    <div class="dd-progress">
+      <div class="dd-progress-top">
+        <div class="dd-progress-label">${MO[cm-1]} ${cy} · ${goalLbl} · ${dg.toLocaleString()} org volume goal</div>
+        <div class="dd-progress-nums"><strong>${currentDV!=null?fmt(currentDV):'—'}</strong> DV · ${pct}% of goal</div>
+      </div>
+      <div class="dd-progress-bar-track"><div class="dd-progress-bar-fill" style="width:${pct}%;background:${col}"></div></div>
+      <div class="dd-progress-sub">
+        <span>Est. Org Volume: ${estOrgVol!=null?fmt(estOrgVol):'—'} &nbsp;·&nbsp; Est. RO: ${estRO!=null?'$'+fmt(estRO):'—'}</span>
+        <span>${orgVolRem!=null?fmt(orgVolRem)+' org vol remaining':'—'}${neededPerDay!=null?' · '+fmt(neededPerDay)+'/day needed':''}</span>
+      </div>
+    </div>
+
+    <!-- METRIC CARDS -->
+    <div class="dd-metrics">
+      <div class="dd-met">
+        <div class="dd-met-l">Current DV</div>
+        <div class="dd-met-v">${currentDV!=null?fmt(currentDV):'—'}</div>
+        <div class="dd-met-s">${MO[cm-1]} ${cy}</div>
+      </div>
+      <div class="dd-met">
+        <div class="dd-met-l">Est. Org Volume</div>
+        <div class="dd-met-v">${estOrgVol!=null?fmt(estOrgVol):'—'}</div>
+        <div class="dd-met-s">DV × ${GLOBAL_UPLIFT} uplift</div>
+      </div>
+      <div class="dd-met">
+        <div class="dd-met-l">Est. RO</div>
+        <div class="dd-met-v">${estRO!=null?'$'+fmt(estRO):'—'}</div>
+        <div class="dd-met-s">Est. org vol × 5%</div>
+      </div>
+      <div class="dd-met">
+        <div class="dd-met-l">Days Logged</div>
+        <div class="dd-met-v">${mr.length}</div>
+        <div class="dd-met-s">This month</div>
+      </div>
+    </div>
+
+    <!-- TABBED BODY -->
+    <div class="dd-tabbed-body">
+      <div class="dd-tabs-bar">
+        <div class="dd-tab on" onclick="switchDetailTab('overview','${d.slug}')">Overview</div>
+        <div class="dd-tab" onclick="switchDetailTab('history','${d.slug}')">History</div>
+        <div class="dd-tab" onclick="switchDetailTab('account','${d.slug}')">Account</div>
+      </div>
+
+      <!-- OVERVIEW TAB -->
+      <div class="dd-tab-pane on" id="dd-tab-overview">
+        <div class="dd-bottom">
+          <div class="dd-chart-card">
+            <div class="dd-ct" id="dd-chart-label">Volume Growth — ${MO[cm-1]} ${cy}</div>
+            <div class="ch"><canvas id="dd-chart"></canvas></div>
+          </div>
+          <div>
+            <div class="dd-ct">Month History</div>
+            <div class="dd-month-pills" id="dd-month-pills">${monthPillsHtml}</div>
           </div>
         </div>
-        <div>
-          <div style="color:var(--ink3);font-size:11px;margin-bottom:4px">URL SLUG</div>
-          <div class="url-pill" onclick="copyUrl('${d.slug}')" title="Click to copy">${location.host}/tracker?user=${d.slug}</div>
+      </div>
+
+      <!-- HISTORY TAB -->
+      <div class="dd-tab-pane" id="dd-tab-history">
+        <div class="dd-history-pane">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+            <div class="dd-ct" style="margin:0">Entry Log</div>
+            <select id="dd-month-filter" style="height:28px;padding:0 9px;font-size:12px;border:1px solid var(--border);border-radius:7px;background:var(--surface)" onchange="renderDetailTable('${d.slug}')">
+              <option value="">All months</option>
+              ${allMonths.map(mk=>{const[y,m]=mk.split('-').map(Number);return`<option value="${mk}">${MO[m-1]} ${y}</option>`;}).join('')}
+            </select>
+          </div>
+          <div id="dd-table" class="tw"></div>
+        </div>
+      </div>
+
+      <!-- ACCOUNT TAB -->
+      <div class="dd-tab-pane" id="dd-tab-account">
+        <div class="dd-account-pane">
+          <div>
+            <div class="dd-account-field-l">Email</div>
+            <div class="dd-account-field-v">${d.email||'<span style="color:var(--ink4)">— not set —</span>'}</div>
+            <div style="margin-top:6px">
+              ${linked
+                ?'<span class="badge b-active" style="font-size:10px">✓ Login linked</span>'
+                :'<span class="badge" style="background:#fef3c7;color:#92400e;font-size:10px">⚠ No login set up</span>'}
+            </div>
+          </div>
+          <div>
+            <div class="dd-account-field-l">Tracker URL</div>
+            <div class="url-pill" onclick="copyUrl('${d.slug}')" title="Click to copy">${location.host}/tracker?user=${d.slug}</div>
+          </div>
+          <div>
+            <div class="dd-account-field-l">Goal Tier</div>
+            <div class="dd-account-field-v">${goalLbl}</div>
+            <div style="font-size:11px;color:var(--ink4);margin-top:2px">$${ro_goal.toLocaleString()} RO · ${dg.toLocaleString()} org vol · ${Math.round(dg/GLOBAL_UPLIFT).toLocaleString()} DV target</div>
+          </div>
+          <div>
+            <div class="dd-account-field-l">Total Records</div>
+            <div class="dd-account-field-v">${(d.records||[]).length.toLocaleString()} entries · ${allMonths.length} months</div>
+          </div>
         </div>
       </div>
     </div>
   `;
-  // Draw chart
+
+  // Draw chart for current month, then render history table (hidden)
   setTimeout(()=>drawDetailChart(d, cm, cy), 50);
   renderDetailTable(d.slug);
 }
@@ -933,6 +1071,41 @@ function drawDetailChart(d, cm, cy) {
     data:{labels:mr.map(r=>r.day),datasets:[{data:mr.map(r=>r.org_volume),borderColor:col,backgroundColor:col+'22',fill:true,tension:.35,pointRadius:2,borderWidth:2}]},
     options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{color:'rgba(0,0,0,.04)'},ticks:{font:{size:11}}},y:{grid:{color:'rgba(0,0,0,.04)'},ticks:{font:{size:11},callback:v=>v>=1000?(v/1000).toFixed(0)+'k':v}}}}
   });
+}
+
+function switchDetailTab(name, slug){
+  document.querySelectorAll('.dd-tab').forEach(t=>t.classList.remove('on'));
+  document.querySelectorAll('.dd-tab-pane').forEach(p=>p.classList.remove('on'));
+  const tab=document.querySelector(`.dd-tab[onclick*="'${name}'"]`);
+  if(tab)tab.classList.add('on');
+  const pane=document.getElementById('dd-tab-'+name);
+  if(pane){
+    pane.classList.add('on');
+    if(name==='overview'){
+      // Redraw chart in case it was mounted while pane was hidden
+      const d=state.distributors.find(x=>x.slug===slug);
+      if(d){const now=new Date();setTimeout(()=>drawDetailChart(d,now.getMonth()+1,now.getFullYear()),50);}
+    }
+  }
+}
+
+function switchDetailMonth(slug, mk){
+  // Highlight the clicked pill
+  document.querySelectorAll('#dd-month-pills .dd-month-pill').forEach(p=>{
+    p.classList.toggle('on', p.dataset.mk===mk);
+  });
+  const [y,m]=mk.split('-').map(Number);
+  const d=state.distributors.find(x=>x.slug===slug);
+  if(!d)return;
+  // Update chart label
+  const lbl=document.getElementById('dd-chart-label');
+  if(lbl)lbl.textContent=`Volume Growth — ${MO[m-1]} ${y}`;
+  // Redraw chart for the selected month
+  drawDetailChart(d, m, y);
+  // Also update the History tab filter to match
+  const sel=document.getElementById('dd-month-filter');
+  if(sel)sel.value=mk;
+  renderDetailTable(slug, mk);
 }
 
 function filterDetailMonth(slug, mk) {
