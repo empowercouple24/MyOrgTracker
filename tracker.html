@@ -516,10 +516,13 @@ html,body{background:var(--bg,#fafaf8);background-attachment:fixed}
   <div class="card">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:10px">
       <div class="ct" style="margin:0">All Entries</div>
-      <div style="display:flex;gap:8px">
+      <div style="display:flex;gap:8px" id="data-controls">
         <select id="fyear" class="data-filter" onchange="renderTable()"><option value="">All years</option></select>
         <select id="fmonth" class="data-filter" onchange="renderTable()"><option value="">All months</option></select>
-        <button class="btn bo bsm" onclick="exportCSV()">Export CSV</button>
+        <button class="btn bo bsm" onclick="exportCSV()" id="btn-export-csv">Export CSV</button>
+        <button class="btn bo bsm" onclick="toggleBulkEdit()" id="btn-bulk-edit">Edit Mode</button>
+        <button class="btn bp bsm" onclick="saveAllBulk()" id="btn-bulk-save" style="display:none">Save All</button>
+        <button class="btn bo bsm" onclick="cancelBulkEdit()" id="btn-bulk-cancel" style="display:none">Cancel</button>
       </div>
     </div>
     <div class="tw"><table><thead><tr><th>Date</th><th>Day</th><th>Org Volume</th><th>Increase</th><th>DV Rem.</th><th>Avg Needed/Day</th><th>Est. Org DV</th><th>Uplift/Day</th><th></th></tr></thead><tbody id="tbody"></tbody></table></div>
@@ -974,8 +977,9 @@ function updateGoalInfo(){
   const infoEl=document.getElementById('goal-info');
   if(infoEl){
     const c=levelColor(g.label);
+    const pin=`<img src="/pins/${g.id}.png" alt="${g.label} pin" style="width:48px;height:48px;flex-shrink:0;object-fit:contain" onerror="this.style.display='none'">`;
     const pill=`<span style="display:inline-block;background:${c.bg};color:${c.text};font-family:'Geist',sans-serif;font-size:11px;font-weight:600;letter-spacing:.04em;padding:3px 9px;border-radius:999px;margin-right:8px;vertical-align:middle">${abbrevLevel(g.label)}</span>`;
-    infoEl.innerHTML=`${pill}<strong>${g.label}</strong> · ${g.dv.toLocaleString()} DV goal · Volume threshold: <strong>${threshold.toLocaleString()}</strong> at ${UPLIFT}× uplift`;
+    infoEl.innerHTML=`<div style="display:flex;align-items:center;gap:14px"><div>${pin}</div><div style="flex:1;line-height:1.5">${pill}<strong>${g.label}</strong> · ${g.dv.toLocaleString()} DV goal · Volume threshold: <strong>${threshold.toLocaleString()}</strong> at ${UPLIFT}× uplift</div></div>`;
   }
 }
 async function saveGoalSetting(){
@@ -1279,6 +1283,10 @@ function buildFilter(){
     fm.innerHTML='<option value="">All months</option>'+MO.map((m,i)=>`<option value="${i+1}"${String(i+1)===mPrev?' selected':''}>${m}</option>`).join('');
   }
 }
+// Whole-tab bulk edit mode: one toggle flips every Org Volume cell into an input.
+// Derived columns (Increase, DV Rem, Avg Needed/Day, etc.) stay read-only — only Org Volume is user-supplied.
+// Del button appears per row in edit mode only; no per-row Edit button anymore.
+let bulkEditMode=false;
 function renderTable(){
   const yVal=document.getElementById('fyear').value;
   const mVal=document.getElementById('fmonth').value;
@@ -1288,26 +1296,58 @@ function renderTable(){
   const body=document.getElementById('tbody');
   if(!rows.length){body.innerHTML=`<tr><td colspan="9"><div class="empty"><p>No data yet.</p></div></td></tr>`;return}
   body.innerHTML=rows.map(r=>{
-    const dk=key(r),editing=editKey===dk,sign=(r.org_increase||0)>=0?'+':'';
-    return`<tr><td>${MO[r.month-1]} ${r.day}, ${r.year}</td><td class="n">${r.day}</td><td class="n">${editing?`<input class="ei" id="eiv" value="${r.org_volume}" type="number">`:fmt(r.org_volume)}</td><td><span class="badge ${(r.org_increase||0)>=0?'bg':'br'}">${sign}${fmt(r.org_increase)}</span></td><td class="n">${r.hit?'<span style="color:#92400e;font-weight:600;font-size:11px">🎯 HIT</span>':fmt(r.dv_remaining)}</td><td class="n">${fmt(r.org_daily_avg)}</td><td class="n">${fmt(r.est_org_dv)}</td><td class="n">${fmt(r.uplift_per_day)}</td><td style="white-space:nowrap">${editing?`<button class="btn bp bsm" onclick="saveEdit('${dk}')">Save</button> <button class="btn bo bsm" onclick="cancelEdit()">×</button>`:`<button class="btn bo bsm" onclick="startEdit('${dk}')">Edit</button> <button class="btn bdng bsm" onclick="del('${dk}')">Del</button>`}</td></tr>`;
+    const dk=key(r),sign=(r.org_increase||0)>=0?'+':'';
+    const volCell=bulkEditMode
+      ? `<input class="ei" data-k="${dk}" value="${r.org_volume}" type="number" step="0.01" style="width:100px">`
+      : fmt(r.org_volume);
+    const actionCell=bulkEditMode
+      ? `<button class="btn bdng bsm" onclick="delBulk('${dk}')">Del</button>`
+      : '';
+    return`<tr><td>${MO[r.month-1]} ${r.day}, ${r.year}</td><td class="n">${r.day}</td><td class="n">${volCell}</td><td><span class="badge ${(r.org_increase||0)>=0?'bg':'br'}">${sign}${fmt(r.org_increase)}</span></td><td class="n">${r.hit?'<span style="color:#92400e;font-weight:600;font-size:11px">🎯 HIT</span>':fmt(r.dv_remaining)}</td><td class="n">${fmt(r.org_daily_avg)}</td><td class="n">${fmt(r.est_org_dv)}</td><td class="n">${fmt(r.uplift_per_day)}</td><td style="white-space:nowrap">${actionCell}</td></tr>`;
   }).join('');
 }
-function startEdit(k){editKey=k;renderTable()}
-function cancelEdit(){editKey=null;renderTable()}
-function saveEdit(k){
-  const[y,m,d]=k.split('-').map(Number);const r=recs.find(x=>x.year===y&&x.month===m&&x.day===d);
-  if(!r)return;const v=+document.getElementById('eiv').value;
-  if(!v||v<0){toast('Invalid value');return}
-  r.org_volume=v;recalcAll();editKey=null;renderAll();
-  if(sbCfg)pushSB(r);
-  toast('Entry updated');
+function toggleBulkEdit(){
+  bulkEditMode=true;
+  document.getElementById('btn-bulk-edit').style.display='none';
+  document.getElementById('btn-bulk-save').style.display='';
+  document.getElementById('btn-bulk-cancel').style.display='';
+  renderTable();
 }
-function del(k){
+function cancelBulkEdit(){
+  bulkEditMode=false;
+  document.getElementById('btn-bulk-edit').style.display='';
+  document.getElementById('btn-bulk-save').style.display='none';
+  document.getElementById('btn-bulk-cancel').style.display='none';
+  renderTable();
+}
+function saveAllBulk(){
+  const inputs=document.querySelectorAll('#tbody input.ei[data-k]');
+  let changed=0,invalid=0;
+  const changedRecs=[];
+  inputs.forEach(inp=>{
+    const dk=inp.dataset.k;const v=+inp.value;
+    if(!v||v<0){invalid++;return}
+    const[y,m,d]=dk.split('-').map(Number);
+    const r=recs.find(x=>x.year===y&&x.month===m&&x.day===d);
+    if(r&&Math.abs(r.org_volume-v)>0.005){r.org_volume=Math.round(v*100)/100;changedRecs.push(r);changed++}
+  });
+  if(invalid){toast('Skipped '+invalid+' invalid value'+(invalid===1?'':'s'))}
+  if(!changed){cancelBulkEdit();return}
+  recalcAll();
+  bulkEditMode=false;
+  document.getElementById('btn-bulk-edit').style.display='';
+  document.getElementById('btn-bulk-save').style.display='none';
+  document.getElementById('btn-bulk-cancel').style.display='none';
+  renderAll();
+  if(sbCfg)changedRecs.forEach(r=>pushSB(r));
+  toast('Saved '+changed+' entr'+(changed===1?'y':'ies'));
+}
+function delBulk(k){
   if(!confirm('Delete this entry?'))return;
   const[y,m,d]=k.split('-').map(Number);
   const gone=recs.find(r=>r.year===y&&r.month===m&&r.day===d);
   recs=recs.filter(r=>!(r.year===y&&r.month===m&&r.day===d));
-  recalcAll();renderAll();
+  recalcAll();renderTable();
   if(gone&&sbCfg)deleteSB(gone);
   toast('Entry deleted');
 }
