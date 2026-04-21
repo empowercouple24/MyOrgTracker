@@ -2151,7 +2151,11 @@ function deleteSB(r){
 }
 function pullSB(cb){
   const h=sbHeaders();if(!h){toast('Configure Supabase first');if(cb)cb();return}
-  fetch(sbCfg.url+'/rest/v1/org_volume?user_slug=eq.'+userSlug+'&select=*',{headers:h})
+  // PostgREST defaults to a 1000-row limit. With historical data we can have
+  // 2500+ rows per distributor, so pass an explicit large limit to get them all.
+  // Ordered ascending by date so the newest entries end up at the tail of recs
+  // (recalcAll re-sorts but ordering input is still polite).
+  fetch(sbCfg.url+'/rest/v1/org_volume?user_slug=eq.'+userSlug+'&select=*&order=entry_date.asc&limit=50000',{headers:h})
     .then(r=>r.json())
     .then(rows=>{
       if(!Array.isArray(rows)){if(cb)cb();return}

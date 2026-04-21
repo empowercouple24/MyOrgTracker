@@ -607,7 +607,7 @@ async function loadAllData(msg='Loading…') {
   try {
     const [dists, entries, admins] = await Promise.all([
       sbFetch('/rest/v1/distributors?select=*&order=created_at.asc'),
-      sbFetch('/rest/v1/org_volume?select=*&order=entry_date.asc'),
+      sbFetch('/rest/v1/org_volume?select=*&order=entry_date.asc&limit=50000'),
       sbFetch('/rest/v1/profiles?select=id&role=eq.admin')
     ]);
     const adminIds = new Set((admins || []).map(p => p.id));
