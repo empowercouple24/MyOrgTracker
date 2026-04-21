@@ -63,9 +63,6 @@ body{font-family:'Geist',system-ui,sans-serif;background:#f4ede1;color:#18181b;m
 .under-link button{color:#18181b;text-decoration:none;border:none;background:none;cursor:pointer;font-family:inherit;font-weight:500;font-size:inherit;padding:4px 2px;border-bottom:1px solid rgba(24,24,27,0.25)}
 .under-link button:hover{border-bottom-color:#18181b}
 
-/* Footer */
-.lp-footer{margin-top:auto;padding-top:40px;text-align:center;font-size:11px;color:#a89f8d;font-family:'DM Mono',monospace;letter-spacing:0.14em;text-transform:uppercase}
-
 /* Hidden element swap for forgot-password mode */
 /* Use .field.pw-wrap so we only match the password field (where pw-wrap sits on .field directly),
    not the email input's wrapper (where pw-wrap is a child div added by initFieldEnhancements). */
@@ -85,11 +82,7 @@ html::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;ba
 .pw-eye svg{pointer-events:none}
 
 /* ── GITHUB VERSION CHECKER ── */
-.gh-check{display:inline-flex;align-items:center;gap:4px;font-family:'DM Mono',monospace;font-size:9px;font-weight:500;padding:3px 9px;border-radius:20px;transition:all .3s;white-space:nowrap;letter-spacing:.05em;cursor:default;user-select:none}
-.gh-check.checking{background:rgba(0,0,0,0.05);color:var(--ink4,#a89f8d)}
-.gh-check.ok{background:rgba(45,107,66,0.1);color:var(--green,#2d6b42)}
-.gh-check.update{background:#fef3c7;color:#92400e;cursor:pointer;font-weight:600;animation:gh-pulse 2s ease-in-out infinite}
-.gh-check.rate,.gh-check.error{opacity:0;pointer-events:none}
+
 @keyframes gh-pulse{0%,100%{opacity:1}50%{opacity:.7}}
 </style>
 </head>
@@ -103,7 +96,7 @@ html::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;ba
 
   <main class="hero-intro" id="hero">
     <h2 id="hero-h"><em>Welcome back.</em></h2>
-    <p id="hero-p">Sign in to track your Org Volume and see today's progress.</p>
+    <p id="hero-p">Sign in to track your DV and see today's progress.</p>
   </main>
 
   <div class="card" id="auth-card">
@@ -138,10 +131,7 @@ html::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;ba
     Are you an admin? <button type="button" id="admin-toggle">Sign in here</button>
   </div>
 
-  <footer class="lp-footer" style="display:flex;flex-direction:column;align-items:center;gap:10px">
-    <div id="gh-check" class="gh-check checking">···</div>
-    <span>myOrgTracker</span>
-  </footer>
+
 
 </div>
 
@@ -178,7 +168,7 @@ function setMode(m){
   card.classList.toggle('mode-forgot', m==='forgot');
   if(m==='distributor'){
     heroH.innerHTML='<em>Welcome back.</em>';
-    heroP.textContent='Sign in to track your Org Volume and see today\'s progress.';
+    heroP.textContent='Sign in to track your DV and see today\'s progress.';
     cardHead.textContent='Distributor Sign In';
     btnLabel.textContent='Sign In';
     pwEl.autocomplete='current-password';
@@ -320,7 +310,7 @@ async function handleForgot(email){
 // Surface a clean initial state
 setMode('distributor');
 initFieldEnhancements();
-startGhChecker();
+
 </script>
 
 <script>
@@ -360,41 +350,8 @@ function initFieldEnhancements(){
   });
 }
 
-// ══════════════════════════════════════════
-//  GITHUB VERSION CHECKER
-// ══════════════════════════════════════════
-const GH_REPO='empowercouple24/MyOrgTracker';
-let _ghBaseSha=null,_ghLimited=false;
 
-async function _ghFetch(){
-  if(_ghLimited)return;
-  try{
-    const r=await fetch(`https://api.github.com/repos/${GH_REPO}/commits/main`,{
-      headers:{'Accept':'application/vnd.github.v3+json'},cache:'no-store'
-    });
-    if(r.status===403||r.status===429){_ghLimited=true;_ghSet('rate');return;}
-    if(!r.ok){_ghSet('error');return;}
-    const d=await r.json();
-    const sha=(d.sha||'').slice(0,7);
-    const msg=(d.commit?.message||'').split('\n')[0];
-    if(!_ghBaseSha){_ghBaseSha=sha;_ghSet('ok',sha);return;}
-    _ghSet(sha!==_ghBaseSha?'update':'ok',sha,msg);
-  }catch{_ghSet('error');}
-}
-function _ghSet(state,sha,msg){
-  document.querySelectorAll('.gh-check').forEach(el=>{
-    el.className='gh-check '+state;
-    if(state==='ok'){el.innerHTML='✓ '+sha;el.title='Up to date ('+sha+')';el.onclick=null;}
-    else if(state==='update'){el.innerHTML='↑ Reload';el.title=(msg||'New commit')+' — click to reload';el.onclick=()=>location.reload(true);}
-    else if(state==='checking'){el.innerHTML='···';el.onclick=null;}
-    else{el.onclick=null;}
-  });
-}
-function startGhChecker(){
-  _ghSet('checking');
-  _ghFetch();
-  setInterval(()=>{if(!document.hidden)_ghFetch();},10000);
-}
+
 
 </script>
 </body>

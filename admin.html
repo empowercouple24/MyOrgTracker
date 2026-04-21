@@ -250,7 +250,7 @@ tr:hover td{background:var(--paper2);transition:background .1s}
   <div class="tn-right">
     <button class="btn bo btn-sm" onclick="loadAllData('Refreshing…').then(()=>{renderOverview();toast('✓ Refreshed')})" title="Refresh data" style="padding:0 10px;height:28px;font-size:11px">↻ Refresh</button>
     <a id="tn-mytracker" href="/tracker" class="tn-mytrack" style="display:none">My Tracker →</a>
-    <div id="gh-check" class="gh-check checking">···</div>
+    <div id="gh-check" class="gh-check checking" style="display:none">···</div>
     <span class="tn-user" id="admin-user-label"></span>
     <span class="tn-logout" onclick="adminLogout()">Log out</span>
   </div>
@@ -300,47 +300,7 @@ tr:hover td{background:var(--paper2);transition:background .1s}
     <div class="ph-title">Admin Settings</div>
     <div class="ph-sub">Platform configuration and admin access</div>
   </div>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;max-width:800px">
-    
-    <div class="card" style="margin-bottom:16px">
-      <div class="ct">Import from Google Sheet</div>
-      <p style="font-size:13px;color:var(--ink3);margin-bottom:16px;line-height:1.6">
-        Paste a public Google Sheet URL to import a distributor's historical Org Volume data.
-        The sheet must be shared publicly (Anyone with the link → Viewer).
-      </p>
-      <div class="fg" style="margin-bottom:10px">
-        <label>Distributor</label>
-        <select id="imp-dist" style="width:100%"></select>
-      </div>
-      <div class="fg" style="margin-bottom:10px">
-        <label>Google Sheet URL</label>
-        <input type="url" id="imp-url" placeholder="https://docs.google.com/spreadsheets/d/..." style="width:100%">
-      </div>
-      <div class="fg" style="margin-bottom:14px">
-        <label>Sheet Tab Name (optional — leave blank for first tab)</label>
-        <input type="text" id="imp-tab" placeholder="e.g. Sheet1 or leave blank">
-      </div>
-      <div id="imp-preview" style="display:none;background:var(--paper2);border-radius:8px;padding:12px 14px;margin-bottom:12px;font-size:13px;max-height:200px;overflow-y:auto"></div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap">
-        <button class="btn bo" onclick="discoverTabs()">Discover Tabs</button>
-        <button class="btn bo" id="imp-fetch-all-btn" style="display:none" onclick="fetchAllTabs()">Fetch All Tabs</button>
-        <button class="btn bo" id="imp-preview-btn" style="display:none" onclick="previewImport()">Preview Single Tab</button>
-        <button class="btn bp" id="imp-commit-btn" style="display:none" onclick="commitImport()">Import to Supabase</button>
-      </div>
-      <div id="imp-status" style="margin-top:10px;font-size:13px;color:var(--ink3)"></div>
-    </div>
-
-<div class="card" style="margin-bottom:16px">
-      <div class="ct">Platform Settings</div>
-      <p style="font-size:13px;color:var(--ink3);margin-bottom:14px;line-height:1.6">The <strong>Influence Factor</strong> determines how DV is converted to Org Volume. At 1.32, a DV of 113,636 equals 150,000 org volume. This applies globally to all distributors.</p>
-      <div class="fg" style="margin-bottom:14px;max-width:320px">
-        <label>Influence Factor</label>
-        <select id="pf-influence" style="font-family:'DM Mono',monospace" onchange="updatePfInfo()">
-        </select>
-      </div>
-      <div id="pf-info" style="font-size:13px;color:var(--ink3);margin-bottom:14px"></div>
-      <button class="btn bp" onclick="savePlatformInfluence()">Save Influence Factor</button>
-    </div>
+  <div style="max-width:400px">
     <div class="card">
       <div class="ct">Account</div>
       <p style="font-size:13px;color:var(--ink3);margin-bottom:16px;line-height:1.6">You are signed in with Supabase Auth. To change your password, sign out and use the Forgot Password link on the sign-in page.</p>
@@ -700,7 +660,6 @@ async function checkAdminSession(){
       if(mt) mt.style.display = 'inline-flex';
     }
     initFieldEnhancements();
-    startGhChecker();
     await Promise.all([loadAllData('Loading dashboard…'), loadPlatformSettings()]);
     goPage('overview');
   }catch(e){
@@ -813,7 +772,7 @@ function renderDistGrid() {
     const mr = (d.records||[]).filter(r=>r.month===cm&&r.year===cy).sort((a,b)=>a.day-b.day);
     const last = mr[mr.length-1];
     const dg = PIN_MAP[d.pinGoal]||DV_GOAL;
-    const est = last ? Math.round((last.org_volume||0)*UPLIFT) : 0;
+    const est = last ? Math.round((last.org_volume||0)*GLOBAL_UPLIFT) : 0;
     const pct = last ? Math.min(100,Math.round(est/dg*100)) : 0;
     return `<div class="dcard ${d.active?'':'inactive'}" onclick="viewDist('${d.slug}')">
       <div class="dc-head">
@@ -1867,41 +1826,6 @@ function initFieldEnhancements(){
   });
 }
 
-// ══════════════════════════════════════════
-//  GITHUB VERSION CHECKER
-// ══════════════════════════════════════════
-const GH_REPO='empowercouple24/MyOrgTracker';
-let _ghBaseSha=null,_ghLimited=false;
-
-async function _ghFetch(){
-  if(_ghLimited)return;
-  try{
-    const r=await fetch(`https://api.github.com/repos/${GH_REPO}/commits/main`,{
-      headers:{'Accept':'application/vnd.github.v3+json'},cache:'no-store'
-    });
-    if(r.status===403||r.status===429){_ghLimited=true;_ghSet('rate');return;}
-    if(!r.ok){_ghSet('error');return;}
-    const d=await r.json();
-    const sha=(d.sha||'').slice(0,7);
-    const msg=(d.commit?.message||'').split('\n')[0];
-    if(!_ghBaseSha){_ghBaseSha=sha;_ghSet('ok',sha);return;}
-    _ghSet(sha!==_ghBaseSha?'update':'ok',sha,msg);
-  }catch{_ghSet('error');}
-}
-function _ghSet(state,sha,msg){
-  document.querySelectorAll('.gh-check').forEach(el=>{
-    el.className='gh-check '+state;
-    if(state==='ok'){el.innerHTML='✓ '+sha;el.title='Up to date ('+sha+')';el.onclick=null;}
-    else if(state==='update'){el.innerHTML='↑ Reload';el.title=(msg||'New commit')+' — click to reload';el.onclick=()=>location.reload(true);}
-    else if(state==='checking'){el.innerHTML='···';el.onclick=null;}
-    else{el.onclick=null;}
-  });
-}
-function startGhChecker(){
-  _ghSet('checking');
-  _ghFetch();
-  setInterval(()=>{if(!document.hidden)_ghFetch();},10000);
-}
 
 // Init
 document.addEventListener("DOMContentLoaded", checkAdminSession);
