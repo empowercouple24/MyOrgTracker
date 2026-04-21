@@ -226,7 +226,7 @@ td.n{font-family:'Geist',sans-serif;font-variant-numeric:tabular-nums}
 .btn.bo:hover{border-color:var(--border2)}
 .btn.bdng{background:var(--red2);color:var(--red)}
 .btn.bsm{height:28px;padding:0 10px;font-size:12px}
-.preview{background:var(--accent-softer);border:1px solid var(--accent-soft);border-radius:8px;padding:14px;margin:16px 0}
+.preview{background:var(--accent-softer);border:1px solid var(--accent-soft);border-radius:8px;padding:14px;margin:16px 0;display:none}
 .pgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:8px}
 .plbl{font-size:10px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:var(--text3);margin-bottom:3px}
 .pval{font-family:'Geist',sans-serif;font-size:15px;font-weight:600;color:var(--accent);font-variant-numeric:tabular-nums}
@@ -352,6 +352,37 @@ td.n{font-family:'Geist',sans-serif;font-variant-numeric:tabular-nums}
 .entry-save.dim{background:var(--text3);color:var(--surface);opacity:.7}
 .entry-save.dim:hover{opacity:.75}
 .entry-save.dim::before{content:'✓ ';opacity:.9}
+
+/* ── POST-SAVE: Vol slot + locked overlay + RO hero + calc placeholder ── */
+.vol-slot{position:relative}
+.vol-locked-overlay{display:none;background:var(--surface2);border:1.5px solid var(--border);border-radius:14px;padding:22px 14px;text-align:center;position:relative;margin-bottom:24px}
+.vol-locked-edit{position:absolute;top:10px;right:12px;font-size:11px;color:var(--text3);background:transparent;border:none;text-decoration:underline;cursor:pointer;letter-spacing:.04em;padding:4px 6px;font-family:'Geist',sans-serif}
+.vol-locked-edit:hover{color:var(--text)}
+.vol-locked-num{font-family:'Geist',sans-serif;font-weight:500;font-size:44px;letter-spacing:-0.025em;color:var(--text);font-variant-numeric:tabular-nums;line-height:1}
+.vol-locked-lbl{font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--text3);font-weight:600;margin-top:10px}
+@media (max-width:560px){.vol-locked-num{font-size:36px}.vol-locked-overlay{padding:18px 12px}}
+
+.calc-placeholder{display:none;background:var(--surface2);border:1px dashed var(--border2);border-radius:10px;padding:14px 16px;margin:16px 0;text-align:center;color:var(--text3);font-size:12px;font-style:italic;font-family:'EB Garamond',serif}
+
+.ro-hero{display:none;background:linear-gradient(180deg,var(--surface) 0%,var(--bg) 100%);border:1px solid var(--border);border-radius:14px;padding:18px;text-align:center;position:relative;overflow:hidden;margin:16px 0}
+.ro-hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at top,rgba(58,172,119,.05) 0%,transparent 60%);pointer-events:none}
+.ro-hero-eyebrow{font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--text3);font-weight:600;margin-bottom:8px;position:relative}
+.ro-hero-eyebrow .ro-est{color:#3aac77;font-weight:600}
+.ro-hero-num{font-family:'EB Garamond',serif;font-size:36px;font-weight:500;letter-spacing:-0.02em;line-height:1;color:var(--text);font-variant-numeric:tabular-nums;position:relative}
+.ro-hero-num .currency{color:var(--text3);font-weight:400;margin-right:3px;font-size:24px}
+.ro-hero-formula{font-family:'EB Garamond',serif;font-style:italic;font-size:11px;color:var(--text3);margin-top:8px;position:relative}
+@media (max-width:560px){.ro-hero-num{font-size:30px}.ro-hero-num .currency{font-size:20px}}
+
+/* State toggles on #entry-hero */
+.entry-hero.is-typing .calc-placeholder{display:block}
+.entry-hero.is-saved .entry-vol{display:none}
+.entry-hero.is-saved .vol-locked-overlay{display:block}
+.entry-hero.is-saved .ro-hero{display:block}
+.entry-hero.is-saved .preview{display:block}
+/* Historical (amber) accents on locked + RO */
+.entry-hero.historical .vol-locked-overlay{border-color:var(--amber);background:var(--amber2)}
+.entry-hero.historical .vol-locked-num{color:var(--amber)}
+.entry-hero.historical .ro-hero-eyebrow .ro-est{color:var(--amber)}
 
 /* ── DATE CHIP: Option 2a — serif number + dark inversion + today ring ── */
 .date-chip-day{font-family:'EB Garamond',serif;font-size:20px;font-weight:500}
@@ -831,7 +862,14 @@ html,body{background:var(--bg,#fafaf8);background-attachment:fixed}
       <h1 class="entry-prompt">What's your <em>cumulative org volume</em>?</h1>
       <div class="entry-hint" id="entry-hint">enter yesterday's ending DV</div>
 
-      <input class="entry-vol" type="number" id="ev" placeholder="0" inputmode="decimal" step="0.01" autocomplete="off">
+      <div class="vol-slot">
+        <input class="entry-vol" type="text" id="ev" placeholder="0" inputmode="decimal" autocomplete="off">
+        <div class="vol-locked-overlay" id="vol-locked-overlay">
+          <button type="button" class="vol-locked-edit" onclick="editSavedEntry()" aria-label="Edit saved entry">Edit</button>
+          <div class="vol-locked-num" id="vol-locked-num">—</div>
+          <div class="vol-locked-lbl">Org Volume · saved</div>
+        </div>
+      </div>
 
       <div id="predata-card" class="predata-card" style="display:none">
         <div class="predata-card-icon">⌛</div>
@@ -869,7 +907,15 @@ html,body{background:var(--bg,#fafaf8);background-attachment:fixed}
         </div>
       </div>
 
-      <div class="preview" id="eprev" style="display:none">
+      <div class="calc-placeholder" id="calc-placeholder">Calculated values appear after you save</div>
+
+      <div class="ro-hero" id="ro-hero">
+        <div class="ro-hero-eyebrow"><span class="ro-est">Est.</span> Royalty Override (5%)</div>
+        <div class="ro-hero-num"><span class="currency">$</span><span id="ro-hero-num">0.00</span></div>
+        <div class="ro-hero-formula" id="ro-hero-formula">—</div>
+      </div>
+
+      <div class="preview" id="eprev">
         <div class="ct" style="color:var(--accent);font-size:10px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;margin:0 0 4px 0">Calculated</div>
         <div class="pgrid">
           <div><div class="plbl">Org Increase</div><div class="pval" id="pi">—</div></div>
@@ -1050,6 +1096,48 @@ const fmt=n=>{
   const r=Math.round(n*100)/100;
   return r.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
 };
+
+// ── Hero input: parse a string like "58,378.00" → 58378, format back with commas ──
+// Values in the #ev input are always strings (type=text). All reads go through parseVol;
+// all writes that set a displayed value go through formatVol.
+function parseVol(s){
+  if(s==null)return NaN;
+  const raw=String(s).replace(/,/g,'').trim();
+  if(!raw)return NaN;
+  return parseFloat(raw);
+}
+function formatVol(n){
+  if(n==null||isNaN(n))return '';
+  return (+n).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+}
+// Live formatter: strips non-digits/decimal, inserts commas, clamps to 2 decimals.
+// Cursor position is preserved by counting commas before/after the caret.
+function fmtVolLive(raw){
+  raw=raw.replace(/[^\d.]/g,'');
+  const dot=raw.indexOf('.');
+  if(dot>=0)raw=raw.slice(0,dot+1)+raw.slice(dot+1).replace(/\./g,'');
+  let [intP,decP]=raw.split('.');
+  intP=(intP||'').replace(/^0+(?=\d)/,'')||'';
+  intP=intP.replace(/\B(?=(\d{3})+(?!\d))/g,',');
+  return decP!==undefined?intP+'.'+decP.slice(0,2):intP;
+}
+function handleVolInput(e){
+  const el=e.target;
+  const before=el.value;
+  const cursorBefore=el.selectionStart||0;
+  const commasBefore=(before.slice(0,cursorBefore).match(/,/g)||[]).length;
+  const formatted=fmtVolLive(before);
+  if(formatted===before)return;
+  el.value=formatted;
+  const commasAfter=(formatted.slice(0,cursorBefore).match(/,/g)||[]).length;
+  const newCursor=Math.max(0,cursorBefore+(commasAfter-commasBefore));
+  try{el.setSelectionRange(newCursor,newCursor)}catch(err){}
+}
+function handleVolBlur(e){
+  const n=parseVol(e.target.value);
+  if(isNaN(n))return;
+  e.target.value=formatVol(n);
+}
 
 const MINIMAL_COLORS=[
   {id:'paper', label:'Paper', sw:['#fafaf8','#18181b']},
@@ -2464,6 +2552,7 @@ function setPickerDate(y,m,d){
   // Populate volume input with that date's value if any
   syncVolumeFromSelectedDate();
   updateSaveButton();
+  if(typeof updateEntryView==='function')updateEntryView();
 }
 
 // Toggles historical / pre-data / today classes on the entry hero + today pill
@@ -2530,7 +2619,7 @@ function syncVolumeFromSelectedDate(){
   if(datePickerYear==null)return;
   const rec=recs.find(r=>r.year===datePickerYear&&r.month===datePickerMonth&&r.day===datePickerDay);
   if(rec){
-    ev.value=rec.org_volume;
+    ev.value=formatVol(rec.org_volume);
     ev._savedValue=rec.org_volume;
   }else{
     ev.value='';
@@ -2629,11 +2718,11 @@ function renderDatePopover(y,m){
   </div>`;
 }
 function previewEntry(){
-  const vol=+document.getElementById('ev').value,
+  const vol=parseVol(document.getElementById('ev').value),
         month=+document.getElementById('em').value,
         year=+document.getElementById('ey').value,
         day=+document.getElementById('ed').value;
-  if(!vol||!day){document.getElementById('eprev').style.display='none';return}
+  if(isNaN(vol)||!vol||!day)return;
   const prev=recs.filter(r=>r.month===month&&r.year===year&&r.day<day).sort((a,b)=>b.day-a.day)[0];
   const inc=prev?vol-prev.org_volume:vol;
   const dims=new Date(year,month,0).getDate(),left=dims-day;
@@ -2643,13 +2732,17 @@ function previewEntry(){
   document.getElementById('pi').textContent=(inc>=0?'+':'')+fmt(inc);
   document.getElementById('pd').textContent=fmt(dvRem);
   document.getElementById('pn').textContent=fmt(need)+'/day';
-  document.getElementById('eprev').style.display='block';
 }
 ['ev','ed','em','ey'].forEach(id=>{
   const el=document.getElementById(id);
   if(!el)return;
-  el.addEventListener('input',()=>{previewEntry();updateSaveButton()});
-  el.addEventListener('change',()=>{previewEntry();updateSaveButton()});
+  if(id==='ev'){
+    // A2: live commas on every keystroke, .00 tail appended on blur
+    el.addEventListener('input',handleVolInput);
+    el.addEventListener('blur',handleVolBlur);
+  }
+  el.addEventListener('input',()=>{previewEntry();updateSaveButton();updateEntryView()});
+  el.addEventListener('change',()=>{previewEntry();updateSaveButton();updateEntryView()});
 });
 // Block mouse-wheel from silently changing values on number inputs inside the
 // entry form — wheel over a focused <input type=number> would otherwise tick
@@ -2671,9 +2764,9 @@ function saveEntry(){
   const month=+document.getElementById('em').value,
         year=+document.getElementById('ey').value,
         day=+document.getElementById('ed').value,
-        vol=+document.getElementById('ev').value;
+        vol=parseVol(document.getElementById('ev').value);
   const g=currentEntryGoal();
-  if(!day||!vol){toast('Please fill in day and org volume');return}
+  if(!day||!vol||isNaN(vol)){toast('Please fill in day and org volume');return}
   const volRound=Math.round(vol*100)/100;
   const idx=recs.findIndex(r=>r.year===year&&r.month===month&&r.day===day);
   const rec={year,month,day,org_volume:volRound,dv_goal:g.dv,pin_goal:g.id};
@@ -2682,8 +2775,10 @@ function saveEntry(){
   const saved=recs.find(r=>r.year===year&&r.month===month&&r.day===day);
   if(saved&&sbCfg)pushSB(saved);
   // Remember saved value so button stays "Saved ✓" until input changes
-  const ev=document.getElementById('ev');if(ev)ev._savedValue=volRound;
+  const ev=document.getElementById('ev');
+  if(ev){ev._savedValue=volRound;ev.value=formatVol(volRound)}
   updateSaveButton();
+  updateEntryView();
   toast('Entry saved!');
 }
 function clearEntry(){
@@ -2692,8 +2787,8 @@ function clearEntry(){
   const _n=new Date();
   setPickerDate(_n.getFullYear(),_n.getMonth()+1,_n.getDate());
   buildDateChips();
-  document.getElementById('eprev').style.display='none';
   updateSaveButton();
+  updateEntryView();
 }
 
 // ═══════════════════ SAVE BUTTON STATE MACHINE ═══════════════════
@@ -2712,7 +2807,7 @@ function updateSaveButton(){
   const isToday=(datePickerYear===ty&&datePickerMonth===tm&&datePickerDay===td);
   const rec=recs.find(r=>r.year===datePickerYear&&r.month===datePickerMonth&&r.day===datePickerDay);
   const ev=document.getElementById('ev');
-  const currentVal=ev?+ev.value:0;
+  const currentVal=ev?(parseVol(ev.value)||0):0;
   const savedVal=(ev&&ev._savedValue!=null)?ev._savedValue:(rec?rec.org_volume:null);
   const hasRec=rec!=null;
   const unchanged=(savedVal!=null&&currentVal&&Math.abs(currentVal-savedVal)<0.005);
@@ -2725,6 +2820,56 @@ function updateSaveButton(){
     if(hasRec&&unchanged){btn.textContent='Saved · '+label;btn.classList.add('dim')}
     else if(hasRec){btn.textContent='Update '+label;btn.classList.remove('dim')}
     else{btn.textContent='Save '+label;btn.classList.remove('dim')}
+  }
+}
+
+// ═══════════════════ ENTRY VIEW STATE (is-typing / is-saved) ═══════════════════
+// Determines whether the Log Entry page shows:
+//   • empty form      — no class, nothing after the input
+//   • typing state    — .is-typing, shows "Calculated values appear after you save" placeholder
+//   • saved state     — .is-saved, shows locked-card value + RO hero + Calculated card
+// Called after every change: date pick, typing, save, clear.
+function updateEntryView(){
+  const hero=document.getElementById('entry-hero');
+  if(!hero)return;
+  const ev=document.getElementById('ev');
+  if(!ev)return;
+  // Pre-data dates never show saved/typing state (can't save anyway)
+  if(hero.classList.contains('predata')){
+    hero.classList.remove('is-saved','is-typing');
+    return;
+  }
+  const val=parseVol(ev.value);
+  const hasVal=!isNaN(val)&&val>0;
+  const rec=recs.find(r=>r.year===datePickerYear&&r.month===datePickerMonth&&r.day===datePickerDay);
+  const savedVal=(ev._savedValue!=null)?ev._savedValue:(rec?rec.org_volume:null);
+  const isSaved=hasVal&&savedVal!=null&&Math.abs(val-savedVal)<0.005;
+  hero.classList.toggle('is-saved',isSaved);
+  hero.classList.toggle('is-typing',hasVal&&!isSaved);
+  if(isSaved){
+    // Populate the locked-card number + RO hero
+    const lockNum=document.getElementById('vol-locked-num');
+    if(lockNum)lockNum.textContent=formatVol(val);
+    const ro=val*UPLIFT*0.05;
+    const roNum=document.getElementById('ro-hero-num');
+    if(roNum)roNum.textContent=formatVol(ro);
+    const roFormula=document.getElementById('ro-hero-formula');
+    if(roFormula)roFormula.textContent=formatVol(val)+' × '+UPLIFT+' × 5%';
+  }
+}
+
+// Flip from saved view back to editable input. Triggered by the "Edit" button
+// on the locked overlay.
+function editSavedEntry(){
+  const hero=document.getElementById('entry-hero');
+  if(!hero)return;
+  hero.classList.remove('is-saved');
+  hero.classList.add('is-typing');
+  const ev=document.getElementById('ev');
+  if(ev){
+    ev.focus();
+    // Select all so one keystroke overwrites, matching how you'd edit a saved value
+    try{ev.setSelectionRange(0,ev.value.length)}catch(err){}
   }
 }
 
@@ -2836,7 +2981,7 @@ function syncAllSB(){
 }
 
 function toast(msg,ms=2800){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('on');setTimeout(()=>t.classList.remove('on'),ms)}
-function renderAll(){recomputeHistoryStart();buildPills();renderDash();buildFilter();renderDataTab();renderLockedGoal();if(document.getElementById('date-chips')){buildDateChips();applyDateModes();updateSaveButton()}}
+function renderAll(){recomputeHistoryStart();buildPills();renderDash();buildFilter();renderDataTab();renderLockedGoal();if(document.getElementById('date-chips')){buildDateChips();applyDateModes();updateSaveButton();if(typeof updateEntryView==='function')updateEntryView()}}
 
 // Airline date picker now owns date state; em/ed/ey are hidden inputs populated by setPickerDate()
 // (Year dropdown deprecated — picker covers ±18-day window with full-month popover for arbitrary dates.)
