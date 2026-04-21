@@ -806,18 +806,18 @@ html,body{background:var(--bg,#fafaf8);background-attachment:fixed}
 <div id="pg-dash" class="pg">
   <div id="mpills" style="flex-wrap:wrap;gap:6px" class="pills"></div>
   <div class="mstrip">
-    <div class="met"><div class="met-l">Org Volume</div><div class="met-v" id="mv">—</div><div class="met-s">Cumulative MTD</div></div>
+    <div class="met"><div class="met-l">DV</div><div class="met-v" id="mv">—</div><div class="met-s">Cumulative MTD</div></div>
     <div class="met"><div class="met-l">Daily Avg Inc.</div><div class="met-v" id="ma">—</div><div class="met-s">Avg daily delta</div></div>
     <div class="met"><div class="met-l">Best Day</div><div class="met-v" id="mb">—</div><div class="met-s" id="mbd">—</div></div>
     <div class="met"><div class="met-l">Goal Progress</div><div class="met-v" id="mp">—</div><div class="met-s" id="mps">—</div></div>
   </div>
   <div class="full card">
-    <div class="ct">Org Volume — Cumulative Growth</div>
+    <div class="ct">DV — Cumulative Growth</div>
     <div class="ch"><canvas id="cv"></canvas></div>
   </div>
   <div class="g2">
     <div class="card"><div class="ct">Daily Increases</div><div class="ch"><canvas id="ci"></canvas></div></div>
-    <div class="card"><div class="ct">Monthly DV Goal Progress</div><div id="gp"></div></div>
+    <div class="card"><div class="ct">Monthly Goal Progress</div><div id="gp"></div></div>
   </div>
 </div>
 
@@ -855,7 +855,7 @@ html,body{background:var(--bg,#fafaf8);background-attachment:fixed}
   <!-- View C: Flat Day List (fallback "Day View") -->
   <div id="data-day-list" class="data-view" style="display:none">
     <div class="card" style="padding:0;overflow:hidden">
-      <div class="tw"><table><thead><tr><th>Date</th><th>Day</th><th>Org Volume</th><th>Increase</th><th>DV Rem.</th><th>Avg Needed/Day</th><th>Est. Org DV</th><th>Uplift/Day</th><th></th></tr></thead><tbody id="tbody"></tbody></table></div>
+      <div class="tw"><table><thead><tr><th>Date</th><th>Day</th><th>DV</th><th>Increase</th><th>Org Vol Rem.</th><th>Avg Needed/Day</th><th>Est. Org Vol</th><th>Uplift/Day</th><th></th></tr></thead><tbody id="tbody"></tbody></table></div>
     </div>
   </div>
 </div>
@@ -865,7 +865,7 @@ html,body{background:var(--bg,#fafaf8);background-attachment:fixed}
   <div class="entry-hero" id="entry-hero">
     <div class="entry-card card">
       <div class="entry-eyebrow" id="entry-eyebrow">Today's entry</div>
-      <h1 class="entry-prompt">What's your <em>cumulative org volume</em>?</h1>
+      <h1 class="entry-prompt">What's your <em>cumulative DV</em>?</h1>
       <div class="entry-hint" id="entry-hint">enter yesterday's ending DV</div>
 
       <div class="vol-slot">
@@ -873,7 +873,7 @@ html,body{background:var(--bg,#fafaf8);background-attachment:fixed}
         <div class="vol-locked-overlay" id="vol-locked-overlay">
           <button type="button" class="vol-locked-edit" onclick="editSavedEntry()" aria-label="Edit saved entry">Edit</button>
           <div class="vol-locked-num" id="vol-locked-num">—</div>
-          <div class="vol-locked-lbl">Org Volume · saved</div>
+          <div class="vol-locked-lbl">DV · saved</div>
         </div>
       </div>
 
@@ -924,8 +924,8 @@ html,body{background:var(--bg,#fafaf8);background-attachment:fixed}
       <div class="preview" id="eprev">
         <div class="ct" style="color:var(--accent);font-size:10px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;margin:0 0 4px 0">Calculated</div>
         <div class="pgrid">
-          <div><div class="plbl">Org Increase</div><div class="pval" id="pi">—</div></div>
-          <div><div class="plbl">DV Remaining</div><div class="pval" id="pd" style="color:var(--text)">—</div></div>
+          <div><div class="plbl">DV Increase</div><div class="pval" id="pi">—</div></div>
+          <div><div class="plbl">Org Vol Rem.</div><div class="pval" id="pd" style="color:var(--text)">—</div></div>
           <div><div class="plbl">Need Per Day</div><div class="pval" id="pn" style="color:var(--text)">—</div></div>
         </div>
       </div>
@@ -1374,7 +1374,7 @@ function buildOnbStyles(){
   grid.innerHTML=STYLES.map(s=>`
     <button class="onb-scard" data-style="${s.id}" onclick="onbPickStyle('${s.id}')">
       <div class="sprev ${s.id==='minimal'?'min-p':'warm-p'}">
-        <div class="sp-lbl">Org Volume</div>
+        <div class="sp-lbl">DV</div>
         <div class="sp-hn">48,620</div>
       </div>
       <div>
@@ -1388,7 +1388,7 @@ function buildOnbColors(style){
   grid.innerHTML=colorsFor(style).map(c=>`
     <button class="onb-ccard" data-color="${c.id}" onclick="onbPickColor('${c.id}')">
       <div class="onb-cp cp-${c.id}">
-        <div class="ml">Org Volume</div>
+        <div class="ml">DV</div>
         <div class="hn">48,620</div>
         <div class="mb"></div>
       </div>
@@ -1424,7 +1424,7 @@ function onbUpdateGoalInfo(){
   const g=goalById(selEl.value);
   const threshold=Math.round(g.dv/UPLIFT);
   const el=document.getElementById('onb-goal-info');
-  if(el)el.innerHTML=`<strong>${g.label}</strong><br>${g.dv.toLocaleString()} DV goal · You need <strong>${threshold.toLocaleString()}</strong> org volume to hit it`;
+  if(el)el.innerHTML=`<strong>${g.label}</strong><br>$${Math.round(g.dv*0.05).toLocaleString()} RO · ${g.dv.toLocaleString()} org volume · ${threshold.toLocaleString()} DV target`;
 }
 function onbPickGoal(){
   const selEl=document.getElementById('onb-goal-select');
@@ -1881,7 +1881,7 @@ function renderDash(){
   document.getElementById('mb').textContent=fmt(best.org_increase);
   document.getElementById('mbd').textContent='Day '+best.day+' · '+MO[month-1];
   document.getElementById('mp').textContent=pct+'%';
-  document.getElementById('mps').textContent='Est. DV: '+fmt(last.est_org_dv)+' / '+fmt(dg);
+  document.getElementById('mps').textContent='Est. Org Vol: '+fmt(last.est_org_dv)+' / '+fmt(dg);
   renderCharts(ms.map(r=>r.day),ms.map(r=>r.org_volume),ms.map(r=>r.org_increase||0));
   renderGoalBars();
 }
@@ -2254,9 +2254,9 @@ function renderMonthDetail(){
       <div class="chev">${bulkEditMode?bulkDel:'›'}</div>`;
     if(expanded&&!bulkEditMode){
       rowHtml+=`<div class="md-row-expand">
-        <div><div class="lbl">DV Remaining</div><div class="val">${r.hit?'🎯 Hit':fmt(r.dv_remaining)}</div></div>
+        <div><div class="lbl">Org Vol Rem.</div><div class="val">${r.hit?'🎯 Hit':fmt(r.dv_remaining)}</div></div>
         <div><div class="lbl">Avg Needed/Day</div><div class="val">${fmt(r.org_daily_avg)}</div></div>
-        <div><div class="lbl">Est Org DV</div><div class="val">${fmt(r.est_org_dv)}</div></div>
+        <div><div class="lbl">Est Org Vol</div><div class="val">${fmt(r.est_org_dv)}</div></div>
         <div><div class="lbl">Uplift/Day</div><div class="val">${fmt(r.uplift_per_day)}</div></div>
         <div class="actions">
           <button class="btn bo bsm" onclick="event.stopPropagation();jumpToLogEntry(${r.year},${r.month},${r.day})">Edit in Log Entry</button>
@@ -2286,7 +2286,7 @@ function renderMonthDetail(){
       </div>
       <div class="md-hero-right">
         <div class="md-hero-num">${fmt(finalVol)}</div>
-        <div class="md-hero-goal">final org volume ${heroPill}</div>
+        <div class="md-hero-goal">final DV ${heroPill}</div>
       </div>
     </div>
     <div class="md-metric-strip">
@@ -2297,7 +2297,7 @@ function renderMonthDetail(){
     </div>
     <div class="md-chart-card">
       <div class="md-chart-title">
-        <span>Daily Org Volume</span>
+        <span>Daily DV</span>
         <span class="md-chart-legend">
           <span><span class="dot coffee"></span>Pre-goal</span>
           <span><span class="dot sage"></span>Goal hit</span>
@@ -2438,7 +2438,7 @@ function delBulk(k){
   toast('Entry deleted');
 }
 function exportCSV(){
-  const hdr=['Date','Day','Org Volume','Org Increase','DV Remaining','Avg Needed/Day','Est Org DV','Uplift/Day'];
+  const hdr=['Date','Day','DV','DV Increase','Org Vol Rem.','Avg Needed/Day','Est Org Vol','Uplift/Day'];
   const rows=[...recs].sort((a,b)=>key(a)<key(b)?-1:1).map(r=>[MO[r.month-1]+' '+r.day+' '+r.year,r.day,r.org_volume,r.org_increase,r.dv_remaining,r.org_daily_avg,r.est_org_dv,r.uplift_per_day].join(','));
   const csv=[hdr.join(','),...rows].join('\n');
   const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);a.download='myorgtracker_'+userSlug+'_export.csv';a.click();
@@ -2489,13 +2489,13 @@ function renderLockedGoal(){
 
   const pinEl=`<div class="goal-b-pin" style="background-image:url('${pinUrl}')" aria-label="${cleanLabel} pin"></div>`;
   const orgTarget=Math.round(g.dv/UPLIFT);
-  const upliftLine=`<div class="goal-b-uplift">Target ${orgTarget.toLocaleString()} · ${g.dv.toLocaleString()} DV goal ÷ ${UPLIFT}× uplift</div>`;
+  const upliftLine=`<div class="goal-b-uplift">DV Target ${orgTarget.toLocaleString()} · ${g.dv.toLocaleString()} org volume goal ÷ ${UPLIFT}× uplift</div>`;
 
   if(isPreData){
     card.innerHTML = pinEl + `
       <div class="goal-b-eyebrow"><div class="goal-b-eyebrow-label" style="color:var(--text3);opacity:.7">Goal</div></div>
       <div class="goal-b-value-hero" style="color:var(--text3);opacity:.7">${fmt(orgTarget)}</div>
-      <div class="goal-b-value-meta">Org volume target</div>
+      <div class="goal-b-value-meta">DV Target</div>
       <div class="goal-b-level-row">
         <span class="goal-b-level-pill" style="background:${colors.bg};color:${colors.text}">${abbrevLevel(g.label)}</span>
         <div class="goal-b-level-name">${cleanLabel}</div>
@@ -2510,7 +2510,7 @@ function renderLockedGoal(){
     card.innerHTML = pinEl + `
       <div class="goal-b-eyebrow"><div class="goal-b-eyebrow-label">Goal</div></div>
       <div class="goal-b-value-hero">${fmt(orgTarget)}</div>
-      <div class="goal-b-value-meta">Org volume target</div>
+      <div class="goal-b-value-meta">DV Target</div>
       <div class="goal-b-level-row">
         <span class="goal-b-level-pill" style="background:${colors.bg};color:${colors.text}">${abbrevLevel(g.label)}</span>
         <div class="goal-b-level-name">${cleanLabel}</div>
@@ -2536,18 +2536,18 @@ function renderLockedGoal(){
   if(currentDV>=goalDV){
     paceClass='ahead';paceLabel=isHistorical?'Goal Hit (snapshot)':'Goal Hit';
     calloutClass='ahead';
-    calloutText=`Goal reached — ${fmt(currentDV-goalDV)} DV over target`;
+    calloutText=`Goal reached — ${fmt(currentDV-goalDV)} org vol over target`;
     calloutSub=`${daysLeft} day${daysLeft===1?'':'s'} remaining in month`;
   }else if(currentDV>=expectedDV*0.98){
     paceClass='ahead';paceLabel=isHistorical?'On Pace (snapshot)':'On Pace';
     calloutClass='ahead';
-    calloutText=`${fmt(neededPerDay)} DV/day to finish · ${daysLeft} day${daysLeft===1?'':'s'} left`;
-    calloutSub=`That's ${fmt(rawNeededPerDay)} raw volume per day at ${UPLIFT}× uplift`;
+    calloutText=`${fmt(neededPerDay)} org vol/day to finish · ${daysLeft} day${daysLeft===1?'':'s'} left`;
+    calloutSub=`That's ${fmt(rawNeededPerDay)} DV per day at ${UPLIFT}× uplift`;
   }else{
     paceClass='behind';paceLabel=isHistorical?'Behind Pace (snapshot)':'Behind Pace';
     calloutClass='behind';
-    calloutText=`${fmt(neededPerDay)} DV/day needed to finish · ${daysLeft} day${daysLeft===1?'':'s'} left`;
-    calloutSub=`That's ${fmt(rawNeededPerDay)} raw volume per day at ${UPLIFT}× uplift`;
+    calloutText=`${fmt(neededPerDay)} org vol/day needed to finish · ${daysLeft} day${daysLeft===1?'':'s'} left`;
+    calloutSub=`That's ${fmt(rawNeededPerDay)} DV per day at ${UPLIFT}× uplift`;
   }
 
   card.innerHTML = pinEl + `
@@ -2560,7 +2560,7 @@ function renderLockedGoal(){
       <div class="goal-b-value-hero">${fmt(currentOrg)}</div>
       <div class="goal-b-value-of">/ ${fmt(orgTarget)}</div>
     </div>
-    <div class="goal-b-value-meta">Org · ${Math.round(progressPct)}% of goal</div>
+    <div class="goal-b-value-meta">DV · ${Math.round(progressPct)}% of goal</div>
     <div class="goal-b-progress"><div class="goal-b-progress-fill" style="width:${progressPct}%"></div></div>
     <div class="goal-b-callout ${calloutClass}">
       <div class="goal-b-callout-main ${calloutClass}">${calloutText}</div>
@@ -2813,7 +2813,7 @@ function saveEntry(){
         day=+document.getElementById('ed').value,
         vol=parseVol(document.getElementById('ev').value);
   const g=currentEntryGoal();
-  if(!day||!vol||isNaN(vol)){toast('Please fill in day and org volume');return}
+  if(!day||!vol||isNaN(vol)){toast('Please fill in day and DV');return}
   const volRound=Math.round(vol*100)/100;
   const idx=recs.findIndex(r=>r.year===year&&r.month===month&&r.day===day);
   const rec={year,month,day,org_volume:volRound,dv_goal:g.dv,pin_goal:g.id};

@@ -332,7 +332,7 @@ tr:hover td{background:var(--paper2);transition:background .1s}
 
 <div class="card" style="margin-bottom:16px">
       <div class="ct">Platform Settings</div>
-      <p style="font-size:13px;color:var(--ink3);margin-bottom:14px;line-height:1.6">The <strong>Influence Factor</strong> determines how Org Volume is converted to DV. At 1.32, an org volume of 113,636 equals 150,000 DV. This applies globally to all distributors.</p>
+      <p style="font-size:13px;color:var(--ink3);margin-bottom:14px;line-height:1.6">The <strong>Influence Factor</strong> determines how DV is converted to Org Volume. At 1.32, a DV of 113,636 equals 150,000 org volume. This applies globally to all distributors.</p>
       <div class="fg" style="margin-bottom:14px;max-width:320px">
         <label>Influence Factor</label>
         <select id="pf-influence" style="font-family:'DM Mono',monospace" onchange="updatePfInfo()">
@@ -470,7 +470,7 @@ tr:hover td{background:var(--paper2);transition:background .1s}
         <div class="fg"><label>Day</label><input type="number" id="le-day" min="1" max="31" style="width:75px"></div>
       </div>
       <div class="frow">
-        <div class="fg" style="flex:1"><label>Org Volume</label><input type="number" id="le-vol" placeholder="e.g. 45000"></div>
+        <div class="fg" style="flex:1"><label>DV</label><input type="number" id="le-vol" placeholder="e.g. 45000"></div>
       </div>
     </div>
     <div class="mf">
@@ -499,7 +499,7 @@ const GOAL_OPTIONS=[
 ];
 function goalById(id){return GOAL_OPTIONS.find(g=>g.id===id)||GOAL_OPTIONS[4]}
 function dvForGoal(id){return goalById(id).dv}
-function goalOptions(sel){return GOAL_OPTIONS.map(g=>`<option value="${g.id}"${g.id===sel?' selected':''}>${g.label} — ${g.dv.toLocaleString()} DV</option>`).join('')}
+function goalOptions(sel){return GOAL_OPTIONS.map(g=>`<option value="${g.id}"${g.id===sel?' selected':''}>${g.label} — ${g.dv.toLocaleString()} Org Volume</option>`).join('')}
 const DV_GOAL = 150000; // default Millionaire Team Plus
 // PIN_MAP kept for backward compat with old records
 const PIN_MAP = {'7.5':113636,'5':75757,'3':45454,'1':15151};
@@ -774,7 +774,7 @@ function renderOverview() {
         <div style="flex:1;min-width:0">
           <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px">
             <span style="font-weight:500">${d.name}</span>
-            <span style="font-family:'DM Mono',monospace;color:var(--ink3)">${pct}% · ${fmt(est)} DV</span>
+            <span style="font-family:'DM Mono',monospace;color:var(--ink3)">${pct}% · ${fmt(est)} Org Vol</span>
           </div>
           <div class="pb-track"><div class="pb-fill" style="width:${pct}%;background:${col}"></div></div>
         </div>
@@ -787,7 +787,7 @@ function renderOverview() {
   dists.forEach(d=>(d.records||[]).forEach(r=>allEntries.push({...r,distName:d.name,distSlug:d.slug})));
   allEntries.sort((a,b)=>(b.year*10000+b.month*100+b.day)-(a.year*10000+a.month*100+a.day));
   if (!allEntries.length) { ac.innerHTML='<div class="empty"><p>No entries yet</p></div>'; return; }
-  ac.innerHTML=`<div class="tw"><table><thead><tr><th>Distributor</th><th>Date</th><th>Org Volume</th><th>Increase</th><th></th></tr></thead><tbody>${
+  ac.innerHTML=`<div class="tw"><table><thead><tr><th>Distributor</th><th>Date</th><th>DV</th><th>Increase</th><th></th></tr></thead><tbody>${
     allEntries.slice(0,12).map(r=>`<tr>
       <td><span style="font-weight:500">${r.distName}</span></td>
       <td>${MO[r.month-1]} ${r.day}, ${r.year}</td>
@@ -883,8 +883,8 @@ function renderDistDetail(d) {
     </div>
     <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px">
       <div class="met"><div class="met-l">Current Vol</div><div class="met-v">${fmt(last?.org_volume)}</div><div class="met-s">${MO[cm-1]} ${cy}</div></div>
-      <div class="met"><div class="met-l">Est. DV</div><div class="met-v">${fmt(last?Math.round(last.org_volume*UPLIFT):null)}</div><div class="met-s">×${getUplift(d)} uplift</div></div>
-      <div class="met"><div class="met-l">DV Remaining</div><div class="met-v">${fmt(last?.dv_remaining)}</div><div class="met-s">To ${fmt(dg)} goal</div></div>
+      <div class="met"><div class="met-l">Est. Org Volume</div><div class="met-v">${fmt(last?Math.round(last.org_volume*UPLIFT):null)}</div><div class="met-s">×${getUplift(d)} uplift</div></div>
+      <div class="met"><div class="met-l">Org Vol Remaining</div><div class="met-v">${fmt(last?.dv_remaining)}</div><div class="met-s">To ${fmt(dg)} org vol goal</div></div>
       <div class="met"><div class="met-l">Days Logged</div><div class="met-v">${mr.length}</div><div class="met-s">This month</div></div>
     </div>
     <div style="display:grid;grid-template-columns:2fr 1fr;gap:14px;margin-bottom:18px">
@@ -970,7 +970,7 @@ function renderDetailTable(slug, mk) {
   const c = document.getElementById('dd-table');
   if (!c) return;
   if (!rows.length) { c.innerHTML='<div class="empty"><p>No entries for this period</p></div>'; return; }
-  c.innerHTML=`<table><thead><tr><th>Date</th><th>Day</th><th>Org Volume</th><th>Increase</th><th>DV Rem.</th><th>Need/Day</th><th>Est DV</th><th>Uplift/Day</th><th></th></tr></thead><tbody>${
+  c.innerHTML=`<table><thead><tr><th>Date</th><th>Day</th><th>DV</th><th>Increase</th><th>Org Vol Rem.</th><th>Need/Day</th><th>Est Org Vol</th><th>Uplift/Day</th><th></th></tr></thead><tbody>${
     rows.map(r=>`<tr>
       <td>${MO[r.month-1]} ${r.day}, ${r.year}</td>
       <td class="n">${r.day}</td>
@@ -1036,8 +1036,9 @@ function updateInviteGoalInfo(){
   if(!sel)return;
   const g=goalById(sel.value);
   const threshold=Math.round(g.dv/GLOBAL_UPLIFT);
+  const ro=Math.round(g.dv*0.05);
   const el=document.getElementById('inv-goal-info');
-  if(el)el.innerHTML=`<strong>${g.label}</strong> — ${g.dv.toLocaleString()} DV · Volume threshold: <strong>${threshold.toLocaleString()}</strong>`;
+  if(el)el.innerHTML=`<strong>${g.label}</strong> — $${ro.toLocaleString()} RO · ${g.dv.toLocaleString()} org volume · DV target: <strong>${threshold.toLocaleString()}</strong>`;
 }
 function copyInviteLink(){
   const link=window.location.origin+'/signup?slug='+inviteSlug;
@@ -1059,20 +1060,36 @@ async function sendInvite(){
   const btn=document.getElementById('inv-send-btn');
   btn.disabled=true;btn.textContent='Sending…';
   try{
-    // 1. Create pending distributor row
-    await sbFetch('/rest/v1/distributors',{
-      method:'POST',
-      headers:{...SB_H(),'Prefer':'return=minimal'},
-      body:JSON.stringify({
-        name:first+(last?' '+last:''),slug:inviteSlug,
-        email,pin:genPinStr(),
-        first_name:first,last_name:last||null,
-        pin_goal:goal,dv_goal:dvForGoal(goal),
-        influence_factor:GLOBAL_UPLIFT,
-        is_active:false,status:'pending',
-        created_by:currentUser.id
-      })
+    // 1. Create pending distributor row. If the slug is taken in the DB (23505),
+    //    append a random suffix and retry once. Covers cases where state.distributors
+    //    is stale (e.g. a previous partial-success attempt) so the pre-check missed it.
+    const buildPayload=()=>({
+      name:first+(last?' '+last:''),slug:inviteSlug,
+      email,pin:genPinStr(),
+      first_name:first,last_name:last||null,
+      pin_goal:goal,dv_goal:dvForGoal(goal),
+      influence_factor:GLOBAL_UPLIFT,
+      is_active:false,status:'pending',
+      created_by:currentUser.id
     });
+    try{
+      await sbFetch('/rest/v1/distributors',{
+        method:'POST',
+        headers:{...SB_H(),'Prefer':'return=minimal'},
+        body:JSON.stringify(buildPayload())
+      });
+    }catch(err){
+      const msg=(err&&err.message)||'';
+      if(msg.includes('23505')){
+        // Slug already taken in DB — strip any prior suffix, add a fresh one, retry
+        inviteSlug=inviteSlug.replace(/-[a-z0-9]{4}$/,'')+'-'+Math.random().toString(36).slice(2,6);
+        await sbFetch('/rest/v1/distributors',{
+          method:'POST',
+          headers:{...SB_H(),'Prefer':'return=minimal'},
+          body:JSON.stringify(buildPayload())
+        });
+      }else throw err;
+    }
     // 2. Send magic link invite
     const redirectTo=window.location.origin+'/signup?slug='+inviteSlug;
     const sbInv=sbClient||initSupabase();
