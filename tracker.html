@@ -518,36 +518,6 @@ html,body{background:var(--bg,#fafaf8);background-attachment:fixed}
       <div class="app-grid" id="app-grid"></div>
     </div>
 
-    <!-- Supabase credentials baked in — no config needed -->
-      <div style="display:flex;gap:9px;align-items:center;flex-wrap:wrap">
-        <button class="btn bp" onclick="saveSB()">Save &amp; Test</button>
-        <button class="btn" onclick="syncAllSB()">Sync All Entries</button>
-        <button class="btn" onclick="pullSB(()=>toast('✓ Pulled from cloud'))">Pull from Cloud</button>
-        <span id="sbst" style="font-size:12px;color:var(--text2)"></span>
-      </div>
-      <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--divider)">
-        <div class="ct" style="margin-bottom:8px">First-time setup</div>
-        <div class="step"><span class="sn">1</span><span>Go to <strong>supabase.com</strong> → New project → name it "MyOrgTracker"</span></div>
-        <div class="step"><span class="sn">2</span><span>SQL Editor → run this schema</span></div>
-        <div class="code">create table org_volume (
-  id              bigserial primary key,
-  entry_date      date not null,
-  user_slug       text not null,
-  month_num       int,  year_num int,  day_num int,
-  org_volume      numeric,
-  org_increase    numeric,
-  dv_goal         numeric default 113636,
-  dv_remaining    numeric,
-  org_daily_avg   numeric,
-  est_org_dv      numeric,
-  uplift_per_day  numeric,
-  pin_goal        text,
-  unique(entry_date, user_slug)
-);</div>
-        <div class="step"><span class="sn">3</span><span>Settings → API → copy URL &amp; anon key → paste above</span></div>
-      </div>
-    </div>
-
   </div>
 </div>
 
@@ -645,8 +615,10 @@ let currentDist=null;
 
 function saveRecs(){
   localStorage.setItem(STORE_KEY,JSON.stringify(recs));
-  const admin=loadAdminState();
-  if(admin){const di=admin.distributors.findIndex(d=>d.slug===userSlug);if(di>=0){admin.distributors[di].records=recs;localStorage.setItem(ADMIN_KEY,JSON.stringify(admin))}}
+  // Note: there used to be code here that mirrored records into a separate
+  // localStorage 'admin state' blob for a non-Supabase admin view.
+  // That's gone — admin reads directly from Supabase now — so this function
+  // is just a localStorage cache for the distributor's own session.
 }
 
 const key=r=>r.year+'-'+String(r.month).padStart(2,'0')+'-'+String(r.day).padStart(2,'0');
@@ -929,10 +901,18 @@ function showApp(name){
 }
 
 function doLogout(){
-  // Clear any legacy session keys (harmless if missing)
+  // Clear our own session caches (harmless if missing)
   sessionStorage.removeItem('ot_session_'+userSlug);
   localStorage.removeItem('ot_persist_'+userSlug);
-  // Send the user back to the sign-in page; index.html will tear down the Supabase session as needed
+  // Clear the Supabase auth session. The SDK persists it under
+  //   sb-<project-ref>-auth-token        (the JWT)
+  //   sb-<project-ref>-auth-token-code-verifier  (PKCE)
+  // Without this, redirecting to / just bounces the user right back in
+  // because index.html's getSession() check still finds a valid session.
+  try {
+    Object.keys(localStorage).forEach(k => { if (k.startsWith('sb-')) localStorage.removeItem(k); });
+    Object.keys(sessionStorage).forEach(k => { if (k.startsWith('sb-')) sessionStorage.removeItem(k); });
+  } catch(e) {}
   window.location.href = '/';
 }
 
