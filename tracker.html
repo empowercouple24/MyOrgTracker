@@ -457,6 +457,7 @@ td.n{font-family:'Geist',sans-serif;font-variant-numeric:tabular-nums}
 .mg-hit.yes{background:#3aac77;color:#fff}
 .mg-hit.no{background:#c65d3a;color:#fff}
 .mg-hit.partial{background:#d4a74a;color:#3a2a0a}
+.mg-hit.progress{background:var(--surface3);color:var(--text2);font-weight:500}
 .mg-hit.none{background:var(--surface3);color:var(--text3)}
 .mg-final{font-family:'EB Garamond',serif;font-size:24px;font-weight:500;line-height:1;letter-spacing:-0.02em;margin-bottom:2px;color:var(--text)}
 .mg-card.current .mg-final{color:var(--surface)}
@@ -484,6 +485,7 @@ td.n{font-family:'Geist',sans-serif;font-variant-numeric:tabular-nums}
 .md-hero-goal{font-family:'Geist',sans-serif;font-size:10px;color:var(--text3);margin-top:3px;letter-spacing:0.04em}
 .md-hero-goal .hit-pill{display:inline-block;padding:2px 7px;background:#3aac77;color:#fff;border-radius:999px;font-weight:700;letter-spacing:0.06em;margin-left:5px;font-size:9px}
 .md-hero-goal .miss-pill{display:inline-block;padding:2px 7px;background:#c65d3a;color:#fff;border-radius:999px;font-weight:700;letter-spacing:0.06em;margin-left:5px;font-size:9px}
+.md-hero-goal .progress-pill{display:inline-block;padding:2px 7px;background:var(--surface3);color:var(--text2);border-radius:999px;font-weight:500;letter-spacing:0.06em;margin-left:5px;font-size:9px}
 
 .md-metric-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
 @media(max-width:640px){.md-metric-strip{grid-template-columns:repeat(2,1fr)}}
@@ -523,8 +525,35 @@ td.n{font-family:'Geist',sans-serif;font-variant-numeric:tabular-nums}
 .md-row .md-row-chg.pos{color:#3aac77}
 .md-row .md-row-chg.neg{color:#c65d3a}
 .md-row .hit-badge{display:inline-block;padding:1px 6px;background:#3aac77;color:#fff;border-radius:999px;font-size:9px;font-weight:700;letter-spacing:0.06em;margin-right:4px}
-.md-row .mini-bar{height:12px;background:linear-gradient(to right,var(--accent) var(--pct),var(--surface3) var(--pct));border-radius:3px}
-.md-row.hit-row .mini-bar{background:linear-gradient(to right,#3aac77 var(--pct),rgba(255,255,255,0.5) var(--pct))}
+/* ═══════ Goal bar with hashmarks + compressed ghost extension ═══════
+   Modes:
+   • .gb[data-mode="compressed"] — below current goal; cur zone 90%, ext 10% ghost tail
+   • .gb[data-mode="expanded"]   — past current goal; zones at true proportions
+   • .gb[data-mode="solo"]       — top tier, no next; just one zone */
+.gb-wrap{position:relative;padding-bottom:18px}
+.gb{position:relative;height:10px;border-radius:3px;overflow:visible}
+.gb-zone-cur{position:absolute;left:0;top:0;bottom:0;background:var(--surface3);border-radius:3px 0 0 3px;z-index:0;transition:right 0.5s cubic-bezier(0.22,1,0.36,1)}
+.gb-zone-ext{position:absolute;top:0;bottom:0;right:0;background:repeating-linear-gradient(90deg,rgba(196,138,58,0.14) 0px,rgba(196,138,58,0.14) 3px,transparent 3px,transparent 6px);border:1px dashed rgba(196,138,58,0.35);border-left:none;border-radius:0 3px 3px 0;z-index:0;transition:left 0.5s cubic-bezier(0.22,1,0.36,1)}
+.gb[data-mode="solo"] .gb-zone-cur{right:0;border-radius:3px}
+.gb[data-mode="solo"] .gb-zone-ext{display:none}
+.gb-fill-cur{position:absolute;left:0;top:0;bottom:0;border-radius:3px 0 0 3px;z-index:1;transition:width 0.5s cubic-bezier(0.22,1,0.36,1)}
+.gb-fill-cur.solo{border-radius:3px}
+.gb-fill-next{position:absolute;top:0;bottom:0;z-index:1;transition:left 0.5s cubic-bezier(0.22,1,0.36,1),width 0.5s cubic-bezier(0.22,1,0.36,1)}
+.gb-fill-next.reaches-end{border-radius:0 3px 3px 0}
+.gb-tick{position:absolute;top:100%;width:1px;height:5px;margin-top:2px;z-index:3;transition:left 0.5s cubic-bezier(0.22,1,0.36,1)}
+.gb-tick.upcoming{opacity:0.4}
+.gb-tick.goal{width:2px;height:7px;margin-top:1px}
+.gb-tick-label{position:absolute;top:calc(100% + 9px);font-size:8px;letter-spacing:0.06em;font-weight:700;color:var(--text3);transform:translateX(-50%);white-space:nowrap;transition:left 0.5s cubic-bezier(0.22,1,0.36,1)}
+.gb-tick-label.past{color:var(--text)}
+.gb-tick-label.goal{color:var(--text);font-weight:800}
+.gb-end-cap{position:absolute;right:0;top:calc(100% + 9px);font-size:8px;letter-spacing:0.06em;font-weight:700;color:rgba(196,138,58,0.55);transition:color 0.2s;white-space:nowrap}
+.gb-end-cap.lit{color:#c48a3a}
+.gb-end-cap.hit-next{color:#c48a3a;font-weight:800}
+/* Mobile: hide the small labels that would collide on narrow bars */
+@media(max-width:640px){
+  .gb-tick-label{display:none}
+  .gb-end-cap{font-size:7px}
+}
 .md-row .chev{color:var(--text3);font-size:14px;text-align:right;transition:transform .15s}
 .md-row.expanded .chev{transform:rotate(90deg)}
 .md-row-expand{grid-column:1 / -1;padding:12px 16px 14px;background:var(--surface2);border-radius:8px;margin:8px 0 2px;display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
@@ -928,6 +957,37 @@ function goalById(id){return GOAL_OPTIONS.find(g=>g.id===id)||GOAL_OPTIONS[4]}
 function dvForGoal(id){return goalById(id).dv}
 function goalOptions(sel){return GOAL_OPTIONS.map(g=>`<option value="${g.id}"${g.id===sel?' selected':''}>${g.label} — ${g.dv.toLocaleString()} DV</option>`).join('')}
 
+// ═══════════════════ TIER NAV HELPERS (goal bar) ═══════════════════
+// Find the next tier up from a given tier id. Returns null when on top tier.
+// GOAL_OPTIONS is listed highest-to-lowest, so "next" is the one directly above (index-1).
+function nextTierAbove(id){
+  const idx=GOAL_OPTIONS.findIndex(g=>g.id===id);
+  if(idx<=0)return null;  // 0 = pt30k (top), so no next tier
+  return GOAL_OPTIONS[idx-1];
+}
+// Major milestones only — filter to tier ids awt, get, mt, pt. Plus tiers skipped.
+// Returns milestones whose DV is STRICTLY LESS THAN the given currentGoalDv.
+const MAJOR_MILESTONES=['awt','get','mt','pt'];
+function majorMilestonesBelow(currentGoalDv){
+  return GOAL_OPTIONS
+    .filter(g=>MAJOR_MILESTONES.includes(g.id)&&g.dv<currentGoalDv)
+    .sort((a,b)=>a.dv-b.dv);
+}
+// Tier color for the bar — returns a concrete hex by tier id, keyed to
+// levelColor() where possible. Used for both tick color and fill color.
+function tierBarColor(id){
+  if(id==='awt')return '#86a383';
+  if(id==='get')return '#5ea39a';
+  if(id==='getp')return '#f39519';
+  if(id==='mt')return '#7a5a3a';
+  if(id==='mtp')return '#c48a3a';
+  if(id==='pt')return '#c65d3a';
+  if(id==='pt15k')return '#a4392e';
+  if(id==='pt20k')return '#7a2428';
+  if(id==='pt30k')return '#5e2a4d';
+  return '#7a5a3a';
+}
+
 // ═══════════════════ TEAM-LEVEL COLOR SYSTEM ═══════════════════
 // Ported verbatim from richlifemonthlynumbers/shared.js — if the level list
 // ever changes in that project, diff these three functions and re-copy.
@@ -994,7 +1054,7 @@ const MO=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec
 const fmt=n=>{
   if(n==null)return'—';
   const r=Math.round(n*100)/100;
-  return r.toLocaleString('en-US',{maximumFractionDigits:2});
+  return r.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
 };
 
 const MINIMAL_COLORS=[
@@ -1836,8 +1896,11 @@ function renderMonthGrid(){
     }
     const estDV=d.finalVol*UPLIFT;
     const pctOfGoal=d.goal>0?(estDV/d.goal)*100:0;
+    // Only show MISS / HIT when the month is actually over. Current month gets
+    // a subtle "IN PROGRESS" pill; if already hit goal this month, it's HIT.
     let hitClass='no',hitLbl='MISS';
     if(d.hit){hitClass='yes';hitLbl='HIT'}
+    else if(isCurrent){hitClass='progress';hitLbl='IN PROGRESS'}
     else if(pctOfGoal>=80){hitClass='partial';hitLbl='CLOSE'}
     const fillClass=d.hit?'hit':'';
     const fillWidth=Math.min(100,Math.max(0,pctOfGoal));
@@ -1850,6 +1913,100 @@ function renderMonthGrid(){
     </div>`);
   }
   host.innerHTML=yearHead+'<div class="mg-grid">'+cards.join('')+'</div>';
+}
+
+// Build the goal bar for a day row. dayEstDV = r.org_volume * UPLIFT.
+// Logic:
+//   1. Find the day's goal id → currentTier. Find nextTier above it.
+//   2. If no nextTier: solo mode, simple fill against currentTier goal.
+//   3. Else determine compressed vs expanded:
+//      - dayEstDV >= currentTier.dv → expanded; zones at true proportions
+//      - otherwise → compressed; cur zone 90%, ext zone 10% ghost
+//   4. Position major milestones (AWT, GET, MT, PT) as colored ticks below the bar.
+function buildGoalBar(r){
+  const curId=r.pin_goal||'mtp';
+  const cur=goalById(curId);
+  const curGoalDv=r.dv_goal||cur.dv;
+  const next=nextTierAbove(curId);
+  const estDV=r.org_volume*UPLIFT;
+  const curColor=tierBarColor(curId);
+
+  // ─── SOLO mode: no next tier (top tier) ───
+  if(!next){
+    const pct=Math.min(100,Math.max(0,(estDV/curGoalDv)*100));
+    const milestones=majorMilestonesBelow(curGoalDv);
+    const ticks=milestones.map(ms=>{
+      const pos=Math.min(99,(ms.dv/curGoalDv)*100);
+      const passed=estDV>=ms.dv;
+      return `<div class="gb-tick ${passed?'past':'upcoming'}" style="left:${pos}%;background:${tierBarColor(ms.id)}"></div>
+              <div class="gb-tick-label ${passed?'past':''}" style="left:${pos}%;color:${tierBarColor(ms.id)}">${abbrevLevel(ms.label)}</div>`;
+    }).join('');
+    return `<div class="gb-wrap"><div class="gb" data-mode="solo">
+      <div class="gb-zone-cur"></div><div class="gb-zone-ext"></div>
+      <div class="gb-fill-cur solo" style="width:${pct}%;background:${curColor}"></div>
+      ${ticks}
+      <div class="gb-tick goal ${estDV>=curGoalDv?'past':'upcoming'}" style="left:100%;background:${curColor}"></div>
+      <div class="gb-tick-label goal ${estDV>=curGoalDv?'past':''}" style="left:97%;color:${curColor}">${abbrevLevel(cur.label)} ${estDV>=curGoalDv?'✓':''}</div>
+    </div></div>`;
+  }
+
+  // ─── Determine mode: compressed if below goal, expanded if past ───
+  const hit=estDV>=curGoalDv;
+  const mode=hit?'expanded':'compressed';
+  // Zone widths: compressed → cur takes 90%, ext takes 10%.
+  // Expanded → cur takes currentGoalDv/nextGoalDv share, ext gets the rest.
+  const curZoneW=hit?(curGoalDv/next.dv)*100:90;
+  const extZoneLeft=curZoneW;
+  const nextColor=tierBarColor(next.id);
+
+  // Fill widths:
+  //   fill-cur = how full is the current-goal zone
+  //   fill-next = how much of the extension is filled (only relevant if hit)
+  let fillCurW,fillNextLeft=null,fillNextW=0,hitNext=false;
+  if(!hit){
+    // Percentage of current goal × compressed cur zone width
+    fillCurW=Math.min(curZoneW,(estDV/curGoalDv)*curZoneW);
+  }else{
+    fillCurW=curZoneW;  // current zone completely filled
+    // Extension fill: (estDV - currentGoalDv) / (nextGoalDv - currentGoalDv) × extZoneWidth
+    const extZoneW=100-curZoneW;
+    const extFillPct=Math.min(1,Math.max(0,(estDV-curGoalDv)/(next.dv-curGoalDv)));
+    fillNextW=extFillPct*extZoneW;
+    fillNextLeft=curZoneW;
+    hitNext=estDV>=next.dv;
+  }
+
+  // Ticks for major milestones below current goal.
+  // Tick position = (milestone.dv / currentGoalDv) × curZoneW — scales with zone.
+  const milestones=majorMilestonesBelow(curGoalDv);
+  const tickMarks=milestones.map(ms=>{
+    const pos=(ms.dv/curGoalDv)*curZoneW;
+    const passed=estDV>=ms.dv;
+    return `<div class="gb-tick ${passed?'past':'upcoming'}" style="left:${pos}%;background:${tierBarColor(ms.id)}"></div>
+            <div class="gb-tick-label ${passed?'past':''}" style="left:${pos}%;color:${tierBarColor(ms.id)}">${abbrevLevel(ms.label)}</div>`;
+  }).join('');
+
+  // Current-goal marker sits at the boundary between cur & ext zones.
+  const goalTickPos=curZoneW;
+  const goalLabel=hit?`${abbrevLevel(cur.label)} ✓`:`${abbrevLevel(cur.label)} · ${(curGoalDv/1000)|0}K`;
+  // End cap label (next tier)
+  const endCapCls=hit?(hitNext?'hit-next':'lit'):'';
+  const endCapText=hitNext?`🎯 ${abbrevLevel(next.label)} ✓`:`${abbrevLevel(next.label)} · ${(next.dv/1000)|0}K`;
+
+  // Zone position attributes — cur zone ends at curZoneW%, ext zone starts at curZoneW%
+  const curZoneStyle=`right:${100-curZoneW}%`;
+  const extZoneStyle=`left:${extZoneLeft}%`;
+
+  return `<div class="gb-wrap"><div class="gb" data-mode="${mode}">
+    <div class="gb-zone-cur" style="${curZoneStyle}"></div>
+    <div class="gb-zone-ext" style="${extZoneStyle}"></div>
+    <div class="gb-fill-cur${(!hit)?' solo':''}" style="width:${fillCurW}%;background:${curColor}"></div>
+    ${hit?`<div class="gb-fill-next${hitNext?' reaches-end':''}" style="left:${fillNextLeft}%;width:${fillNextW}%;background:${nextColor}"></div>`:''}
+    ${tickMarks}
+    <div class="gb-tick goal ${hit?'past':'upcoming'}" style="left:${goalTickPos}%;background:${curColor}"></div>
+    <div class="gb-tick-label goal ${hit?'past':''}" style="left:${goalTickPos}%">${goalLabel}</div>
+    <div class="gb-end-cap ${endCapCls}">${endCapText}</div>
+  </div></div>`;
 }
 
 function renderMonthDetail(){
@@ -1887,14 +2044,12 @@ function renderMonthDetail(){
   }
 
   // Day list rows (newest first for easy scanning)
-  const maxInc=Math.max(...monthRecs.map(r=>r.org_increase||0),1);
   const rows=[...monthRecs].reverse().map(r=>{
     const dk=y+'-'+m+'-'+r.day;
     const expanded=(dataExpandedDayKey===dk);
     const dowName=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][new Date(r.year,r.month-1,r.day).getDay()];
     const sign=(r.org_increase||0)>=0?'+':'';
     const changeCls=(r.org_increase||0)>=0?'pos':'neg';
-    const pct=Math.max(2,Math.round(((r.org_increase||0)/maxInc)*100));
     const hitRow=r.hit?' hit-row':'';
     const expandedCls=expanded?' expanded':'';
     const volCell=bulkEditMode
@@ -1902,9 +2057,10 @@ function renderMonthDetail(){
       : fmt(r.org_volume);
     const hitBadge=r.hit?`<span class="hit-badge">HIT</span>`:'';
     const bulkDel=bulkEditMode?`<button class="btn bdng bsm" onclick="event.stopPropagation();delBulk('${dk}')">Del</button>`:'';
+    const goalBar=buildGoalBar(r);
     let rowHtml=`<div class="md-row${hitRow}${expandedCls}" ${bulkEditMode?'':`onclick="toggleDayRow('${dk}')"`}>
       <div><div class="day-num">${MO[r.month-1]} ${r.day}</div><div class="day-meta">${dowName} · ${r.day}</div></div>
-      <div class="mini-bar" style="--pct:${pct}%"></div>
+      ${goalBar}
       <div class="md-row-vol">${volCell}</div>
       <div class="md-row-chg ${changeCls}">${hitBadge}${sign}${fmt(r.org_increase)}</div>
       <div class="chev">${bulkEditMode?bulkDel:'›'}</div>`;
@@ -1927,6 +2083,12 @@ function renderMonthDetail(){
   const hitOnCopy=hitDay?`${MO[hitDay.month-1]} ${hitDay.day}`:'—';
   const hitOnSub=hitDay?`day ${hitDay.day} of ${dimsMonth}`:(hit?'goal hit':'not yet');
   const overTxt=hit?`+${fmt(estDV-goalDV)} over target`:`${fmt(goalDV-estDV)} short`;
+  // Show HIT/MISS pill only if month is definitively over. For current or
+  // future months, show a subtle "IN PROGRESS" pill unless already hit.
+  let heroPill='';
+  if(hit){heroPill=`<span class="hit-pill">🎯 HIT</span>`}
+  else if(isCurrentMonth||(y===now.getFullYear()&&m>now.getMonth()+1)||(y>now.getFullYear())){heroPill=`<span class="progress-pill">IN PROGRESS</span>`}
+  else{heroPill=`<span class="miss-pill">MISS</span>`}
 
   host.innerHTML=`
     <div class="md-hero">
@@ -1936,7 +2098,7 @@ function renderMonthDetail(){
       </div>
       <div class="md-hero-right">
         <div class="md-hero-num">${fmt(finalVol)}</div>
-        <div class="md-hero-goal">final org volume ${hit?`<span class="hit-pill">🎯 HIT</span>`:`<span class="miss-pill">MISS</span>`}</div>
+        <div class="md-hero-goal">final org volume ${heroPill}</div>
       </div>
     </div>
     <div class="md-metric-strip">
@@ -1960,7 +2122,7 @@ function renderMonthDetail(){
     <div class="card" style="padding:10px 10px 12px">
       <div class="md-day-head">
         <div>Day</div>
-        <div>Progress <span class="hide-sm">(vs best day)</span></div>
+        <div>Progress <span class="hide-sm">to goal</span></div>
         <div class="n">Org Vol</div>
         <div class="n">Change</div>
         <div></div>
