@@ -232,24 +232,73 @@ td.n{font-family:'DM Mono',monospace;font-variant-numeric:tabular-nums}
 .entry-vol::placeholder{color:var(--text3);font-weight:300;opacity:0.45}
 @media (max-width:560px){.entry-vol{font-size:48px;padding:22px 12px}.entry-card{padding:24px 20px}.entry-prompt{font-size:20px}}
 
-.entry-meta{display:flex;justify-content:space-between;gap:18px;flex-wrap:wrap;align-items:flex-end}
-.entry-meta-group{display:flex;flex-direction:column;gap:6px;flex:0 1 auto}
+.entry-meta{display:flex;flex-direction:column;gap:14px;align-items:stretch}
+.entry-meta-group{display:flex;flex-direction:column;gap:6px}
 .entry-meta-group label{font-family:'DM Mono',monospace;font-size:10px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--text3)}
-.entry-meta-row{display:flex;gap:6px;align-items:center}
-.entry-meta-select{height:38px;padding:0 10px;font-size:14px;border:1px solid var(--border);border-radius:8px;background:var(--surface);color:var(--text);font-family:'Geist',sans-serif;outline:none;transition:.12s;cursor:pointer}
-.entry-meta-select:focus{border-color:var(--accent)}
-.entry-meta-day{width:56px;height:38px;padding:0 10px;font-size:14px;text-align:center;border:1px solid var(--border);border-radius:8px;background:var(--surface);color:var(--text);font-family:'DM Mono',monospace;outline:none;transition:.12s;-moz-appearance:textfield}
-.entry-meta-day:focus{border-color:var(--accent)}
-.entry-meta-day::-webkit-outer-spin-button,.entry-meta-day::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
-.goal-select{min-width:200px}
 
-/* Locked goal display on Log Entry (editable only in Settings) */
-.goal-locked{display:flex;flex-direction:column;gap:4px;padding:8px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;cursor:pointer;transition:.12s;min-width:200px;user-select:none}
-.goal-locked:hover{border-color:var(--border2);background:var(--surface3)}
-.goal-locked-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-.goal-locked-label{font-family:'Geist',sans-serif;font-size:14px;font-weight:500;color:var(--text);line-height:1.2}
-.goal-locked-pin{font-family:'Geist',sans-serif;font-size:11px;font-weight:600;letter-spacing:.04em;padding:3px 9px;border-radius:999px;border:1px solid transparent;line-height:1.4}
-.goal-locked-hint{font-family:'DM Mono',monospace;font-size:9px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:var(--text3)}
+/* Airline-style date picker */
+.date-picker{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:12px 14px}
+.date-picker-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.date-picker-label{font-family:'DM Mono',monospace;font-size:10px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--text3)}
+.date-picker-controls{display:flex;align-items:center;gap:8px}
+.date-picker-month{font-family:'Geist',sans-serif;font-size:11px;font-weight:500;color:var(--text2);letter-spacing:0.02em}
+.date-picker-cal-btn{width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:7px;border:1px solid var(--border);background:transparent;color:var(--text2);cursor:pointer;transition:.12s;padding:0}
+.date-picker-cal-btn:hover{border-color:var(--border2);color:var(--text);background:var(--surface)}
+.date-chips{display:flex;gap:6px;overflow-x:auto;scroll-behavior:smooth;padding-bottom:2px;-webkit-overflow-scrolling:touch}
+.date-chips::-webkit-scrollbar{height:0}
+.date-chip{flex-shrink:0;min-width:48px;padding:8px 6px;border-radius:9px;border:1px solid var(--border);text-align:center;background:var(--surface);cursor:pointer;transition:.12s;user-select:none}
+.date-chip:hover{border-color:var(--border2)}
+.date-chip-dow{font-family:'DM Mono',monospace;font-size:9px;font-weight:500;letter-spacing:.1em;color:var(--text3);text-transform:uppercase;margin-bottom:2px}
+.date-chip-day{font-family:'DM Mono',monospace;font-size:16px;font-weight:500;color:var(--text);line-height:1}
+.date-chip.has-entry::after{content:'';display:block;width:4px;height:4px;border-radius:50%;background:var(--accent);margin:3px auto 0}
+.date-chip.on{background:var(--accent);border-color:var(--accent)}
+.date-chip.on .date-chip-dow,.date-chip.on .date-chip-day{color:var(--surface)}
+.date-chip.on .date-chip-dow{opacity:0.85}
+.date-chip.on::after{background:var(--surface)}
+.date-popover{position:absolute;top:38px;right:0;background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:14px;z-index:50;box-shadow:0 8px 24px rgba(0,0,0,0.12);min-width:260px}
+.date-popover-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-top:8px}
+.date-popover-dow{font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);text-align:center;letter-spacing:.06em;padding:4px 0}
+.date-popover-day{font-family:'DM Mono',monospace;font-size:13px;color:var(--text);text-align:center;padding:7px 0;border-radius:6px;cursor:pointer;transition:.1s;background:transparent;border:none}
+.date-popover-day:hover{background:var(--surface2)}
+.date-popover-day.empty{cursor:default;color:transparent}
+.date-popover-day.on{background:var(--accent);color:var(--surface)}
+.date-popover-day.today{outline:1px solid var(--accent);outline-offset:-2px}
+.date-popover-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
+.date-popover-nav button{background:transparent;border:none;color:var(--text2);font-size:16px;cursor:pointer;padding:4px 10px;border-radius:6px}
+.date-popover-nav button:hover{background:var(--surface2);color:var(--text)}
+.date-popover-nav-title{font-size:13px;font-weight:500;color:var(--text)}
+
+/* Goal card — Design B (pin as corner seal) — also targeted by #entry-goal-locked */
+.goal-locked{position:relative;background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:14px 16px;cursor:pointer;transition:.12s;user-select:none;display:block}
+.goal-locked:hover{border-color:var(--border2)}
+.goal-b-pin{position:absolute;top:12px;right:12px;width:44px;height:44px;background-position:center;background-size:contain;background-repeat:no-repeat;pointer-events:none}
+.goal-b-eyebrow{display:flex;align-items:center;gap:6px;margin-bottom:10px;padding-right:54px}
+.goal-b-eyebrow-label{font-family:'DM Mono',monospace;font-size:10px;font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:var(--text3)}
+.goal-b-eyebrow-dot{width:3px;height:3px;border-radius:50%;background:var(--text3);opacity:0.4}
+.goal-b-pace{font-family:'DM Mono',monospace;font-size:10px;font-weight:500;letter-spacing:.06em;text-transform:uppercase}
+.goal-b-pace.ahead{color:#3aac77}
+.goal-b-pace.behind{color:#c65d3a}
+.goal-b-pace.ontrack{color:var(--text2)}
+.goal-b-value-row{display:flex;align-items:baseline;gap:6px;margin-bottom:4px}
+.goal-b-value-hero{font-family:'DM Mono',monospace;font-size:28px;font-weight:500;color:var(--text);letter-spacing:-0.02em;line-height:1}
+.goal-b-value-of{font-family:'DM Mono',monospace;font-size:14px;color:var(--text3)}
+.goal-b-value-meta{font-family:'DM Mono',monospace;font-size:10px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);margin-bottom:10px}
+.goal-b-progress{height:5px;background:var(--surface3);border-radius:3px;overflow:hidden;margin-bottom:14px}
+.goal-b-progress-fill{height:100%;background:var(--accent);transition:width .4s}
+.goal-b-callout{padding:8px 10px;border-radius:0 8px 8px 0;border-left:3px solid;margin-bottom:12px}
+.goal-b-callout.behind{background:rgba(198,93,58,0.08);border-left-color:#c65d3a}
+.goal-b-callout.ahead{background:rgba(58,172,119,0.08);border-left-color:#3aac77}
+.goal-b-callout.ontrack{background:var(--surface3);border-left-color:var(--text3)}
+.goal-b-callout-main{font-family:'Geist',sans-serif;font-size:11px;font-weight:500;line-height:1.4}
+.goal-b-callout-main.behind{color:#8a3f25}
+.goal-b-callout-main.ahead{color:#1f6b48}
+.goal-b-callout-main.ontrack{color:var(--text2)}
+.goal-b-callout-sub{font-family:'Geist',sans-serif;font-size:10px;color:var(--text3);margin-top:2px}
+.goal-b-level-row{display:flex;align-items:center;gap:6px;margin-bottom:10px}
+.goal-b-level-pill{font-family:'Geist',sans-serif;font-size:10px;font-weight:500;padding:2px 8px;border-radius:999px;letter-spacing:0.02em}
+.goal-b-level-name{font-family:'Geist',sans-serif;font-size:12px;font-weight:500;color:var(--text)}
+.goal-b-presave-copy{font-family:'Geist',sans-serif;font-size:11px;color:var(--text3);line-height:1.5;margin-bottom:12px}
+.goal-b-uplift{font-family:'DM Mono',monospace;font-size:10px;color:var(--text3);padding-top:8px;border-top:1px solid var(--divider);letter-spacing:0.02em}
 
 .entry-actions{margin-top:28px;display:flex;gap:10px}
 .entry-save{flex:1;height:56px;background:var(--accent);color:var(--surface);border:none;border-radius:12px;font-family:'Geist',sans-serif;font-weight:500;font-size:15px;letter-spacing:0.005em;cursor:pointer;transition:opacity .12s,transform .12s}
@@ -487,28 +536,28 @@ html,body{background:var(--bg,#fafaf8);background-attachment:fixed}
       <input class="entry-vol" type="number" id="ev" placeholder="0" inputmode="decimal" step="0.01" autocomplete="off">
 
       <div class="entry-meta">
-        <div class="entry-meta-group">
-          <label>Date</label>
-          <div class="entry-meta-row">
-            <select id="em" class="entry-meta-select">
-              <option value="1">January</option><option value="2">February</option><option value="3">March</option>
-              <option value="4">April</option><option value="5">May</option><option value="6">June</option>
-              <option value="7">July</option><option value="8">August</option><option value="9">September</option>
-              <option value="10">October</option><option value="11">November</option><option value="12">December</option>
-            </select>
-            <input type="number" id="ed" class="entry-meta-day" min="1" max="31">
-            <select id="ey" class="entry-meta-select"></select>
-          </div>
-        </div>
-        <div class="entry-meta-group">
-          <label>Goal</label>
-          <div class="goal-locked" id="entry-goal-locked" onclick="go('settings')" title="Change in Settings">
-            <div class="goal-locked-row">
-              <span class="goal-locked-label" id="entry-goal-label">—</span>
-              <span class="goal-locked-pin" id="entry-goal-pin" style="display:none"></span>
+        <!-- Airline-style date picker; em/ed/ey kept as hidden source-of-truth for saveEntry -->
+        <div class="entry-meta-group" style="position:relative">
+          <div class="date-picker">
+            <div class="date-picker-header">
+              <div class="date-picker-label">Date</div>
+              <div class="date-picker-controls">
+                <span class="date-picker-month" id="date-picker-month">—</span>
+                <button class="date-picker-cal-btn" type="button" onclick="toggleDatePopover(event)" title="Pick a date" aria-label="Open calendar">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M3 10h18M8 2v4M16 2v4"/></svg>
+                </button>
+              </div>
             </div>
-            <span class="goal-locked-hint">Locked · change in Settings</span>
+            <div class="date-chips" id="date-chips"></div>
           </div>
+          <div id="date-popover-host" style="position:relative"></div>
+          <input type="hidden" id="em" value="">
+          <input type="hidden" id="ed" value="">
+          <input type="hidden" id="ey" value="">
+        </div>
+        <!-- Goal card (Design B); inner markup built by renderLockedGoal() -->
+        <div class="entry-meta-group">
+          <div class="goal-locked" id="entry-goal-locked" onclick="go('settings')" title="Change in Settings"></div>
         </div>
       </div>
 
@@ -1278,18 +1327,178 @@ function currentEntryGoal(){
   return goalById(id);
 }
 function renderLockedGoal(){
+  const card=document.getElementById('entry-goal-locked');
+  if(!card)return;
   const g=currentEntryGoal();
-  const labelEl=document.getElementById('entry-goal-label');
-  const pinEl=document.getElementById('entry-goal-pin');
-  if(labelEl){labelEl.textContent=g.label.replace(/\s*\(.*?\)\s*$/,'').trim()}
-  if(pinEl){
-    const c=levelColor(g.label);
-    pinEl.textContent=abbrevLevel(g.label);
-    pinEl.style.background=c.bg;
-    pinEl.style.color=c.text;
-    pinEl.style.borderColor='transparent';
-    pinEl.style.display='inline-block';
+  const cleanLabel=g.label.replace(/\s*\(.*?\)\s*$/,'').trim();
+  const colors=levelColor(g.label);
+  const pinUrl='/pins/'+g.id+'.png';
+
+  // Find today's actual record (not the picker-selected date)
+  const now=new Date();
+  const ty=now.getFullYear(),tm=now.getMonth()+1,td=now.getDate();
+  const todayRec=recs.find(r=>r.year===ty&&r.month===tm&&r.day===td);
+
+  // Build the Design B markup: pin in corner + state-dependent content
+  const pinEl=`<div class="goal-b-pin" style="background-image:url('${pinUrl}')" aria-label="${cleanLabel} pin"></div>`;
+  const upliftLine=`<div class="goal-b-uplift">Uplift factor ${UPLIFT}× · admin controlled</div>`;
+
+  if(!todayRec){
+    // ── PRE-SAVE STATE ──
+    card.innerHTML = pinEl + `
+      <div class="goal-b-eyebrow"><div class="goal-b-eyebrow-label">Goal</div></div>
+      <div class="goal-b-value-hero">${kFmt(g.dv)}</div>
+      <div class="goal-b-value-meta">DV target</div>
+      <div class="goal-b-level-row">
+        <span class="goal-b-level-pill" style="background:${colors.bg};color:${colors.text}">${abbrevLevel(g.label)}</span>
+        <div class="goal-b-level-name">${cleanLabel}</div>
+      </div>
+      <div class="goal-b-presave-copy">Log today's entry to see pace, daily target, and progress.</div>
+      ${upliftLine}`;
+    return;
   }
+
+  // ── POST-SAVE STATE ── compute pace + needed/day
+  const dimsToday=new Date(ty,tm,0).getDate();
+  const daysLeft=dimsToday-td;
+  const currentDV=todayRec.org_volume*UPLIFT;
+  const goalDV=g.dv;
+  const dvRemaining=Math.max(0,goalDV-currentDV);
+  const progressPct=Math.min(100,Math.max(0,(currentDV/goalDV)*100));
+  const neededPerDay=daysLeft>0?(dvRemaining/daysLeft):0;
+  const rawNeededPerDay=daysLeft>0?(neededPerDay/UPLIFT):0;
+
+  // Pace: compare current DV to expected DV at this point in the month (linear pace)
+  const expectedDV=(td/dimsToday)*goalDV;
+  let paceClass,paceLabel,calloutClass,calloutText,calloutSub;
+  if(currentDV>=goalDV){
+    paceClass='ahead';paceLabel='Goal Hit';
+    calloutClass='ahead';
+    calloutText=`Goal reached — ${kFmt(currentDV-goalDV)} DV over target`;
+    calloutSub=`${daysLeft} day${daysLeft===1?'':'s'} remaining this month`;
+  }else if(currentDV>=expectedDV*0.98){
+    paceClass='ahead';paceLabel='On Pace';
+    calloutClass='ahead';
+    calloutText=`${fmt(neededPerDay)} DV/day to finish · ${daysLeft} day${daysLeft===1?'':'s'} left`;
+    calloutSub=`That's ${fmt(rawNeededPerDay)} raw volume per day at ${UPLIFT}× uplift`;
+  }else{
+    paceClass='behind';paceLabel='Behind Pace';
+    calloutClass='behind';
+    calloutText=`${fmt(neededPerDay)} DV/day needed to finish · ${daysLeft} day${daysLeft===1?'':'s'} left`;
+    calloutSub=`That's ${fmt(rawNeededPerDay)} raw volume per day at ${UPLIFT}× uplift`;
+  }
+
+  card.innerHTML = pinEl + `
+    <div class="goal-b-eyebrow">
+      <div class="goal-b-eyebrow-label">Goal</div>
+      <div class="goal-b-eyebrow-dot"></div>
+      <div class="goal-b-pace ${paceClass}">${paceLabel}</div>
+    </div>
+    <div class="goal-b-value-row">
+      <div class="goal-b-value-hero">${kFmt(currentDV)}</div>
+      <div class="goal-b-value-of">/ ${kFmt(goalDV)}</div>
+    </div>
+    <div class="goal-b-value-meta">DV · ${Math.round(progressPct)}% of goal</div>
+    <div class="goal-b-progress"><div class="goal-b-progress-fill" style="width:${progressPct}%"></div></div>
+    <div class="goal-b-callout ${calloutClass}">
+      <div class="goal-b-callout-main ${calloutClass}">${calloutText}</div>
+      <div class="goal-b-callout-sub">${calloutSub}</div>
+    </div>
+    <div class="goal-b-level-row">
+      <span class="goal-b-level-pill" style="background:${colors.bg};color:${colors.text}">${abbrevLevel(g.label)}</span>
+      <div class="goal-b-level-name">${cleanLabel}</div>
+    </div>
+    ${upliftLine}`;
+}
+
+// Compact K-formatter for big DV numbers (150,000 → 150K, 99,000 → 99K, but <10K shows full)
+function kFmt(n){
+  if(n==null||isNaN(n))return'—';
+  const abs=Math.abs(n);
+  if(abs>=1000)return Math.round(n/1000).toLocaleString()+'K';
+  return Math.round(n).toLocaleString();
+}
+
+// ═══════════════════ AIRLINE-STYLE DATE PICKER ═══════════════════
+// Reads/writes hidden em/ed/ey inputs so saveEntry() / previewEntry() keep working unchanged.
+const DOW=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+let datePickerMonth=null,datePickerYear=null,datePickerDay=null;
+
+function setPickerDate(y,m,d){
+  datePickerYear=y;datePickerMonth=m;datePickerDay=d;
+  const ey=document.getElementById('ey'),em=document.getElementById('em'),ed=document.getElementById('ed');
+  if(ey)ey.value=y;if(em)em.value=m;if(ed)ed.value=d;
+  const monthLbl=document.getElementById('date-picker-month');
+  if(monthLbl)monthLbl.textContent=MO[m-1]+' '+y;
+  if(typeof previewEntry==='function')previewEntry();
+}
+
+function buildDateChips(){
+  const host=document.getElementById('date-chips');
+  if(!host)return;
+  const now=new Date();
+  const ty=now.getFullYear(),tm=now.getMonth()+1,td=now.getDate();
+  // Default: today selected on first build
+  if(datePickerYear===null){setPickerDate(ty,tm,td)}
+  // Build a sliding window: 3 days before today through 14 days after = 18 chips
+  const anchor=new Date(ty,tm-1,td);
+  const chips=[];
+  for(let offset=-3;offset<=14;offset++){
+    const d=new Date(anchor);d.setDate(anchor.getDate()+offset);
+    const y=d.getFullYear(),m=d.getMonth()+1,day=d.getDate();
+    const isSel=(y===datePickerYear&&m===datePickerMonth&&day===datePickerDay);
+    const isToday=(y===ty&&m===tm&&day===td);
+    const hasEntry=recs.some(r=>r.year===y&&r.month===m&&r.day===day);
+    chips.push(`<div class="date-chip${isSel?' on':''}${hasEntry?' has-entry':''}" onclick="setPickerDate(${y},${m},${day});buildDateChips()" title="${MO[m-1]} ${day}, ${y}${isToday?' (today)':''}">
+      <div class="date-chip-dow">${isToday&&!isSel?'TODAY':DOW[d.getDay()].toUpperCase()}</div>
+      <div class="date-chip-day">${day}</div>
+    </div>`);
+  }
+  host.innerHTML=chips.join('');
+  // Auto-scroll selected chip into view
+  const onChip=host.querySelector('.date-chip.on');
+  if(onChip)onChip.scrollIntoView({block:'nearest',inline:'center'});
+}
+
+function toggleDatePopover(ev){
+  if(ev){ev.stopPropagation()}
+  const host=document.getElementById('date-popover-host');
+  if(!host)return;
+  if(host.querySelector('.date-popover')){host.innerHTML='';return}
+  renderDatePopover(datePickerYear,datePickerMonth);
+  // Click-away to close
+  setTimeout(()=>{document.addEventListener('click',closeDatePopoverOnce,{once:true})},0);
+}
+function closeDatePopoverOnce(e){
+  const pop=document.querySelector('.date-popover');
+  if(pop&&!pop.contains(e.target)){
+    const host=document.getElementById('date-popover-host');
+    if(host)host.innerHTML='';
+  }
+}
+function renderDatePopover(y,m){
+  const host=document.getElementById('date-popover-host');
+  if(!host)return;
+  const dim=new Date(y,m,0).getDate();
+  const firstDow=new Date(y,m-1,1).getDay();
+  const now=new Date();
+  const ty=now.getFullYear(),tm=now.getMonth()+1,td=now.getDate();
+  const cells=[];
+  for(let i=0;i<firstDow;i++)cells.push('<button class="date-popover-day empty" type="button" disabled></button>');
+  for(let d=1;d<=dim;d++){
+    const isSel=(y===datePickerYear&&m===datePickerMonth&&d===datePickerDay);
+    const isToday=(y===ty&&m===tm&&d===td);
+    cells.push(`<button class="date-popover-day${isSel?' on':''}${isToday?' today':''}" type="button" onclick="setPickerDate(${y},${m},${d});document.getElementById('date-popover-host').innerHTML='';buildDateChips()">${d}</button>`);
+  }
+  const dowHdr=DOW.map(d=>`<div class="date-popover-dow">${d.slice(0,1)}</div>`).join('');
+  host.innerHTML=`<div class="date-popover" onclick="event.stopPropagation()">
+    <div class="date-popover-nav">
+      <button type="button" onclick="renderDatePopover(${m===1?y-1:y},${m===1?12:m-1})">‹</button>
+      <div class="date-popover-nav-title">${MO[m-1]} ${y}</div>
+      <button type="button" onclick="renderDatePopover(${m===12?y+1:y},${m===12?1:m+1})">›</button>
+    </div>
+    <div class="date-popover-grid">${dowHdr}${cells.join('')}</div>
+  </div>`;
 }
 function previewEntry(){
   const vol=+document.getElementById('ev').value,
@@ -1337,7 +1546,7 @@ function saveEntry(){
   if(saved&&sbCfg)pushSB(saved);
   toast('Entry saved!');
 }
-function clearEntry(){document.getElementById('ev').value='';document.getElementById('ed').value='';document.getElementById('eprev').style.display='none'}
+function clearEntry(){document.getElementById('ev').value='';const _n=new Date();setPickerDate(_n.getFullYear(),_n.getMonth()+1,_n.getDate());buildDateChips();document.getElementById('eprev').style.display='none'}
 
 // ═══════════════════ IMPORT ═══════════════════
 function handleDrop(e){e.preventDefault();document.getElementById('dz').classList.remove('drag');handleFiles(e.dataTransfer.files)}
@@ -1434,18 +1643,13 @@ function syncAllSB(){
 }
 
 function toast(msg,ms=2800){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('on');setTimeout(()=>t.classList.remove('on'),ms)}
-function renderAll(){buildPills();renderDash();buildFilter();renderTable()}
+function renderAll(){buildPills();renderDash();buildFilter();renderTable();renderLockedGoal();if(document.getElementById('date-chips'))buildDateChips()}
 
-const now=new Date();
-document.getElementById('em').value=now.getMonth()+1;
-// Year dropdown: 2024 → current year + 1, newest first
-const _curYr=now.getFullYear();
-const _eySel=document.getElementById('ey');
-let _yOpts='';
-for(let y=_curYr+1;y>=2024;y--) _yOpts+='<option value="'+y+'">'+y+'</option>';
-_eySel.innerHTML=_yOpts;
-_eySel.value=_curYr;
-document.getElementById('ed').value=now.getDate();
+// Airline date picker now owns date state; em/ed/ey are hidden inputs populated by setPickerDate()
+// (Year dropdown deprecated — picker covers ±18-day window with full-month popover for arbitrary dates.)
+// buildDateChips() defaults to today on first call. clearEntry() and saveEntry() still read em/ed/ey.
+// Build chips after auth + records load via renderAll() → page open. Defer until DOM ready:
+document.addEventListener('DOMContentLoaded',()=>{ if(document.getElementById('date-chips')) buildDateChips(); });
 // Supabase credentials baked in — Settings config removed
 initAuth().catch(e=>{console.error(e);document.getElementById("inactive-screen").classList.add("on");});
 </script>
