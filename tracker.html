@@ -191,14 +191,16 @@ body{font-family:'Geist',system-ui,sans-serif;background:var(--bg);background-at
 .pb-fill{height:100%;border-radius:5px;transition:width .4s}
 
 .tw{overflow-x:auto}
-table{width:100%;border-collapse:collapse;font-size:13px}
-th,td{padding:10px 12px;text-align:left;white-space:nowrap}
-th{font-size:11px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:var(--text3);border-bottom:1px solid var(--border)}
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th,td{padding:5px 11px;text-align:left;white-space:nowrap;line-height:1.4}
+th{font-size:10px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:var(--text3);border-bottom:1px solid var(--border);padding-top:8px;padding-bottom:8px}
 td{border-bottom:1px solid var(--divider);color:var(--text)}
 td.n{font-family:'DM Mono',monospace;font-variant-numeric:tabular-nums}
-.badge{padding:3px 8px;border-radius:4px;font-size:12px;font-weight:500;font-family:'DM Mono',monospace}
+.badge{padding:2px 7px;border-radius:4px;font-size:11px;font-weight:500;font-family:'DM Mono',monospace}
 .bg{background:var(--accent-soft);color:var(--accent)}
 .br{background:var(--red2);color:var(--red)}
+/* Compact in-row buttons for the data table */
+.tw .btn.bsm{height:24px;padding:0 9px;font-size:11px;border-radius:5px}
 
 .frow{display:flex;gap:12px;margin-bottom:14px;flex-wrap:wrap}
 .fg{display:flex;flex-direction:column;gap:5px}
@@ -246,7 +248,7 @@ td.n{font-family:'DM Mono',monospace;font-variant-numeric:tabular-nums}
 .goal-locked:hover{border-color:var(--border2);background:var(--surface3)}
 .goal-locked-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .goal-locked-label{font-family:'Geist',sans-serif;font-size:14px;font-weight:500;color:var(--text);line-height:1.2}
-.goal-locked-pin{font-family:'DM Mono',monospace;font-size:11px;font-weight:500;letter-spacing:.02em;color:var(--accent);background:var(--accent-softer);padding:2px 7px;border-radius:4px;border:1px solid var(--accent-soft)}
+.goal-locked-pin{font-family:'Geist',sans-serif;font-size:11px;font-weight:600;letter-spacing:.04em;padding:3px 9px;border-radius:999px;border:1px solid transparent;line-height:1.4}
 .goal-locked-hint{font-family:'DM Mono',monospace;font-size:9px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:var(--text3)}
 
 .entry-actions{margin-top:28px;display:flex;gap:10px}
@@ -598,6 +600,65 @@ const GOAL_OPTIONS=[
 function goalById(id){return GOAL_OPTIONS.find(g=>g.id===id)||GOAL_OPTIONS[4]}
 function dvForGoal(id){return goalById(id).dv}
 function goalOptions(sel){return GOAL_OPTIONS.map(g=>`<option value="${g.id}"${g.id===sel?' selected':''}>${g.label} — ${g.dv.toLocaleString()} DV</option>`).join('')}
+
+// ═══════════════════ TEAM-LEVEL COLOR SYSTEM ═══════════════════
+// Ported verbatim from richlifemonthlynumbers/shared.js — if the level list
+// ever changes in that project, diff these three functions and re-copy.
+// ────────────────────────────────────────────────────────────────
+function levelColor(level){
+  if (!level) return { bg:'#e3e3e3', text:'#555' };
+  const l = level.toLowerCase().trim();
+  if (l.startsWith('president'))                         return { bg:'#fde488', text:'#7a5200' };
+  if (l.includes('7500') || l === 'mp')                  return { bg:'#84c8d3', text:'#fff'    };
+  if (l.startsWith('millionaire') || l === 'mt')         return { bg:'#3aac77', text:'#fff'    };
+  if (l.startsWith('get team 2500') || l === 'gp' ||
+      l.startsWith('get plus') || l.includes('(2500)'))  return { bg:'#f39519', text:'#fff'    };
+  if (l.startsWith('get team') || l === 'gt' ||
+      l === 'get')                                       return { bg:'#e02054', text:'#fff'    };
+  if (l.startsWith('active world') || l === 'awt' ||
+      l.startsWith('world team')   || l === 'wt')        return { bg:'#767678', text:'#fff'    };
+  if (l.startsWith('supervisor') || l === 'sp')          return { bg:'#64ba44', text:'#fff'    };
+  if (l === 'pt' || l.startsWith('pt ') ||
+      l.startsWith('pt ·') || l === 'cc' ||
+      l.startsWith('chairman'))                          return { bg:'#fde488', text:'#7a5200' };
+  if (l.startsWith('success') || l === 'sb' ||
+      l.startsWith('senior')  || l === 'sc' ||
+      l.startsWith('distributor') || l === 'ds')         return { bg:'#e3e3e3', text:'#555'    };
+  return { bg:'#e3e3e3', text:'#555' };
+}
+
+function abbrevLevel(level){
+  if (!level) return '';
+  const l = level.trim();
+  if (/^chairmans/i.test(l))                    return 'CC';
+  if (/^presidents team 30k/i.test(l))          return 'PT 30K';
+  if (/^presidents team 20k/i.test(l))          return 'PT 20K';
+  if (/^presidents team 15k/i.test(l))          return 'PT 15K';
+  if (/^presidents team/i.test(l)){
+    const dm = l.match(/(\d+)\s*diamond/i);
+    return dm ? 'PT · ' + dm[1] + '◆' : 'PT';
+  }
+  if (/^millionaire team (plus )?\(?7500/i.test(l)) return 'MP';
+  if (/^millionaire/i.test(l))                  return 'MT';
+  if (/^get (team )?(plus )?\(?2500/i.test(l))  return 'GP';
+  if (/^get team/i.test(l))                     return 'GT';
+  if (/^active world/i.test(l))                 return 'AWT';
+  if (/^world team/i.test(l))                   return 'WT';
+  if (/^supervisor/i.test(l))                   return 'SP';
+  if (/^success/i.test(l))                      return 'SB';
+  if (/^senior/i.test(l))                       return 'SC';
+  if (/^distributor/i.test(l))                  return 'DS';
+  return l;
+}
+
+function levelGroup(level){
+  if (!level) return '';
+  const l = level.trim().toLowerCase();
+  if (l.startsWith('presidents') || l.startsWith('chairman')) return 'Pres Team 💎';
+  if (l === 'get team' || l.startsWith('get team') || l.startsWith('millionaire')) return 'Future Pres Team 🚀';
+  return 'Future Tab Team';
+}
+// ────────────────────────────────────────────────────────────────
 const DV_GOAL=150000;
 const PIN_MAP={'7.5':113636,'5':75757,'3':45454,'1':15151};
 let UPLIFT=1.32; // per-distributor influence factor loaded on auth
@@ -689,16 +750,19 @@ const key=r=>r.year+'-'+String(r.month).padStart(2,'0')+'-'+String(r.day).padSta
 const mk=k=>{const[y,m]=k.split('-');return{year:+y,month:+m}};
 
 function calcDerived(r,all){
+  // Round to 2 decimals — single shared helper so display + storage stay
+  // in lockstep with the new fmt rule and the source xlsx precision.
+  const r2=n=>Math.round(n*100)/100;
   const prev=all.filter(x=>x.month===r.month&&x.year===r.year&&x.day<r.day).sort((a,b)=>b.day-a.day)[0];
-  r.org_increase=prev?r.org_volume-prev.org_volume:r.org_volume;
+  r.org_increase=r2(prev?r.org_volume-prev.org_volume:r.org_volume);
   const dims=new Date(r.year,r.month,0).getDate();
   const left=dims-r.day;
   const dg=r.dv_goal||DV_GOAL;
-  r.est_org_dv=Math.round(r.org_volume*UPLIFT);
-  r.dv_remaining=Math.max(0,Math.round(dg-r.est_org_dv));
+  r.est_org_dv=r2(r.org_volume*UPLIFT);
+  r.dv_remaining=r2(Math.max(0,dg-r.est_org_dv));
   r.hit=r.est_org_dv>=dg;
-  r.org_daily_avg=left>0?Math.round(r.dv_remaining/left):0;
-  r.uplift_per_day=left>0?Math.round(r.dv_remaining/left/UPLIFT):0;
+  r.org_daily_avg=left>0?r2(r.dv_remaining/left):0;
+  r.uplift_per_day=left>0?r2(r.dv_remaining/left/UPLIFT):0;
 }
 function recalcAll(){recs.sort((a,b)=>key(a)<key(b)?-1:1);recs.forEach(r=>calcDerived(r,recs));saveRecs()}
 
@@ -852,7 +916,11 @@ function updateGoalInfo(){
   const g=goalById(goalId);
   const threshold=Math.round(g.dv/UPLIFT);
   const infoEl=document.getElementById('goal-info');
-  if(infoEl)infoEl.innerHTML=`<strong>${g.label}</strong> · ${g.dv.toLocaleString()} DV goal · Volume threshold: <strong>${threshold.toLocaleString()}</strong> at ${UPLIFT}× uplift`;
+  if(infoEl){
+    const c=levelColor(g.label);
+    const pill=`<span style="display:inline-block;background:${c.bg};color:${c.text};font-family:'Geist',sans-serif;font-size:11px;font-weight:600;letter-spacing:.04em;padding:3px 9px;border-radius:999px;margin-right:8px;vertical-align:middle">${abbrevLevel(g.label)}</span>`;
+    infoEl.innerHTML=`${pill}<strong>${g.label}</strong> · ${g.dv.toLocaleString()} DV goal · Volume threshold: <strong>${threshold.toLocaleString()}</strong> at ${UPLIFT}× uplift`;
+  }
 }
 async function saveGoalSetting(){
   const selEl=document.getElementById('goal-select');
@@ -1091,12 +1159,24 @@ function renderGoalBars(){
 // ═══════════════════ TABLE ═══════════════════
 function buildFilter(){
   const fy=document.getElementById('fyear'),fm=document.getElementById('fmonth');
-  const yPrev=fy.value, mPrev=fm.value;
-  const cur=new Date().getFullYear();
   const yearsInData=[...new Set(recs.map(r=>r.year))].sort((a,b)=>b-a);
-  const years=yearsInData.length?yearsInData:[cur];
-  fy.innerHTML='<option value="">All years</option>'+years.map(y=>`<option value="${y}"${String(y)===yPrev?' selected':''}>${y}</option>`).join('');
-  fm.innerHTML='<option value="">All months</option>'+MO.map((m,i)=>`<option value="${i+1}"${String(i+1)===mPrev?' selected':''}>${m}</option>`).join('');
+  const cur=new Date();
+  const curYear=cur.getFullYear(),curMonth=cur.getMonth()+1;
+
+  // First time we build the filters, default them to the current month
+  // so the user lands on a focused view of just-this-month — not a wall of
+  // 1000+ historical rows. Subsequent rebuilds preserve whatever the user picked.
+  if(!fy.dataset.initialized){
+    fy.dataset.initialized='1';
+    const years=yearsInData.length?yearsInData:[curYear];
+    fy.innerHTML='<option value="">All years</option>'+years.map(y=>`<option value="${y}"${y===curYear?' selected':''}>${y}</option>`).join('');
+    fm.innerHTML='<option value="">All months</option>'+MO.map((m,i)=>`<option value="${i+1}"${(i+1)===curMonth?' selected':''}>${m}</option>`).join('');
+  } else {
+    const yPrev=fy.value, mPrev=fm.value;
+    const years=yearsInData.length?yearsInData:[curYear];
+    fy.innerHTML='<option value="">All years</option>'+years.map(y=>`<option value="${y}"${String(y)===yPrev?' selected':''}>${y}</option>`).join('');
+    fm.innerHTML='<option value="">All months</option>'+MO.map((m,i)=>`<option value="${i+1}"${String(i+1)===mPrev?' selected':''}>${m}</option>`).join('');
+  }
 }
 function renderTable(){
   const yVal=document.getElementById('fyear').value;
@@ -1145,21 +1225,18 @@ function currentEntryGoal(){
   const id=(currentDist&&currentDist.pinGoal)||'mtp';
   return goalById(id);
 }
-// Extract a PIN number from the goal label, e.g. "Millionaire Team Plus (7500)" → "7500".
-// User will be sending a full PIN table to replace this fallback.
-function pinFromLabel(label){
-  const m=(label||'').match(/\((\d[\d,\.]*)\)/);
-  return m?m[1]:'';
-}
 function renderLockedGoal(){
   const g=currentEntryGoal();
   const labelEl=document.getElementById('entry-goal-label');
   const pinEl=document.getElementById('entry-goal-pin');
   if(labelEl){labelEl.textContent=g.label.replace(/\s*\(.*?\)\s*$/,'').trim()}
   if(pinEl){
-    const pin=pinFromLabel(g.label);
-    if(pin){pinEl.textContent='PIN '+pin;pinEl.style.display='inline-block'}
-    else{pinEl.style.display='none'}
+    const c=levelColor(g.label);
+    pinEl.textContent=abbrevLevel(g.label);
+    pinEl.style.background=c.bg;
+    pinEl.style.color=c.text;
+    pinEl.style.borderColor='transparent';
+    pinEl.style.display='inline-block';
   }
 }
 function previewEntry(){
