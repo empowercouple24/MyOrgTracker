@@ -241,6 +241,14 @@ td.n{font-family:'DM Mono',monospace;font-variant-numeric:tabular-nums}
 .entry-meta-day::-webkit-outer-spin-button,.entry-meta-day::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
 .goal-select{min-width:200px}
 
+/* Locked goal display on Log Entry (editable only in Settings) */
+.goal-locked{display:flex;flex-direction:column;gap:4px;padding:8px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;cursor:pointer;transition:.12s;min-width:200px;user-select:none}
+.goal-locked:hover{border-color:var(--border2);background:var(--surface3)}
+.goal-locked-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.goal-locked-label{font-family:'Geist',sans-serif;font-size:14px;font-weight:500;color:var(--text);line-height:1.2}
+.goal-locked-pin{font-family:'DM Mono',monospace;font-size:11px;font-weight:500;letter-spacing:.02em;color:var(--accent);background:var(--accent-softer);padding:2px 7px;border-radius:4px;border:1px solid var(--accent-soft)}
+.goal-locked-hint{font-family:'DM Mono',monospace;font-size:9px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:var(--text3)}
+
 .entry-actions{margin-top:28px;display:flex;gap:10px}
 .entry-save{flex:1;height:56px;background:var(--accent);color:var(--surface);border:none;border-radius:12px;font-family:'Geist',sans-serif;font-weight:500;font-size:15px;letter-spacing:0.005em;cursor:pointer;transition:opacity .12s,transform .12s}
 .entry-save:hover{opacity:0.92}
@@ -474,7 +482,7 @@ html,body{background:var(--bg,#fafaf8);background-attachment:fixed}
       <div class="entry-eyebrow">Today's entry</div>
       <h1 class="entry-prompt">What's your <em>cumulative org volume</em>?</h1>
 
-      <input class="entry-vol" type="number" id="ev" placeholder="0" inputmode="numeric" autocomplete="off">
+      <input class="entry-vol" type="number" id="ev" placeholder="0" inputmode="decimal" step="0.01" autocomplete="off">
 
       <div class="entry-meta">
         <div class="entry-meta-group">
@@ -492,13 +500,14 @@ html,body{background:var(--bg,#fafaf8);background-attachment:fixed}
         </div>
         <div class="entry-meta-group">
           <label>Goal</label>
-          <select id="epin" class="entry-meta-select goal-select" onchange="onPinChange()"></select>
+          <div class="goal-locked" id="entry-goal-locked" onclick="go('settings')" title="Change in Settings">
+            <div class="goal-locked-row">
+              <span class="goal-locked-label" id="entry-goal-label">—</span>
+              <span class="goal-locked-pin" id="entry-goal-pin" style="display:none"></span>
+            </div>
+            <span class="goal-locked-hint">Locked · change in Settings</span>
+          </div>
         </div>
-      </div>
-
-      <div class="fg" id="cdvw" style="display:none;margin-top:14px">
-        <label>Custom DV Goal</label>
-        <input type="number" id="edv" placeholder="e.g. 90000">
       </div>
 
       <div class="preview" id="eprev" style="display:none">
@@ -594,7 +603,11 @@ const PIN_MAP={'7.5':113636,'5':75757,'3':45454,'1':15151};
 let UPLIFT=1.32; // per-distributor influence factor loaded on auth
 
 const MO=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-const fmt=n=>n==null?'—':Math.round(n).toLocaleString();
+const fmt=n=>{
+  if(n==null)return'—';
+  const r=Math.round(n*100)/100;
+  return r.toLocaleString('en-US',{maximumFractionDigits:2});
+};
 
 const MINIMAL_COLORS=[
   {id:'paper', label:'Paper', sw:['#fafaf8','#18181b']},
@@ -830,9 +843,8 @@ function populateGoalDropdowns(){
   const savedGoal=currentDist?.pinGoal||'mtp';
   const sel=document.getElementById('goal-select');
   if(sel){sel.innerHTML=goalOptions(savedGoal);}
-  const epin=document.getElementById('epin');
-  if(epin){epin.innerHTML=goalOptions(savedGoal)+'<option value="custom">Custom goal</option>';}
   updateGoalInfo();
+  renderLockedGoal();
 }
 function updateGoalInfo(){
   const selEl=document.getElementById('goal-select');
@@ -847,13 +859,14 @@ async function saveGoalSetting(){
   if(!selEl||!currentDist)return;
   const goalId=selEl.value;
   const g=goalById(goalId);
+  // Propagate the change onto the in-memory distributor object so the
+  // Log Entry locked card reflects it immediately without a reload.
+  currentDist.pinGoal=goalId;
   // Update all existing records' dv_goal
   recs.forEach(r=>{r.dv_goal=g.dv;});
   recalcAll();renderAll();
   updateGoalInfo();
-  // Also sync to epin dropdown
-  const epinEl=document.getElementById('epin');
-  if(epinEl){const prev=epinEl.value;epinEl.innerHTML=goalOptions(goalId)+'<option value="custom">Custom goal</option>';epinEl.value=prev;}
+  renderLockedGoal();
   // Push update to Supabase distributors table
   try{
     await fetch(SB_URL+'/rest/v1/distributors?slug=eq.'+userSlug,{
@@ -1125,32 +1138,70 @@ function exportCSV(){
 }
 
 // ═══════════════════ ENTRY ═══════════════════
-function onPinChange(){document.getElementById('cdvw').style.display=document.getElementById('epin').value==='custom'?'flex':'none';previewEntry()}
+// Single source of truth for the entry's goal: the distributor's saved pinGoal.
+// The Log Entry page displays this as a locked card; to change it, user goes
+// to Settings.
+function currentEntryGoal(){
+  const id=(currentDist&&currentDist.pinGoal)||'mtp';
+  return goalById(id);
+}
+// Extract a PIN number from the goal label, e.g. "Millionaire Team Plus (7500)" → "7500".
+// User will be sending a full PIN table to replace this fallback.
+function pinFromLabel(label){
+  const m=(label||'').match(/\((\d[\d,\.]*)\)/);
+  return m?m[1]:'';
+}
+function renderLockedGoal(){
+  const g=currentEntryGoal();
+  const labelEl=document.getElementById('entry-goal-label');
+  const pinEl=document.getElementById('entry-goal-pin');
+  if(labelEl){labelEl.textContent=g.label.replace(/\s*\(.*?\)\s*$/,'').trim()}
+  if(pinEl){
+    const pin=pinFromLabel(g.label);
+    if(pin){pinEl.textContent='PIN '+pin;pinEl.style.display='inline-block'}
+    else{pinEl.style.display='none'}
+  }
+}
 function previewEntry(){
-  const vol=+document.getElementById('ev').value,month=+document.getElementById('em').value,year=+document.getElementById('ey').value,day=+document.getElementById('ed').value;
+  const vol=+document.getElementById('ev').value,
+        month=+document.getElementById('em').value,
+        year=+document.getElementById('ey').value,
+        day=+document.getElementById('ed').value;
   if(!vol||!day){document.getElementById('eprev').style.display='none';return}
   const prev=recs.filter(r=>r.month===month&&r.year===year&&r.day<day).sort((a,b)=>b.day-a.day)[0];
   const inc=prev?vol-prev.org_volume:vol;
   const dims=new Date(year,month,0).getDate(),left=dims-day;
-  const pin=document.getElementById('epin').value;
-  const dg=pin==='custom'?(+document.getElementById('edv').value||DV_GOAL):(dvForGoal(pin)||PIN_MAP[pin]||DV_GOAL);
+  const dg=currentEntryGoal().dv;
   const dvRem=Math.max(0,dg-vol*UPLIFT);
-  const need=left>0?Math.round(dvRem/left):0;
+  const need=left>0?dvRem/left:0;
   document.getElementById('pi').textContent=(inc>=0?'+':'')+fmt(inc);
   document.getElementById('pd').textContent=fmt(dvRem);
   document.getElementById('pn').textContent=fmt(need)+'/day';
   document.getElementById('eprev').style.display='block';
 }
 ['ev','ed','em','ey'].forEach(id=>{
-  document.getElementById(id).addEventListener('input',previewEntry);
-  document.getElementById(id).addEventListener('change',previewEntry);
+  const el=document.getElementById(id);
+  if(!el)return;
+  el.addEventListener('input',previewEntry);
+  el.addEventListener('change',previewEntry);
+});
+// Block mouse-wheel from silently changing values on number inputs inside the
+// entry form — wheel over a focused <input type=number> would otherwise tick
+// the value up/down, which is too easy to do accidentally on a trackpad.
+document.querySelectorAll('#pg-entry input[type="number"]').forEach(el=>{
+  el.addEventListener('wheel',function(){if(document.activeElement===this)this.blur()},{passive:true});
 });
 function saveEntry(){
-  const month=+document.getElementById('em').value,year=+document.getElementById('ey').value,day=+document.getElementById('ed').value,vol=+document.getElementById('ev').value;
-  const pin=document.getElementById('epin').value,dg=pin==='custom'?(+document.getElementById('edv').value||DV_GOAL):(dvForGoal(pin)||PIN_MAP[pin]||DV_GOAL);
+  const month=+document.getElementById('em').value,
+        year=+document.getElementById('ey').value,
+        day=+document.getElementById('ed').value,
+        vol=+document.getElementById('ev').value;
+  const g=currentEntryGoal();
   if(!day||!vol){toast('Please fill in day and org volume');return}
+  // Round to 2 decimals on save — matches display rule and the xlsx source data
+  const volRound=Math.round(vol*100)/100;
   const idx=recs.findIndex(r=>r.year===year&&r.month===month&&r.day===day);
-  const rec={year,month,day,org_volume:vol,dv_goal:dg,pin_goal:pin};
+  const rec={year,month,day,org_volume:volRound,dv_goal:g.dv,pin_goal:g.id};
   if(idx>=0){recs[idx]={...recs[idx],...rec}}else{recs.push(rec)}
   recalcAll();active={year,month};renderAll();
   const saved=recs.find(r=>r.year===year&&r.month===month&&r.day===day);
