@@ -155,16 +155,27 @@ body{font-family:'Geist',system-ui,sans-serif;background:var(--bg);background-at
 .onb-enter:hover{opacity:.9}
 
 /* ═══════════════════ NAV & PAGES ═══════════════════ */
-.nav{background:var(--surface);border-bottom:1px solid var(--border);padding:0 20px;display:flex;align-items:center;height:50px;gap:4px;overflow-x:auto;scrollbar-width:none}
+.nav{background:var(--surface);border-bottom:1px solid var(--border);padding:0 14px;display:flex;align-items:center;height:50px;gap:4px;overflow-x:auto;scrollbar-width:none;position:sticky;top:0;z-index:50}
 .nav::-webkit-scrollbar{display:none}
-.brand{font-weight:600;font-size:15px;color:var(--accent);margin-right:24px;letter-spacing:-.01em;white-space:nowrap}
+.brand{font-weight:600;font-size:15px;color:var(--accent);margin-right:16px;letter-spacing:-.01em;white-space:nowrap}
 .brand em{color:var(--text2);font-style:normal;font-weight:400}
-.tab{height:50px;padding:0 13px;display:flex;align-items:center;font-size:13px;font-weight:500;color:var(--text2);cursor:pointer;border-bottom:2px solid transparent;transition:.12s;white-space:nowrap;user-select:none}
+.nav-back{flex:0 0 auto;width:30px;height:30px;display:inline-flex;align-items:center;justify-content:center;border-radius:9px;background:var(--surface2);color:var(--text);font-size:18px;cursor:pointer;margin-right:6px;transition:.12s;border:1px solid var(--border);line-height:1;padding:0 0 2px 0}
+.nav-back:hover{background:var(--accent-softer);border-color:var(--border2)}
+.tab{height:50px;padding:0 11px;display:flex;align-items:center;font-size:13px;font-weight:500;color:var(--text2);cursor:pointer;border-bottom:2px solid transparent;transition:.12s;white-space:nowrap;user-select:none;flex-shrink:0}
 .tab:hover{color:var(--text)}
 .tab.on{color:var(--accent);border-bottom-color:var(--accent)}
-.nav-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.nav-right{margin-left:auto;display:flex;align-items:center;gap:10px;flex-shrink:0}
 .nav-logout{font-size:12px;color:var(--text3);cursor:pointer;padding:3px 9px;border:1px solid var(--border);border-radius:6px;transition:.12s;white-space:nowrap}
 .nav-logout:hover{color:var(--text);border-color:var(--border2)}
+@media(max-width:640px){
+  .nav{padding:0 8px;gap:0}
+  .brand{display:none}
+  .tab{padding:0 8px;font-size:12px}
+  .nav-logout{padding:3px 7px;font-size:11px}
+}
+@media(max-width:380px){
+  .tab{padding:0 6px;font-size:11px}
+}
 
 .pg{display:none;padding:22px;max-width:1080px;margin:0 auto}
 .pg.on{display:block}
@@ -310,6 +321,98 @@ td.n{font-family:'DM Mono',monospace;font-variant-numeric:tabular-nums}
 /* Data page filter spacing */
 .data-filter{height:32px;padding:0 12px;font-size:13px;border:1px solid var(--border);border-radius:7px;background:var(--surface);color:var(--text);font-family:inherit;cursor:pointer;outline:none;transition:.12s}
 .data-filter:focus{border-color:var(--accent)}
+
+/* ── ENTRY HINT (enter yesterday's ending DV) ── */
+.entry-hint{font-family:'DM Mono',monospace;font-size:11px;color:var(--text3);letter-spacing:.02em;margin:-14px 0 18px 2px;display:flex;align-items:center;gap:6px}
+.entry-hint::before{content:'↳';color:var(--accent);font-weight:600}
+.entry-hint.amber{color:var(--amber)}
+.entry-hint.amber::before{color:var(--amber)}
+.entry-hint.disabled{color:var(--text3);opacity:.6}
+.entry-hint.disabled::before{color:var(--text3)}
+
+/* ── ENTRY HISTORICAL (amber) MODE ── */
+.entry-hero.historical .entry-eyebrow{color:var(--amber)}
+.entry-hero.historical .entry-vol{border-color:var(--amber);background:var(--amber2);color:var(--amber)}
+.entry-hero.historical .entry-vol:focus{border-color:var(--amber);background:var(--amber2)}
+.entry-hero.historical .entry-save{background:var(--amber)}
+
+/* ── ENTRY PRE-DATA (disabled) MODE ── */
+.entry-hero.predata .entry-eyebrow{color:var(--text3);opacity:.7}
+.entry-hero.predata .entry-prompt{color:var(--text3);opacity:.7}
+.entry-hero.predata .entry-vol{border-style:dashed;border-color:var(--border2);background:var(--surface2);color:var(--text3);opacity:.7;pointer-events:none}
+.entry-hero.predata .entry-save{background:var(--text3);color:var(--surface);cursor:not-allowed;opacity:.7}
+.entry-hero.predata .entry-save:hover{opacity:.7}
+.predata-card{background:var(--surface);border:1px dashed var(--border2);border-radius:14px;padding:20px 18px;text-align:center;margin:16px 0}
+.predata-card-icon{font-size:24px;margin-bottom:6px;opacity:.6}
+.predata-card-title{font-family:'EB Garamond',serif;font-style:italic;font-size:16px;color:var(--text2);margin-bottom:4px}
+.predata-card-body{font-size:12.5px;color:var(--text3);line-height:1.55;max-width:260px;margin:0 auto}
+.predata-card-body strong{color:var(--text2);font-weight:600}
+
+/* ── SAVE BUTTON STATES (after-save dim, historical label) ── */
+.entry-save.dim{background:var(--text3);color:var(--surface);opacity:.7}
+.entry-save.dim:hover{opacity:.75}
+.entry-save.dim::before{content:'✓ ';opacity:.9}
+
+/* ── DATE CHIP: Option 2a — serif number + dark inversion + today ring ── */
+.date-chip-day{font-family:'EB Garamond',serif;font-size:20px;font-weight:500}
+.date-chip.today-ring{box-shadow:inset 0 0 0 1.5px var(--accent)}
+.date-chip.today-ring .date-chip-day{color:var(--accent);font-weight:600}
+.date-chip.historical.on{background:var(--amber);border-color:var(--amber)}
+.date-chip.historical.on .date-chip-dow,.date-chip.historical.on .date-chip-day{color:var(--surface)}
+.date-chip.predata{opacity:.35;pointer-events:none}
+.date-chip.predata .date-chip-day{text-decoration:line-through;text-decoration-thickness:1px}
+
+/* ── INLINE "Today" pill (variant 3: inside date-picker card, above chips) ── */
+.today-pill-inline{display:none;align-items:center;justify-content:space-between;padding:6px 12px;background:var(--accent-softer);border-radius:999px;margin-bottom:10px}
+.today-pill-inline.on{display:flex}
+.today-pill-inline .tpi-left{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);font-weight:700}
+.today-pill-inline .tpi-right{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:5px}
+.today-pill-inline .tpi-right::before{content:'↻';font-size:13px;display:inline-block;transform:scaleX(-1)}
+
+/* ── CALENDAR POPOVER: logged dots, disabled days, today ring ── */
+.date-popover-day.has-entry{position:relative}
+.date-popover-day.has-entry::after{content:'';position:absolute;left:50%;bottom:3px;transform:translateX(-50%);width:3px;height:3px;border-radius:50%;background:var(--accent)}
+.date-popover-day.has-entry.on::after{background:var(--surface)}
+.date-popover-day.disabled{color:var(--text3);opacity:.3;cursor:not-allowed;text-decoration:line-through;text-decoration-thickness:1px}
+.date-popover-day.disabled:hover{background:transparent}
+.date-popover-day.on.historical{background:var(--amber)}
+
+/* ── INACTIVITY WARNING MODAL ── */
+#inactivity-modal{position:fixed;inset:0;background:rgba(24,24,27,0.55);display:none;align-items:center;justify-content:center;z-index:1200;padding:20px;backdrop-filter:blur(3px)}
+#inactivity-modal.on{display:flex}
+.inactivity-card{background:var(--surface);border-radius:18px;padding:26px 26px 22px;max-width:360px;width:100%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.25)}
+.inactivity-icon{font-size:28px;margin-bottom:6px;color:var(--amber)}
+.inactivity-title{font-family:'EB Garamond',serif;font-size:22px;font-weight:500;color:var(--text);margin-bottom:8px;letter-spacing:-.01em}
+.inactivity-body{font-size:13.5px;color:var(--text2);line-height:1.55;margin-bottom:18px}
+.inactivity-body strong{color:var(--text);font-family:'DM Mono',monospace}
+.inactivity-actions{display:flex;gap:10px;flex-direction:column}
+.inactivity-btn{padding:12px 18px;border-radius:10px;border:none;font-family:'Geist',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:.12s}
+.inactivity-btn.stay{background:var(--accent);color:var(--surface)}
+.inactivity-btn.stay:hover{opacity:.92}
+.inactivity-btn.leave{background:transparent;color:var(--text3);border:1px solid var(--border)}
+.inactivity-btn.leave:hover{color:var(--text);border-color:var(--border2)}
+
+/* ── GOAL MATH CARD (Settings) ── */
+.goal-math-card{background:var(--surface2);border-radius:12px;padding:14px 16px;margin-top:14px;border:1px solid var(--border)}
+.goal-math-row{display:flex;justify-content:space-between;align-items:baseline;padding:7px 0;font-family:'DM Mono',monospace;font-size:12px;color:var(--text2);border-bottom:1px dashed var(--divider)}
+.goal-math-row:last-child{border-bottom:0}
+.goal-math-row .gml{font-size:10px;color:var(--text3);letter-spacing:.12em;text-transform:uppercase;font-weight:500}
+.goal-math-row .gmv{font-family:'EB Garamond',serif;font-size:16px;color:var(--text);font-weight:500}
+.goal-math-row.total .gmv{font-size:22px;color:var(--accent)}
+
+/* ── GOAL PICKER LIST (Settings, replaces dropdown) ── */
+.goal-picker-list{display:flex;flex-direction:column;border:1px solid var(--border);border-radius:12px;overflow:hidden;background:var(--surface)}
+.goal-picker-item{display:flex;align-items:center;gap:12px;padding:11px 13px;border-bottom:1px solid var(--divider);cursor:pointer;transition:.12s}
+.goal-picker-item:last-child{border-bottom:0}
+.goal-picker-item:hover{background:var(--surface2)}
+.goal-picker-item.selected{background:var(--accent-softer);box-shadow:inset 3px 0 0 var(--accent)}
+.goal-picker-item-pin{width:38px;height:38px;flex-shrink:0;object-fit:contain}
+.goal-picker-item-info{flex:1;min-width:0}
+.goal-picker-item-name{font-family:'EB Garamond',serif;font-size:15px;font-weight:500;color:var(--text);letter-spacing:-.005em}
+.goal-picker-item-meta{font-family:'DM Mono',monospace;font-size:10px;color:var(--text3);letter-spacing:.04em;margin-top:2px}
+.goal-picker-item.selected .goal-picker-item-meta{color:var(--accent);font-weight:600}
+.goal-picker-item-check{color:var(--accent);font-size:18px;font-weight:700;flex-shrink:0;opacity:0;transition:.12s}
+.goal-picker-item.selected .goal-picker-item-check{opacity:1}
 
 .drop{border:2px dashed var(--border2);border-radius:12px;padding:36px;text-align:center;cursor:pointer;transition:.15s;background:var(--surface2)}
 .drop:hover,.drop.drag{border-color:var(--accent);background:var(--accent-softer)}
@@ -481,6 +584,7 @@ html,body{background:var(--bg,#fafaf8);background-attachment:fixed}
 
 <!-- ── NAV ── -->
 <nav class="nav" id="main-nav" style="display:none">
+  <button type="button" class="nav-back" id="nav-back-btn" onclick="goBackToAdmin()" title="Back to Admin" style="display:none" aria-label="Back to Admin">‹</button>
   <div class="brand">MyOrgTracker <em id="nav-name"></em></div>
   <div class="tab on" onclick="go('entry')">Log Entry</div>
   <div class="tab" onclick="go('dash')">Dashboard</div>
@@ -517,8 +621,8 @@ html,body{background:var(--bg,#fafaf8);background-attachment:fixed}
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:10px">
       <div class="ct" style="margin:0">All Entries</div>
       <div style="display:flex;gap:8px" id="data-controls">
-        <select id="fyear" class="data-filter" onchange="renderTable()"><option value="">All years</option></select>
-        <select id="fmonth" class="data-filter" onchange="renderTable()"><option value="">All months</option></select>
+        <select id="fyear" class="data-filter" onchange="onDataFilterChange()"><option value="">All years</option></select>
+        <select id="fmonth" class="data-filter" onchange="onDataFilterChange()"><option value="">All months</option></select>
         <button class="btn bo bsm" onclick="exportCSV()" id="btn-export-csv">Export CSV</button>
         <button class="btn bo bsm" onclick="toggleBulkEdit()" id="btn-bulk-edit">Edit Mode</button>
         <button class="btn bp bsm" onclick="saveAllBulk()" id="btn-bulk-save" style="display:none">Save All</button>
@@ -531,17 +635,24 @@ html,body{background:var(--bg,#fafaf8);background-attachment:fixed}
 
 <!-- ── ENTRY ── -->
 <div id="pg-entry" class="pg">
-  <div class="entry-hero">
+  <div class="entry-hero" id="entry-hero">
     <div class="entry-card card">
-      <div class="entry-eyebrow">Today's entry</div>
+      <div class="entry-eyebrow" id="entry-eyebrow">Today's entry</div>
       <h1 class="entry-prompt">What's your <em>cumulative org volume</em>?</h1>
+      <div class="entry-hint" id="entry-hint">enter yesterday's ending DV</div>
 
       <input class="entry-vol" type="number" id="ev" placeholder="0" inputmode="decimal" step="0.01" autocomplete="off">
+
+      <div id="predata-card" class="predata-card" style="display:none">
+        <div class="predata-card-icon">⌛</div>
+        <div class="predata-card-title">Before your tracked history</div>
+        <div class="predata-card-body">Records start <strong id="predata-start-date">Feb 22, 2019</strong>. To log earlier days, use the Import tab.</div>
+      </div>
 
       <div class="entry-meta">
         <!-- Airline-style date picker; em/ed/ey kept as hidden source-of-truth for saveEntry -->
         <div class="entry-meta-group" style="position:relative">
-          <div class="date-picker">
+          <div class="date-picker" id="date-picker-wrap">
             <div class="date-picker-header">
               <div class="date-picker-label">Date</div>
               <div class="date-picker-controls">
@@ -550,6 +661,10 @@ html,body{background:var(--bg,#fafaf8);background-attachment:fixed}
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M3 10h18M8 2v4M16 2v4"/></svg>
                 </button>
               </div>
+            </div>
+            <div class="today-pill-inline" id="today-pill">
+              <span class="tpi-left" id="tpi-left">Not today</span>
+              <span class="tpi-right" onclick="jumpToToday()" id="tpi-right">Jump to today</span>
             </div>
             <div class="date-chips" id="date-chips"></div>
           </div>
@@ -608,12 +723,10 @@ html,body{background:var(--bg,#fafaf8);background-attachment:fixed}
     <div class="card" style="margin-bottom:16px">
       <div class="ct">Goal Setting</div>
       <p style="font-size:13px;color:var(--text2);margin-bottom:14px;line-height:1.6">Your goal tier drives all DV calculations and progress tracking. Change it here anytime.</p>
-      <div class="fg" style="margin-bottom:14px">
-        <label>Current Goal Tier</label>
-        <select id="goal-select" onchange="saveGoalSetting()">
-        </select>
-      </div>
-      <div id="goal-info" style="background:var(--accent-softer);border:1px solid var(--accent-soft);border-radius:8px;padding:11px 13px;font-size:13px;color:var(--text)"></div>
+      <div class="goal-picker-list" id="goal-picker-list"></div>
+      <!-- Hidden legacy select: kept so saveGoalSetting() / populateGoalDropdowns() don't break; value mirrors picker selection -->
+      <select id="goal-select" style="display:none" onchange="saveGoalSetting()"></select>
+      <div class="goal-math-card" id="goal-math-card"></div>
     </div>
 
     <div class="card appearance">
@@ -632,6 +745,19 @@ html,body{background:var(--bg,#fafaf8);background-attachment:fixed}
       <div class="app-grid" id="app-grid"></div>
     </div>
 
+  </div>
+</div>
+
+<!-- ── INACTIVITY WARNING MODAL ── -->
+<div id="inactivity-modal" role="dialog" aria-modal="true" aria-labelledby="inactivity-title">
+  <div class="inactivity-card">
+    <div class="inactivity-icon">⌛</div>
+    <div class="inactivity-title" id="inactivity-title">Still there?</div>
+    <div class="inactivity-body">You'll be logged out in <strong id="inactivity-countdown">5:00</strong> due to inactivity.</div>
+    <div class="inactivity-actions">
+      <button type="button" class="inactivity-btn stay" onclick="dismissInactivityWarning()">Stay signed in</button>
+      <button type="button" class="inactivity-btn leave" onclick="doLogout()">Log out now</button>
+    </div>
   </div>
 </div>
 
@@ -826,8 +952,83 @@ function calcDerived(r,all){
 function recalcAll(){recs.sort((a,b)=>key(a)<key(b)?-1:1);recs.forEach(r=>calcDerived(r,recs));saveRecs()}
 
 // ═══════════════════ THEME SYSTEM ═══════════════════
-function loadTheme(){return JSON.parse(localStorage.getItem(THEME_KEY)||'null')}
-function saveTheme(t){localStorage.setItem(THEME_KEY,JSON.stringify(t))}
+// ═══════════════════ USER SETTINGS (cross-device via profiles.settings jsonb) ═══════════════════
+// Settings cache in memory — mirror of profiles.settings. Written through to DB
+// on change (debounced). Also kept in localStorage so offline / slow network
+// still work smoothly.
+let userSettings={};
+let _settingsLoaded=false;
+let _settingsSaveTimer=null;
+let _currentUserId=null;
+
+async function loadUserSettings(){
+  // Pull the current auth user's settings row from profiles.settings.
+  // Falls back to localStorage keys for one-time migration if DB is empty.
+  const SB_REF=(SB_URL||'').match(/https:\/\/([^.]+)\.supabase\.co/);
+  const tokKey=SB_REF?'sb-'+SB_REF[1]+'-auth-token':null;
+  let session=null;
+  try{session=tokKey?JSON.parse(localStorage.getItem(tokKey)||'null'):null}catch(e){}
+  const access=session&&session.access_token;
+  const userId=session&&session.user&&session.user.id;
+  if(!access||!userId){userSettings={};_settingsLoaded=true;return}
+  _currentUserId=userId;
+  try{
+    const r=await fetch(SB_URL+'/rest/v1/profiles?select=settings&id=eq.'+userId,{
+      headers:{'apikey':SB_KEY,'Authorization':'Bearer '+access}
+    });
+    if(r.ok){
+      const arr=await r.json();
+      userSettings=(arr&&arr[0]&&arr[0].settings)||{};
+    }
+  }catch(e){console.warn('settings load failed, using localStorage fallback',e)}
+  // First-time migration: if DB is empty but localStorage has a theme, seed it
+  if(!userSettings.theme){
+    try{
+      const lsTheme=JSON.parse(localStorage.getItem(THEME_KEY)||'null');
+      if(lsTheme){userSettings.theme=lsTheme;scheduleSettingsSave()}
+    }catch(e){}
+  }
+  _settingsLoaded=true;
+}
+function scheduleSettingsSave(){
+  if(_settingsSaveTimer)clearTimeout(_settingsSaveTimer);
+  _settingsSaveTimer=setTimeout(pushUserSettings,500);
+}
+async function pushUserSettings(){
+  if(!_currentUserId)return;
+  const SB_REF=(SB_URL||'').match(/https:\/\/([^.]+)\.supabase\.co/);
+  const tokKey=SB_REF?'sb-'+SB_REF[1]+'-auth-token':null;
+  let session=null;
+  try{session=tokKey?JSON.parse(localStorage.getItem(tokKey)||'null'):null}catch(e){}
+  const access=session&&session.access_token;
+  if(!access)return;
+  try{
+    await fetch(SB_URL+'/rest/v1/profiles?id=eq.'+_currentUserId,{
+      method:'PATCH',
+      headers:{'apikey':SB_KEY,'Authorization':'Bearer '+access,'Content-Type':'application/json','Prefer':'return=minimal'},
+      body:JSON.stringify({settings:userSettings})
+    });
+  }catch(e){console.warn('settings save failed, will retry on next change',e)}
+}
+function setSetting(key,value){
+  userSettings[key]=value;
+  scheduleSettingsSave();
+}
+function getSetting(key,fallback){
+  return (key in userSettings)?userSettings[key]:fallback;
+}
+
+function loadTheme(){
+  // Prefer DB settings; fall back to localStorage for offline / first-run
+  if(userSettings.theme)return userSettings.theme;
+  try{return JSON.parse(localStorage.getItem(THEME_KEY)||'null')}catch(e){return null}
+}
+function saveTheme(t){
+  userSettings.theme=t;
+  scheduleSettingsSave();
+  // Keep localStorage as a cache so the theme shows on next load before DB comes back
+  try{localStorage.setItem(THEME_KEY,JSON.stringify(t))}catch(e){}
+}
 function applyTheme(style,color){
   document.body.setAttribute('data-style',style||'minimal');
   document.body.setAttribute('data-color',color);
@@ -970,17 +1171,42 @@ function populateGoalDropdowns(){
   renderLockedGoal();
 }
 function updateGoalInfo(){
+  const currentId=(currentDist&&currentDist.pinGoal)||'mtp';
   const selEl=document.getElementById('goal-select');
-  const goalId=selEl?selEl.value:(currentDist?.pinGoal||'mtp');
-  const g=goalById(goalId);
-  const threshold=Math.round(g.dv/UPLIFT);
-  const infoEl=document.getElementById('goal-info');
-  if(infoEl){
-    const c=levelColor(g.label);
-    const pin=`<img src="/pins/${g.id}.png" alt="${g.label} pin" style="width:48px;height:48px;flex-shrink:0;object-fit:contain" onerror="this.style.display='none'">`;
-    const pill=`<span style="display:inline-block;background:${c.bg};color:${c.text};font-family:'Geist',sans-serif;font-size:11px;font-weight:600;letter-spacing:.04em;padding:3px 9px;border-radius:999px;margin-right:8px;vertical-align:middle">${abbrevLevel(g.label)}</span>`;
-    infoEl.innerHTML=`<div style="display:flex;align-items:center;gap:14px"><div>${pin}</div><div style="flex:1;line-height:1.5">${pill}<strong>${g.label}</strong> · ${g.dv.toLocaleString()} DV goal · Volume threshold: <strong>${threshold.toLocaleString()}</strong> at ${UPLIFT}× uplift</div></div>`;
+  if(selEl)selEl.value=currentId;
+  // Build picker list with pin + name + DV/org on each row
+  const listEl=document.getElementById('goal-picker-list');
+  if(listEl){
+    listEl.innerHTML=GOAL_OPTIONS.map(g=>{
+      const cleanLbl=g.label.replace(/\s*\(.*?\)\s*$/,'').trim();
+      const orgTarget=Math.round(g.dv/UPLIFT);
+      const isSel=g.id===currentId;
+      return `<div class="goal-picker-item${isSel?' selected':''}" onclick="pickGoal('${g.id}')">
+        <img class="goal-picker-item-pin" src="/pins/${g.id}.png" alt="${cleanLbl} pin" onerror="this.style.display='none'">
+        <div class="goal-picker-item-info">
+          <div class="goal-picker-item-name">${cleanLbl}</div>
+          <div class="goal-picker-item-meta">${g.dv.toLocaleString()} DV · ${orgTarget.toLocaleString()} org volume</div>
+        </div>
+        <div class="goal-picker-item-check">✓</div>
+      </div>`;
+    }).join('');
   }
+  // Build Goal math card (current selection)
+  const mathEl=document.getElementById('goal-math-card');
+  if(mathEl){
+    const g=goalById(currentId);
+    const orgTarget=Math.round(g.dv/UPLIFT);
+    mathEl.innerHTML=`
+      <div class="goal-math-row"><span class="gml">DV goal</span><span class="gmv">${g.dv.toLocaleString()}</span></div>
+      <div class="goal-math-row"><span class="gml">÷ Uplift factor</span><span class="gmv">${UPLIFT}×</span></div>
+      <div class="goal-math-row total"><span class="gml">= Org volume target</span><span class="gmv">${orgTarget.toLocaleString()}</span></div>`;
+  }
+}
+function pickGoal(id){
+  const selEl=document.getElementById('goal-select');
+  if(!selEl)return;
+  selEl.value=id;
+  saveGoalSetting();
 }
 async function saveGoalSetting(){
   const selEl=document.getElementById('goal-select');
@@ -1102,6 +1328,8 @@ async function initAuth(){
   const slug=await resolveSlug();
   if(!slug){return;}  // resolveSlug already bounced or showed inactive screen
   setSlug(slug);
+  // Load persistent user settings before rendering anything theme-dependent
+  await loadUserSettings();
   const dist=await fetchDistributorFromDB(userSlug);
   if(!dist){
     document.getElementById('inactive-screen').classList.add('on');
@@ -1110,9 +1338,23 @@ async function initAuth(){
   currentDist=dist;
   await loadPlatformInfluence();
   if(!dist.active){document.getElementById('inactive-screen').classList.add('on');return;}
-  // Auth is handled upstream by index.html (email + password via Supabase).
-  // If we got this far the session is valid; just show the app.
+  // Show back-to-admin arrow only when the current session is an admin viewing
+  // someone else via ?user=X override (i.e. profile.slug !== resolved slug)
+  try{
+    const urlSlug=new URLSearchParams(window.location.search).get('user');
+    if(urlSlug){
+      const backBtn=document.getElementById('nav-back-btn');
+      if(backBtn)backBtn.style.display='inline-flex';
+    }
+  }catch(e){}
   afterAuth(dist.name);
+  // Start inactivity timer after authenticated UI is visible
+  startInactivityTracking();
+}
+
+function goBackToAdmin(){
+  // Used by the back-arrow in nav when an admin is viewing a distributor.
+  window.location.href='/admin';
 }
 
 function afterAuth(name){
@@ -1151,6 +1393,60 @@ function doLogout(){
     Object.keys(sessionStorage).forEach(k => { if (k.startsWith('sb-')) sessionStorage.removeItem(k); });
   } catch(e) {}
   window.location.href = '/';
+}
+
+// ═══════════════════ INACTIVITY AUTO-LOGOUT ═══════════════════
+// 30 hours of inactivity → show 5-minute warning modal → auto-logout if no response.
+// "Activity" = any click, keypress, touch, or scroll inside the tab.
+const INACTIVITY_HOURS_DEFAULT=30;
+const INACTIVITY_WARN_MINUTES=5;
+let _inactivityTimer=null,_inactivityCountdown=null,_inactivityCountdownSec=0;
+function inactivityTimeoutMs(){
+  const h=getSetting('inactivity_hours',INACTIVITY_HOURS_DEFAULT);
+  return h*3600*1000;
+}
+function resetInactivityTimer(){
+  if(_inactivityTimer)clearTimeout(_inactivityTimer);
+  _inactivityTimer=setTimeout(showInactivityWarning,inactivityTimeoutMs());
+}
+function showInactivityWarning(){
+  const modal=document.getElementById('inactivity-modal');
+  if(!modal)return;
+  modal.classList.add('on');
+  _inactivityCountdownSec=INACTIVITY_WARN_MINUTES*60;
+  updateInactivityCountdownDisplay();
+  _inactivityCountdown=setInterval(()=>{
+    _inactivityCountdownSec--;
+    updateInactivityCountdownDisplay();
+    if(_inactivityCountdownSec<=0){
+      clearInterval(_inactivityCountdown);
+      doLogout();
+    }
+  },1000);
+}
+function updateInactivityCountdownDisplay(){
+  const el=document.getElementById('inactivity-countdown');
+  if(!el)return;
+  const m=Math.floor(_inactivityCountdownSec/60);
+  const s=_inactivityCountdownSec%60;
+  el.textContent=m+':'+(s<10?'0':'')+s;
+}
+function dismissInactivityWarning(){
+  const modal=document.getElementById('inactivity-modal');
+  if(modal)modal.classList.remove('on');
+  if(_inactivityCountdown){clearInterval(_inactivityCountdown);_inactivityCountdown=null}
+  resetInactivityTimer();
+}
+function startInactivityTracking(){
+  ['click','keydown','touchstart','scroll','mousemove'].forEach(ev=>{
+    document.addEventListener(ev,()=>{
+      // Don't reset while the warning modal is showing — user must click "Stay signed in"
+      const modal=document.getElementById('inactivity-modal');
+      if(modal&&modal.classList.contains('on'))return;
+      resetInactivityTimer();
+    },{passive:true});
+  });
+  resetInactivityTimer();
 }
 
 // ═══════════════════ NAV ═══════════════════
@@ -1268,20 +1564,34 @@ function buildFilter(){
   const cur=new Date();
   const curYear=cur.getFullYear(),curMonth=cur.getMonth()+1;
 
-  // First time we build the filters, default them to the current month
-  // so the user lands on a focused view of just-this-month — not a wall of
-  // 1000+ historical rows. Subsequent rebuilds preserve whatever the user picked.
+  // First time we build the filters, restore the user's last-used filter from
+  // profiles.settings (if any), else default to the current month. Subsequent
+  // rebuilds preserve whatever the user picked in the current session.
   if(!fy.dataset.initialized){
     fy.dataset.initialized='1';
+    const saved=getSetting('last_data_filter',null);  // "YYYY-MM" or "all-all" or "YYYY-all"
+    let defY=String(curYear),defM=String(curMonth);
+    if(saved){
+      const parts=String(saved).split('-');
+      defY=(parts[0]==='all')?'':parts[0];
+      defM=(parts[1]==='all')?'':parts[1];
+    }
     const years=yearsInData.length?yearsInData:[curYear];
-    fy.innerHTML='<option value="">All years</option>'+years.map(y=>`<option value="${y}"${y===curYear?' selected':''}>${y}</option>`).join('');
-    fm.innerHTML='<option value="">All months</option>'+MO.map((m,i)=>`<option value="${i+1}"${(i+1)===curMonth?' selected':''}>${m}</option>`).join('');
+    fy.innerHTML='<option value="">All years</option>'+years.map(y=>`<option value="${y}"${String(y)===defY?' selected':''}>${y}</option>`).join('');
+    fm.innerHTML='<option value="">All months</option>'+MO.map((m,i)=>`<option value="${i+1}"${String(i+1)===defM?' selected':''}>${m}</option>`).join('');
   } else {
     const yPrev=fy.value, mPrev=fm.value;
     const years=yearsInData.length?yearsInData:[curYear];
     fy.innerHTML='<option value="">All years</option>'+years.map(y=>`<option value="${y}"${String(y)===yPrev?' selected':''}>${y}</option>`).join('');
     fm.innerHTML='<option value="">All months</option>'+MO.map((m,i)=>`<option value="${i+1}"${String(i+1)===mPrev?' selected':''}>${m}</option>`).join('');
   }
+}
+// Persist current Data tab filter to profiles.settings. Called from onchange.
+function onDataFilterChange(){
+  const fy=document.getElementById('fyear'),fm=document.getElementById('fmonth');
+  const yVal=fy.value||'all',mVal=fm.value||'all';
+  setSetting('last_data_filter',yVal+'-'+mVal);
+  renderTable();
 }
 // Whole-tab bulk edit mode: one toggle flips every Org Volume cell into an input.
 // Derived columns (Increase, DV Rem, Avg Needed/Day, etc.) stay read-only — only Org Volume is user-supplied.
@@ -1366,6 +1676,20 @@ function currentEntryGoal(){
   const id=(currentDist&&currentDist.pinGoal)||'mtp';
   return goalById(id);
 }
+// Earliest date that has any records — drives "pre-data" lockout on Log Entry.
+// Gets set after data loads; defaults to a safe recent value so admin's own
+// pre-data boundary doesn't accidentally allow ancient backdating.
+let HISTORY_START=new Date(2019,1,22);  // Feb 22, 2019 — matches historical import
+function recomputeHistoryStart(){
+  if(!recs||!recs.length){HISTORY_START=new Date(2019,1,22);return}
+  let earliest=null;
+  recs.forEach(r=>{
+    const d=new Date(r.year,r.month-1,r.day);
+    if(!earliest||d<earliest)earliest=d;
+  });
+  if(earliest)HISTORY_START=earliest;
+}
+
 function renderLockedGoal(){
   const card=document.getElementById('entry-goal-locked');
   if(!card)return;
@@ -1374,55 +1698,73 @@ function renderLockedGoal(){
   const colors=levelColor(g.label);
   const pinUrl='/pins/'+g.id+'.png';
 
-  // Find today's actual record (not the picker-selected date)
+  // The selected date from the picker — used for historical pace snapshot
+  const sy=datePickerYear,sm=datePickerMonth,sd=datePickerDay;
   const now=new Date();
   const ty=now.getFullYear(),tm=now.getMonth()+1,td=now.getDate();
-  const todayRec=recs.find(r=>r.year===ty&&r.month===tm&&r.day===td);
+  const isHistorical=(sy&&sm&&sd&&!(sy===ty&&sm===tm&&sd===td));
+  const isPreData=(sy&&sm&&sd&&(new Date(sy,sm-1,sd)<HISTORY_START));
 
-  // Build the Design B markup: pin in corner + state-dependent content
+  // Find the record for the SELECTED date (today's OR the historical date)
+  const selectedRec=(sy&&sm&&sd)?recs.find(r=>r.year===sy&&r.month===sm&&r.day===sd):null;
+
   const pinEl=`<div class="goal-b-pin" style="background-image:url('${pinUrl}')" aria-label="${cleanLabel} pin"></div>`;
-  const upliftLine=`<div class="goal-b-uplift">Uplift factor ${UPLIFT}× · admin controlled</div>`;
+  const orgTarget=Math.round(g.dv/UPLIFT);
+  const upliftLine=`<div class="goal-b-uplift">Target ${orgTarget.toLocaleString()} · ${g.dv.toLocaleString()} DV goal ÷ ${UPLIFT}× uplift</div>`;
 
-  if(!todayRec){
-    // ── PRE-SAVE STATE ──
+  if(isPreData){
     card.innerHTML = pinEl + `
-      <div class="goal-b-eyebrow"><div class="goal-b-eyebrow-label">Goal</div></div>
-      <div class="goal-b-value-hero">${kFmt(g.dv)}</div>
-      <div class="goal-b-value-meta">DV target</div>
+      <div class="goal-b-eyebrow"><div class="goal-b-eyebrow-label" style="color:var(--text3);opacity:.7">Goal</div></div>
+      <div class="goal-b-value-hero" style="color:var(--text3);opacity:.7">${kFmt(orgTarget)}</div>
+      <div class="goal-b-value-meta">Org volume target</div>
       <div class="goal-b-level-row">
         <span class="goal-b-level-pill" style="background:${colors.bg};color:${colors.text}">${abbrevLevel(g.label)}</span>
         <div class="goal-b-level-name">${cleanLabel}</div>
       </div>
-      <div class="goal-b-presave-copy">Log today's entry to see pace, daily target, and progress.</div>
+      <div class="goal-b-presave-copy">Before your tracked history — use the Import tab to add earlier months.</div>
       ${upliftLine}`;
     return;
   }
 
-  // ── POST-SAVE STATE ── compute pace + needed/day
-  const dimsToday=new Date(ty,tm,0).getDate();
-  const daysLeft=dimsToday-td;
-  const currentDV=todayRec.org_volume*UPLIFT;
+  if(!selectedRec){
+    // ── PRE-SAVE STATE (for the selected date) ──
+    card.innerHTML = pinEl + `
+      <div class="goal-b-eyebrow"><div class="goal-b-eyebrow-label">Goal</div></div>
+      <div class="goal-b-value-hero">${kFmt(orgTarget)}</div>
+      <div class="goal-b-value-meta">Org volume target</div>
+      <div class="goal-b-level-row">
+        <span class="goal-b-level-pill" style="background:${colors.bg};color:${colors.text}">${abbrevLevel(g.label)}</span>
+        <div class="goal-b-level-name">${cleanLabel}</div>
+      </div>
+      <div class="goal-b-presave-copy">${isHistorical?'Log this day to see its pace snapshot.':"Log today's entry to see pace, daily target, and progress."}</div>
+      ${upliftLine}`;
+    return;
+  }
+
+  // ── POST-SAVE STATE (pace snapshot for the selected date) ──
+  const dimsMonth=new Date(sy,sm,0).getDate();
+  const daysLeft=dimsMonth-sd;
+  const currentDV=selectedRec.org_volume*UPLIFT;
   const goalDV=g.dv;
   const dvRemaining=Math.max(0,goalDV-currentDV);
   const progressPct=Math.min(100,Math.max(0,(currentDV/goalDV)*100));
   const neededPerDay=daysLeft>0?(dvRemaining/daysLeft):0;
   const rawNeededPerDay=daysLeft>0?(neededPerDay/UPLIFT):0;
 
-  // Pace: compare current DV to expected DV at this point in the month (linear pace)
-  const expectedDV=(td/dimsToday)*goalDV;
+  const expectedDV=(sd/dimsMonth)*goalDV;
   let paceClass,paceLabel,calloutClass,calloutText,calloutSub;
   if(currentDV>=goalDV){
-    paceClass='ahead';paceLabel='Goal Hit';
+    paceClass='ahead';paceLabel=isHistorical?'Goal Hit (snapshot)':'Goal Hit';
     calloutClass='ahead';
     calloutText=`Goal reached — ${kFmt(currentDV-goalDV)} DV over target`;
-    calloutSub=`${daysLeft} day${daysLeft===1?'':'s'} remaining this month`;
+    calloutSub=`${daysLeft} day${daysLeft===1?'':'s'} remaining in month`;
   }else if(currentDV>=expectedDV*0.98){
-    paceClass='ahead';paceLabel='On Pace';
+    paceClass='ahead';paceLabel=isHistorical?'On Pace (snapshot)':'On Pace';
     calloutClass='ahead';
     calloutText=`${fmt(neededPerDay)} DV/day to finish · ${daysLeft} day${daysLeft===1?'':'s'} left`;
     calloutSub=`That's ${fmt(rawNeededPerDay)} raw volume per day at ${UPLIFT}× uplift`;
   }else{
-    paceClass='behind';paceLabel='Behind Pace';
+    paceClass='behind';paceLabel=isHistorical?'Behind Pace (snapshot)':'Behind Pace';
     calloutClass='behind';
     calloutText=`${fmt(neededPerDay)} DV/day needed to finish · ${daysLeft} day${daysLeft===1?'':'s'} left`;
     calloutSub=`That's ${fmt(rawNeededPerDay)} raw volume per day at ${UPLIFT}× uplift`;
@@ -1430,7 +1772,7 @@ function renderLockedGoal(){
 
   card.innerHTML = pinEl + `
     <div class="goal-b-eyebrow">
-      <div class="goal-b-eyebrow-label">Goal</div>
+      <div class="goal-b-eyebrow-label">${isHistorical?MO[sm-1]+' '+sd:'Goal'}</div>
       <div class="goal-b-eyebrow-dot"></div>
       <div class="goal-b-pace ${paceClass}">${paceLabel}</div>
     </div>
@@ -1470,7 +1812,85 @@ function setPickerDate(y,m,d){
   if(ey)ey.value=y;if(em)em.value=m;if(ed)ed.value=d;
   const monthLbl=document.getElementById('date-picker-month');
   if(monthLbl)monthLbl.textContent=MO[m-1]+' '+y;
+  applyDateModes();
   if(typeof previewEntry==='function')previewEntry();
+  // Re-render goal card (pace snapshot depends on selected date)
+  if(typeof renderLockedGoal==='function')renderLockedGoal();
+  // Populate volume input with that date's value if any
+  syncVolumeFromSelectedDate();
+  updateSaveButton();
+}
+
+// Toggles historical / pre-data / today classes on the entry hero + today pill
+function applyDateModes(){
+  const hero=document.getElementById('entry-hero');
+  const pill=document.getElementById('today-pill');
+  const predataCard=document.getElementById('predata-card');
+  const hint=document.getElementById('entry-hint');
+  const eyebrow=document.getElementById('entry-eyebrow');
+  if(!hero)return;
+  const now=new Date();
+  const ty=now.getFullYear(),tm=now.getMonth()+1,td=now.getDate();
+  const isToday=(datePickerYear===ty&&datePickerMonth===tm&&datePickerDay===td);
+  const sel=new Date(datePickerYear,datePickerMonth-1,datePickerDay);
+  const isPreData=(sel<HISTORY_START);
+  const isFuture=(sel>new Date(ty,tm-1,td));
+
+  hero.classList.remove('historical','predata');
+  if(isPreData){
+    hero.classList.add('predata');
+    if(predataCard){
+      predataCard.style.display='block';
+      const startEl=document.getElementById('predata-start-date');
+      if(startEl)startEl.textContent=HISTORY_START.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+    }
+    if(hint){hint.classList.add('disabled');hint.classList.remove('amber');hint.textContent='before tracked history · records start '+HISTORY_START.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}
+    if(eyebrow)eyebrow.textContent=sel.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'})+' · pre-data';
+  }else if(!isToday){
+    hero.classList.add('historical');
+    if(predataCard)predataCard.style.display='none';
+    const label=sel.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'});
+    if(hint){hint.classList.add('amber');hint.classList.remove('disabled');hint.textContent=(isFuture?'future date · can\'t log ahead':'showing '+label+' entry · tap today to log new')}
+    if(eyebrow)eyebrow.textContent=label+' · viewing';
+  }else{
+    if(predataCard)predataCard.style.display='none';
+    if(hint){hint.classList.remove('amber','disabled');hint.textContent='enter yesterday\'s ending DV'}
+    if(eyebrow)eyebrow.textContent='Today\'s entry';
+  }
+  // Today pill: show whenever selected != today
+  if(pill){
+    if(!isToday){
+      pill.classList.add('on');
+      const leftEl=document.getElementById('tpi-left');
+      const rightEl=document.getElementById('tpi-right');
+      if(leftEl)leftEl.textContent=isPreData?'pre-data':(isFuture?'future date':'not today');
+      if(rightEl)rightEl.innerHTML='Jump to today';
+    }else{
+      pill.classList.remove('on');
+    }
+  }
+}
+
+function jumpToToday(){
+  const now=new Date();
+  setPickerDate(now.getFullYear(),now.getMonth()+1,now.getDate());
+  buildDateChips();
+}
+
+// Pull the org_volume value for the picker-selected date into the input field.
+// Falls back to empty if no record for that date.
+function syncVolumeFromSelectedDate(){
+  const ev=document.getElementById('ev');
+  if(!ev)return;
+  if(datePickerYear==null)return;
+  const rec=recs.find(r=>r.year===datePickerYear&&r.month===datePickerMonth&&r.day===datePickerDay);
+  if(rec){
+    ev.value=rec.org_volume;
+    ev._savedValue=rec.org_volume;
+  }else{
+    ev.value='';
+    ev._savedValue=null;
+  }
 }
 
 function buildDateChips(){
@@ -1478,9 +1898,7 @@ function buildDateChips(){
   if(!host)return;
   const now=new Date();
   const ty=now.getFullYear(),tm=now.getMonth()+1,td=now.getDate();
-  // Default: today selected on first build
   if(datePickerYear===null){setPickerDate(ty,tm,td)}
-  // Build a sliding window: 3 days before today through 14 days after = 18 chips
   const anchor=new Date(ty,tm-1,td);
   const chips=[];
   for(let offset=-3;offset<=14;offset++){
@@ -1489,13 +1907,20 @@ function buildDateChips(){
     const isSel=(y===datePickerYear&&m===datePickerMonth&&day===datePickerDay);
     const isToday=(y===ty&&m===tm&&day===td);
     const hasEntry=recs.some(r=>r.year===y&&r.month===m&&r.day===day);
-    chips.push(`<div class="date-chip${isSel?' on':''}${hasEntry?' has-entry':''}" onclick="setPickerDate(${y},${m},${day});buildDateChips()" title="${MO[m-1]} ${day}, ${y}${isToday?' (today)':''}">
-      <div class="date-chip-dow">${isToday&&!isSel?'TODAY':DOW[d.getDay()].toUpperCase()}</div>
+    const isPreData=(d<HISTORY_START);
+    const classes=['date-chip'];
+    if(isSel&&isToday)classes.push('on');
+    else if(isSel)classes.push('on','historical');
+    if(hasEntry)classes.push('has-entry');
+    if(isToday&&!isSel)classes.push('today-ring');
+    if(isPreData)classes.push('predata');
+    const clickHandler=isPreData?'':`onclick="setPickerDate(${y},${m},${day});buildDateChips()"`;
+    chips.push(`<div class="${classes.join(' ')}" ${clickHandler} title="${MO[m-1]} ${day}, ${y}${isToday?' (today)':''}${isPreData?' (pre-data)':''}">
+      <div class="date-chip-dow">${DOW[d.getDay()].toUpperCase()}</div>
       <div class="date-chip-day">${day}</div>
     </div>`);
   }
   host.innerHTML=chips.join('');
-  // Auto-scroll selected chip into view
   const onChip=host.querySelector('.date-chip.on');
   if(onChip)onChip.scrollIntoView({block:'nearest',inline:'center'});
 }
@@ -1506,7 +1931,6 @@ function toggleDatePopover(ev){
   if(!host)return;
   if(host.querySelector('.date-popover')){host.innerHTML='';return}
   renderDatePopover(datePickerYear,datePickerMonth);
-  // Click-away to close
   setTimeout(()=>{document.addEventListener('click',closeDatePopoverOnce,{once:true})},0);
 }
 function closeDatePopoverOnce(e){
@@ -1523,19 +1947,38 @@ function renderDatePopover(y,m){
   const firstDow=new Date(y,m-1,1).getDay();
   const now=new Date();
   const ty=now.getFullYear(),tm=now.getMonth()+1,td=now.getDate();
+  // Disable prev-month if it would go below HISTORY_START, disable next-month if beyond today's month
+  const prevY=m===1?y-1:y,prevM=m===1?12:m-1;
+  const nextY=m===12?y+1:y,nextM=m===12?1:m+1;
+  const prevLastDay=new Date(prevY,prevM,0);
+  const canPrev=prevLastDay>=HISTORY_START;
+  const nextFirstDay=new Date(nextY,nextM-1,1);
+  const canNext=nextFirstDay<=new Date(ty,tm-1,td);
   const cells=[];
   for(let i=0;i<firstDow;i++)cells.push('<button class="date-popover-day empty" type="button" disabled></button>');
   for(let d=1;d<=dim;d++){
+    const dt=new Date(y,m-1,d);
     const isSel=(y===datePickerYear&&m===datePickerMonth&&d===datePickerDay);
     const isToday=(y===ty&&m===tm&&d===td);
-    cells.push(`<button class="date-popover-day${isSel?' on':''}${isToday?' today':''}" type="button" onclick="setPickerDate(${y},${m},${d});document.getElementById('date-popover-host').innerHTML='';buildDateChips()">${d}</button>`);
+    const hasEntry=recs.some(r=>r.year===y&&r.month===m&&r.day===d);
+    const isPreData=(dt<HISTORY_START);
+    const isFuture=(dt>new Date(ty,tm-1,td));
+    const isDisabled=isPreData||isFuture;
+    const classes=['date-popover-day'];
+    if(isSel&&isToday)classes.push('on');
+    else if(isSel)classes.push('on','historical');
+    if(isToday)classes.push('today');
+    if(hasEntry)classes.push('has-entry');
+    if(isDisabled)classes.push('disabled');
+    const onclick=isDisabled?'':`onclick="setPickerDate(${y},${m},${d});document.getElementById('date-popover-host').innerHTML='';buildDateChips()"`;
+    cells.push(`<button class="${classes.join(' ')}" type="button" ${onclick}${isDisabled?' disabled':''}>${d}</button>`);
   }
   const dowHdr=DOW.map(d=>`<div class="date-popover-dow">${d.slice(0,1)}</div>`).join('');
   host.innerHTML=`<div class="date-popover" onclick="event.stopPropagation()">
     <div class="date-popover-nav">
-      <button type="button" onclick="renderDatePopover(${m===1?y-1:y},${m===1?12:m-1})">‹</button>
+      <button type="button" ${canPrev?`onclick="renderDatePopover(${prevY},${prevM})"`:'disabled style="opacity:.3;cursor:not-allowed"'}>‹</button>
       <div class="date-popover-nav-title">${MO[m-1]} ${y}</div>
-      <button type="button" onclick="renderDatePopover(${m===12?y+1:y},${m===12?1:m+1})">›</button>
+      <button type="button" ${canNext?`onclick="renderDatePopover(${nextY},${nextM})"`:'disabled style="opacity:.3;cursor:not-allowed"'}>›</button>
     </div>
     <div class="date-popover-grid">${dowHdr}${cells.join('')}</div>
   </div>`;
@@ -1560,8 +2003,8 @@ function previewEntry(){
 ['ev','ed','em','ey'].forEach(id=>{
   const el=document.getElementById(id);
   if(!el)return;
-  el.addEventListener('input',previewEntry);
-  el.addEventListener('change',previewEntry);
+  el.addEventListener('input',()=>{previewEntry();updateSaveButton()});
+  el.addEventListener('change',()=>{previewEntry();updateSaveButton()});
 });
 // Block mouse-wheel from silently changing values on number inputs inside the
 // entry form — wheel over a focused <input type=number> would otherwise tick
@@ -1570,13 +2013,22 @@ document.querySelectorAll('#pg-entry input[type="number"]').forEach(el=>{
   el.addEventListener('wheel',function(){if(document.activeElement===this)this.blur()},{passive:true});
 });
 function saveEntry(){
+  // Block in pre-data mode
+  const hero=document.getElementById('entry-hero');
+  if(hero&&hero.classList.contains('predata')){toast("Can't save — date is before tracked history");return}
+  // Block in future mode
+  const now=new Date();
+  const ty=now.getFullYear(),tm=now.getMonth()+1,td=now.getDate();
+  if(datePickerYear&&datePickerMonth&&datePickerDay){
+    const sel=new Date(datePickerYear,datePickerMonth-1,datePickerDay);
+    if(sel>new Date(ty,tm-1,td)){toast("Can't log a future date");return}
+  }
   const month=+document.getElementById('em').value,
         year=+document.getElementById('ey').value,
         day=+document.getElementById('ed').value,
         vol=+document.getElementById('ev').value;
   const g=currentEntryGoal();
   if(!day||!vol){toast('Please fill in day and org volume');return}
-  // Round to 2 decimals on save — matches display rule and the xlsx source data
   const volRound=Math.round(vol*100)/100;
   const idx=recs.findIndex(r=>r.year===year&&r.month===month&&r.day===day);
   const rec={year,month,day,org_volume:volRound,dv_goal:g.dv,pin_goal:g.id};
@@ -1584,9 +2036,52 @@ function saveEntry(){
   recalcAll();active={year,month};renderAll();
   const saved=recs.find(r=>r.year===year&&r.month===month&&r.day===day);
   if(saved&&sbCfg)pushSB(saved);
+  // Remember saved value so button stays "Saved ✓" until input changes
+  const ev=document.getElementById('ev');if(ev)ev._savedValue=volRound;
+  updateSaveButton();
   toast('Entry saved!');
 }
-function clearEntry(){document.getElementById('ev').value='';const _n=new Date();setPickerDate(_n.getFullYear(),_n.getMonth()+1,_n.getDate());buildDateChips();document.getElementById('eprev').style.display='none'}
+function clearEntry(){
+  document.getElementById('ev').value='';
+  const ev=document.getElementById('ev');if(ev)ev._savedValue=null;
+  const _n=new Date();
+  setPickerDate(_n.getFullYear(),_n.getMonth()+1,_n.getDate());
+  buildDateChips();
+  document.getElementById('eprev').style.display='none';
+  updateSaveButton();
+}
+
+// ═══════════════════ SAVE BUTTON STATE MACHINE ═══════════════════
+// Label + style depends on: is this historical? does a record exist? does current
+// input match the last-saved value (then dim + ✓)?
+function updateSaveButton(){
+  const btn=document.querySelector('.entry-save');
+  if(!btn)return;
+  const hero=document.getElementById('entry-hero');
+  if(hero&&hero.classList.contains('predata')){
+    btn.textContent="Can't save";btn.classList.remove('dim');btn.disabled=true;return;
+  }
+  btn.disabled=false;
+  const now=new Date();
+  const ty=now.getFullYear(),tm=now.getMonth()+1,td=now.getDate();
+  const isToday=(datePickerYear===ty&&datePickerMonth===tm&&datePickerDay===td);
+  const rec=recs.find(r=>r.year===datePickerYear&&r.month===datePickerMonth&&r.day===datePickerDay);
+  const ev=document.getElementById('ev');
+  const currentVal=ev?+ev.value:0;
+  const savedVal=(ev&&ev._savedValue!=null)?ev._savedValue:(rec?rec.org_volume:null);
+  const hasRec=rec!=null;
+  const unchanged=(savedVal!=null&&currentVal&&Math.abs(currentVal-savedVal)<0.005);
+  if(isToday){
+    if(hasRec&&unchanged){btn.textContent='Saved';btn.classList.add('dim')}
+    else if(hasRec){btn.textContent='Update Entry';btn.classList.remove('dim')}
+    else{btn.textContent='Save Entry';btn.classList.remove('dim')}
+  }else{
+    const label=MO[datePickerMonth-1]+' '+datePickerDay;
+    if(hasRec&&unchanged){btn.textContent='Saved · '+label;btn.classList.add('dim')}
+    else if(hasRec){btn.textContent='Update '+label;btn.classList.remove('dim')}
+    else{btn.textContent='Save '+label;btn.classList.remove('dim')}
+  }
+}
 
 // ═══════════════════ IMPORT ═══════════════════
 function handleDrop(e){e.preventDefault();document.getElementById('dz').classList.remove('drag');handleFiles(e.dataTransfer.files)}
@@ -1683,7 +2178,7 @@ function syncAllSB(){
 }
 
 function toast(msg,ms=2800){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('on');setTimeout(()=>t.classList.remove('on'),ms)}
-function renderAll(){buildPills();renderDash();buildFilter();renderTable();renderLockedGoal();if(document.getElementById('date-chips'))buildDateChips()}
+function renderAll(){recomputeHistoryStart();buildPills();renderDash();buildFilter();renderTable();renderLockedGoal();if(document.getElementById('date-chips')){buildDateChips();applyDateModes();updateSaveButton()}}
 
 // Airline date picker now owns date state; em/ed/ey are hidden inputs populated by setPickerDate()
 // (Year dropdown deprecated — picker covers ±18-day window with full-month popover for arbitrary dates.)
