@@ -699,10 +699,17 @@ const STYLES=[
 function colorsFor(style){return style==='warm'?WARM_COLORS:MINIMAL_COLORS}
 function defaultColorFor(style){return style==='warm'?'sunrise':'paper'}
 
-const urlParams=new URLSearchParams(window.location.search);
-const userSlug=urlParams.get('user')||'default';
-const STORE_KEY='ot_user_'+userSlug;
-const THEME_KEY='ot_theme_'+userSlug;
+// userSlug is resolved at the start of initAuth() — see resolveSlug().
+//   /tracker          → load the signed-in user's own data
+//   /tracker?user=X   → admin-only override; ignored if signed-in user isn't admin
+let userSlug='default';
+let STORE_KEY='ot_user_default';
+let THEME_KEY='ot_theme_default';
+function setSlug(slug){
+  userSlug=slug;
+  STORE_KEY='ot_user_'+slug;
+  THEME_KEY='ot_theme_'+slug;
+}
 
 // ── Supabase (baked-in credentials, no user config needed) ──────────────
 const SB_URL='https://nclvgzirfzddrbsnzryo.supabase.co';
@@ -995,8 +1002,53 @@ function updateAppearanceUI(style,color){
 }
 
 // ═══════════════════ AUTH ═══════════════════
+// Look up which distributor's data to load:
+//   1. Read session (sb-<ref>-auth-token) → get auth user id
+//   2. Look up profile.slug + profile.role for that user
+//   3. If a ?user=X override is present AND profile.role === 'admin',
+//      load that distributor's data (admin viewing a distributor)
+//   4. Otherwise, load the user's own profile.slug
+//   5. If no session at all → bounce back to /
+async function resolveSlug(){
+  const params=new URLSearchParams(window.location.search);
+  const overrideSlug=params.get('user');
+  // No SDK in tracker.html — read the session token directly out of localStorage
+  // (Supabase v2 default key) and call PostgREST with it.
+  const SB_REF=(SB_URL||'').match(/https:\/\/([^.]+)\.supabase\.co/);
+  const tokKey=SB_REF?'sb-'+SB_REF[1]+'-auth-token':null;
+  let session=null;
+  try{ session=tokKey?JSON.parse(localStorage.getItem(tokKey)||'null'):null; }catch(e){}
+  const access=session&&session.access_token;
+  const userId=session&&session.user&&session.user.id;
+  if(!access||!userId){
+    // No valid session — bounce home
+    window.location.href='/';
+    return null;
+  }
+  // Look up this user's profile (slug + role)
+  let profile=null;
+  try{
+    const r=await fetch(SB_URL+'/rest/v1/profiles?select=slug,role&id=eq.'+userId,{
+      headers:{'apikey':SB_KEY,'Authorization':'Bearer '+access}
+    });
+    if(r.ok){const arr=await r.json();profile=arr&&arr[0];}
+  }catch(e){console.error('profile lookup failed',e);}
+  if(!profile){
+    document.getElementById('inactive-screen').classList.add('on');
+    return null;
+  }
+  // Admin override: only honored if the signed-in user is themselves an admin
+  if(overrideSlug && profile.role==='admin'){
+    return overrideSlug;
+  }
+  // Distributor's own data
+  return profile.slug;
+}
+
 async function initAuth(){
-  if(userSlug==='default'){afterAuth('Default User');return;}
+  const slug=await resolveSlug();
+  if(!slug){return;}  // resolveSlug already bounced or showed inactive screen
+  setSlug(slug);
   const dist=await fetchDistributorFromDB(userSlug);
   if(!dist){
     document.getElementById('inactive-screen').classList.add('on');

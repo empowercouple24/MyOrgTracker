@@ -189,7 +189,7 @@ html::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;ba
         <div class="success-icon">🎉</div>
         <h2>You're all set!</h2>
         <p>Your MyOrgTracker account is ready. Start tracking your Org Volume and watching your progress toward your goal.</p>
-        <a id="tracker-link" href="/tracker?user=" class="btn-primary" style="text-decoration:none">
+        <a id="tracker-link" href="/tracker" class="btn-primary" style="text-decoration:none">
           <span class="btn-label">Go to My Tracker →</span>
         </a>
       </div>
@@ -301,7 +301,7 @@ window.completeSignup = async function(){
     }).eq('slug', slug);
 
     // Success
-    $('tracker-link').href='/tracker?user='+slug;
+    $('tracker-link').href='/tracker';
     showPanel('panel-success');
   }catch(e){
     btn.classList.remove('loading');btn.disabled=false;
@@ -356,7 +356,7 @@ async function init(){
   // Note: this gates on auth_user_id, NOT status. A distributor can be marked "active"
   // (created/activated by an admin) but never have completed login setup yet.
   if(distRecord.auth_user_id){
-    window.location.href='/tracker?user='+slug;
+    window.location.href='/tracker';
     return;
   }
 

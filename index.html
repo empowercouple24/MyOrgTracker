@@ -287,7 +287,7 @@ async function handleLogin(email,password){
     return;
   }
   showOk('Signing you in…');
-  window.location.href = '/tracker?user=' + encodeURIComponent(profile.slug);
+  window.location.href = '/tracker';
 }
 
 async function handleForgot(email){
@@ -311,7 +311,7 @@ async function handleForgot(email){
   const { data: profile } = await sb.from('profiles').select('role, slug').eq('id', session.user.id).single();
   if(!profile) return;
   if(profile.role==='admin'){ window.location.href='/admin'; return }
-  if(profile.slug){ window.location.href='/tracker?user='+encodeURIComponent(profile.slug); return }
+  if(profile.slug){ window.location.href='/tracker'; return }
   // distributor with no slug — stay on landing page with a message
   showErr('Your distributor profile isn\'t fully set up. Please contact your admin.');
   await sb.auth.signOut();
