@@ -540,6 +540,31 @@ async function sbFetch(path, opts={}) {
   return r.status === 204 ? null : r.json();
 }
 
+// Paginated fetch — PostgREST caps at 1000 rows per response regardless of
+// &limit=X. Use this when the result set can exceed 1000 rows (e.g. org_volume
+// across every distributor with years of history).
+async function sbFetchAll(basePath) {
+  const PAGE = 1000;
+  const MAX_PAGES = 200;
+  let all = [];
+  let offset = 0;
+  const sep = basePath.includes('?') ? '&' : '?';
+  for (let i = 0; i < MAX_PAGES; i++) {
+    const url = SB_URL + basePath + sep + 'limit=' + PAGE + '&offset=' + offset;
+    const r = await fetch(url, { headers: SB_H() });
+    if (!r.ok) {
+      const txt = await r.text().catch(()=>'');
+      throw new Error('Supabase error ' + r.status + ': ' + txt.slice(0,120));
+    }
+    const rows = await r.json();
+    if (!Array.isArray(rows) || rows.length === 0) break;
+    all = all.concat(rows);
+    if (rows.length < PAGE) break;
+    offset += PAGE;
+  }
+  return all;
+}
+
 function showLoading(msg='Loading…') {
   document.getElementById('dl-txt').textContent = msg;
   document.getElementById('data-loading').classList.add('on');
@@ -607,7 +632,7 @@ async function loadAllData(msg='Loading…') {
   try {
     const [dists, entries, admins] = await Promise.all([
       sbFetch('/rest/v1/distributors?select=*&order=created_at.asc'),
-      sbFetch('/rest/v1/org_volume?select=*&order=entry_date.asc&limit=50000'),
+      sbFetchAll('/rest/v1/org_volume?select=*&order=entry_date.asc'),
       sbFetch('/rest/v1/profiles?select=id&role=eq.admin')
     ]);
     const adminIds = new Set((admins || []).map(p => p.id));

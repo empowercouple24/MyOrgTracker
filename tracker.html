@@ -2149,26 +2149,35 @@ function deleteSB(r){
   fetch(sbCfg.url+'/rest/v1/org_volume?entry_date=eq.'+d+'&user_slug=eq.'+userSlug,{method:'DELETE',headers:h})
     .catch(e=>console.error('SB delete failed',e));
 }
-function pullSB(cb){
+// Paginated pull — PostgREST caps responses at 1000 rows regardless of
+// &limit=X. We page through in 1000-row chunks until we've got everything.
+async function pullSB(cb){
   const h=sbHeaders();if(!h){toast('Configure Supabase first');if(cb)cb();return}
-  // PostgREST defaults to a 1000-row limit. With historical data we can have
-  // 2500+ rows per distributor, so pass an explicit large limit to get them all.
-  // Ordered ascending by date so the newest entries end up at the tail of recs
-  // (recalcAll re-sorts but ordering input is still polite).
-  fetch(sbCfg.url+'/rest/v1/org_volume?user_slug=eq.'+userSlug+'&select=*&order=entry_date.asc&limit=50000',{headers:h})
-    .then(r=>r.json())
-    .then(rows=>{
-      if(!Array.isArray(rows)){if(cb)cb();return}
-      let merged=0;
-      rows.forEach(row=>{
-        const y=+row.year_num,m=+row.month_num,d=+row.day_num;
-        const idx=recs.findIndex(x=>x.year===y&&x.month===m&&x.day===d);
-        const rec={year:y,month:m,day:d,org_volume:+row.org_volume,dv_goal:+row.dv_goal,pin_goal:row.pin_goal||'Mill 7.5'};
-        if(idx>=0){recs[idx]={...recs[idx],...rec}}else{recs.push(rec);merged++}
-      });
-      recalcAll();renderAll();
-      if(cb)cb(merged,rows.length);
-    }).catch(e=>{console.error('SB pull failed',e);if(cb)cb()});
+  const PAGE=1000;
+  const MAX_PAGES=100;  // safety cap — 100,000 rows max per user
+  let all=[];
+  let offset=0;
+  try{
+    for(let i=0;i<MAX_PAGES;i++){
+      const url=sbCfg.url+'/rest/v1/org_volume?user_slug=eq.'+userSlug+'&select=*&order=entry_date.asc&limit='+PAGE+'&offset='+offset;
+      const r=await fetch(url,{headers:h});
+      if(!r.ok)break;
+      const rows=await r.json();
+      if(!Array.isArray(rows)||rows.length===0)break;
+      all=all.concat(rows);
+      if(rows.length<PAGE)break;  // last page — short response means we got everything
+      offset+=PAGE;
+    }
+    let merged=0;
+    all.forEach(row=>{
+      const y=+row.year_num,m=+row.month_num,d=+row.day_num;
+      const idx=recs.findIndex(x=>x.year===y&&x.month===m&&x.day===d);
+      const rec={year:y,month:m,day:d,org_volume:+row.org_volume,dv_goal:+row.dv_goal,pin_goal:row.pin_goal||'Mill 7.5'};
+      if(idx>=0){recs[idx]={...recs[idx],...rec}}else{recs.push(rec);merged++}
+    });
+    recalcAll();renderAll();
+    if(cb)cb(merged,all.length);
+  }catch(e){console.error('SB pull failed',e);if(cb)cb()}
 }
 function syncAllSB(){
   const h=sbHeaders();if(!h){toast('Configure Supabase first');return}
