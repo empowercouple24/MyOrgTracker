@@ -117,6 +117,8 @@ body{font-family:'Geist',system-ui,sans-serif;background:var(--paper);color:var(
 .bg_{background:var(--green2);color:var(--green);border-color:var(--green3)}
 .bg_:hover{background:var(--green3)}
 .br_{background:var(--red2);color:var(--red);border-color:#e8b8b8}
+.btn-delete{background:transparent;color:var(--red);border-color:var(--red);opacity:.7}
+.btn-delete:hover{opacity:1;background:var(--red2)}
 .br_:hover{background:#f0cccc}
 .bgo{background:var(--gold2);color:var(--gold);border-color:var(--gold3)}
 .bgo:hover{background:var(--gold3)}
@@ -316,7 +318,7 @@ tr:hover td{background:var(--paper2);transition:background .1s}
   <div style="max-width:400px">
     <div class="card">
       <div class="ct">Account</div>
-      <p style="font-size:13px;color:var(--ink3);margin-bottom:16px;line-height:1.6">You are signed in with Supabase Auth. To change your password, sign out and use the Forgot Password link on the sign-in page.</p>
+      <p style="font-size:13px;color:var(--ink3);margin-bottom:16px;line-height:1.6">To change your password, sign out and use the Forgot Password link on the sign-in page.</p>
       <button class="btn bo" onclick="adminLogout()">Sign Out</button>
     </div>
   </div>
@@ -635,6 +637,10 @@ const colorFor = slug => COLORS[Math.abs(slug.split('').reduce((a,c)=>a+c.charCo
 // ── Supabase Auth (admin.html) ─────────────────────────────────────────
 const SB_URL='https://nclvgzirfzddrbsnzryo.supabase.co';
 const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5jbHZnemlyZnpkZHJic256cnlvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY0Mzc0NTgsImV4cCI6MjA5MjAxMzQ1OH0.y7paxIa6Zd2ubwO8w_YwEHVNiKA5D6L5vHKxz7P6gC0';
+// Service role key — needed only for hard-deleting auth.users.
+// Get from Supabase dashboard → Project Settings → API → service_role (secret).
+// This key bypasses Row Level Security — keep admin.html access-controlled.
+const SB_SERVICE_KEY='PASTE_SERVICE_ROLE_KEY_HERE';
 let sbClient = null;
 
 function initSupabase(){
@@ -740,8 +746,7 @@ function renderOverview() {
     pc.innerHTML = dists.map(d=>{
       const mr = (d.records||[]).filter(r=>r.month===cm&&r.year===cy).sort((a,b)=>a.day-b.day);
       const last = mr[mr.length-1];
-      const dg = PIN_MAP[d.pinGoal]||DV_GOAL;
-      const uplift=getUplift(d);const est = last ? Math.round((last.org_volume||0)*uplift) : 0;
+      const dg = dvForGoal(d.pinGoal);const uplift=getUplift(d);const est = last ? Math.round((last.org_volume||0)*uplift) : 0;
       const pct = Math.min(100,Math.round(est/dg*100));
       const col = colorFor(d.slug);
       return `<div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;cursor:pointer" onclick="viewDist('${d.slug}')">
@@ -749,7 +754,7 @@ function renderOverview() {
         <div style="flex:1;min-width:0">
           <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px">
             <span style="font-weight:500">${d.name}</span>
-            <span style="font-family:'DM Mono',monospace;color:var(--ink3)">${pct}% · ${fmt(est)} Org Vol</span>
+            <span style="font-family:'DM Mono',monospace;color:var(--ink3)">${pct}% · ${fmt(last?.org_volume||0)} DV</span>
           </div>
           <div class="pb-track"><div class="pb-fill" style="width:${pct}%;background:${col}"></div></div>
         </div>
@@ -787,7 +792,7 @@ function renderDistGrid() {
     const now = new Date(); const cm=now.getMonth()+1; const cy=now.getFullYear();
     const mr = (d.records||[]).filter(r=>r.month===cm&&r.year===cy).sort((a,b)=>a.day-b.day);
     const last = mr[mr.length-1];
-    const dg = PIN_MAP[d.pinGoal]||DV_GOAL;
+    const dg = dvForGoal(d.pinGoal);
     const est = last ? Math.round((last.org_volume||0)*GLOBAL_UPLIFT) : 0;
     const pct = last ? Math.min(100,Math.round(est/dg*100)) : 0;
     return `<div class="dcard ${d.active?'':'inactive'}" onclick="viewDist('${d.slug}')">
@@ -795,23 +800,22 @@ function renderDistGrid() {
         <div class="dc-av" style="background:${col};color:#fff">${initials(d.name)}</div>
         <div>
           <div class="dc-name">${d.name}</div>
-          <div class="dc-slug">?user=${d.slug}</div>
         </div>
         <div style="margin-left:auto;display:flex;flex-direction:column;align-items:flex-end;gap:4px">
-
           <span class="badge ${d.active?'b-active':'b-inactive'}">${d.active?'Active':'Inactive'}</span>
           ${d.authUserId?'<span class="badge b-active" style="font-size:10px">✓ Login</span>':'<span class="badge" style="background:#fef3c7;color:#92400e;font-size:10px">⚠ No login</span>'}
         </div>
       </div>
       <div class="dc-body">
         <div class="dc-row"><span>Goal</span><span>${goalById(d.pinGoal).label}</span></div>
-        <div class="dc-row"><span>This month</span><span>${fmt(last?.org_volume||0)} vol</span></div>
+        <div class="dc-row"><span>This month</span><span>${fmt(last?.org_volume||0)} DV</span></div>
         <div class="dc-row"><span>Goal progress</span><span>${pct}%</span></div>
         <div style="margin-top:8px"><div class="pb-track"><div class="pb-fill" style="width:${pct}%;background:${col}"></div></div></div>
       </div>
       <div class="dc-foot" onclick="event.stopPropagation()">
         <button class="btn bo btn-sm" onclick="viewDist('${d.slug}')">View</button>
         <button class="btn ${d.active?'br_':'bg_'} btn-sm" onclick="toggleActive('${d.slug}')">${d.active?'Deactivate':'Activate'}</button>
+        <button class="btn btn-delete btn-sm" onclick="confirmDeleteDist('${d.slug}')">Delete</button>
       </div>
     </div>`;
   }).join('');
@@ -834,7 +838,7 @@ function renderDistDetail(d) {
   const now = new Date(); const cm=now.getMonth()+1; const cy=now.getFullYear();
   const mr = (d.records||[]).filter(r=>r.month===cm&&r.year===cy).sort((a,b)=>a.day-b.day);
   const last = mr[mr.length-1];
-  const dg = PIN_MAP[d.pinGoal]||DV_GOAL;
+  const dg = dvForGoal(d.pinGoal);
   const allMonths = [...new Set((d.records||[]).map(r=>r.year+'-'+String(r.month).padStart(2,'0')))].sort();
   const goalLbl = goalById(d.pinGoal).label;
   const linked = !!d.authUserId;
@@ -845,7 +849,7 @@ function renderDistDetail(d) {
       <div class="dv-av" style="background:${col};color:#fff">${initials(d.name)}</div>
       <div>
         <div class="dv-name">${d.name}${d.isAdmin?' <span style="display:inline-block;font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;background:var(--ink);color:var(--paper);padding:2px 7px;border-radius:20px;vertical-align:middle;margin-left:6px;font-family:\'DM Mono\',monospace">ADMIN</span>':''}</div>
-        <div class="dv-meta">?user=${d.slug} · ${goalLbl} · ${d.active?'Active':'Inactive'}${d.email?' · '+d.email:''}</div>
+        <div class="dv-meta">${goalLbl} · ${d.active?'Active':'Inactive'}${d.email?' · '+d.email:''}</div>
       </div>
       <div class="dv-actions">
         <button class="btn bo" onclick="openLogEntry('${d.slug}')">＋ Log Entry</button>
@@ -854,11 +858,12 @@ function renderDistDetail(d) {
         <button class="btn bo" onclick="openEditDist('${d.slug}')">Edit Settings</button>
         ${linked?`<button class="btn ${d.isAdmin?'br_':'bgo'}" onclick="togglePromoteAdmin('${d.slug}')">${d.isAdmin?'Revoke Admin':'Promote to Admin'}</button>`:''}
         <button class="btn ${d.active?'br_':'bg_'}" onclick="toggleActive('${d.slug}');renderDistDetail(state.distributors.find(x=>x.slug==='${d.slug}'))">${d.active?'Deactivate':'Activate'}</button>
+        <button class="btn btn-delete" onclick="confirmDeleteDist('${d.slug}')">Delete</button>
       </div>
     </div>
     <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px">
-      <div class="met"><div class="met-l">Current Vol</div><div class="met-v">${fmt(last?.org_volume)}</div><div class="met-s">${MO[cm-1]} ${cy}</div></div>
-      <div class="met"><div class="met-l">Est. Org Volume</div><div class="met-v">${fmt(last?Math.round(last.org_volume*UPLIFT):null)}</div><div class="met-s">×${getUplift(d)} uplift</div></div>
+      <div class="met"><div class="met-l">Current DV</div><div class="met-v">${fmt(last?.org_volume)}</div><div class="met-s">${MO[cm-1]} ${cy}</div></div>
+      <div class="met"><div class="met-l">Est. Org Volume</div><div class="met-v">${fmt(last?Math.round(last.org_volume*GLOBAL_UPLIFT):null)}</div><div class="met-s">×${getUplift(d)} uplift</div></div>
       <div class="met"><div class="met-l">Org Vol Remaining</div><div class="met-v">${fmt(last?.dv_remaining)}</div><div class="met-s">To ${fmt(dg)} org vol goal</div></div>
       <div class="met"><div class="met-l">Days Logged</div><div class="met-v">${mr.length}</div><div class="met-s">This month</div></div>
     </div>
@@ -1324,6 +1329,63 @@ async function toggleActive(slug) {
     renderDistGrid();
     toast(d.name + ' ' + (newActive ? 'activated' : 'deactivated'));
   } catch(e) { toast('Error: ' + e.message); }
+}
+
+function confirmDeleteDist(slug){
+  const d=state.distributors.find(x=>x.slug===slug);
+  if(!d)return;
+  const recCount=(d.records||[]).length;
+  const msg=`Delete ${d.name}?\n\n` +
+    `• Their distributor record and ${recCount} org volume entr${recCount===1?'y':'ies'} will be permanently deleted.\n` +
+    `• Their login will be removed — they will not be able to sign in.\n` +
+    `• Data cannot be recovered.\n\n` +
+    `Type DELETE to confirm.`;
+  const input=window.prompt(msg);
+  if((input||'').trim().toUpperCase()!=='DELETE'){
+    if(input!==null)toast('Cancelled — type DELETE to confirm');
+    return;
+  }
+  deleteDist(slug);
+}
+
+async function deleteDist(slug){
+  const d=state.distributors.find(x=>x.slug===slug);
+  if(!d)return;
+  try{
+    // 1. Delete all org_volume records for this distributor
+    await sbFetch('/rest/v1/org_volume?user_slug=eq.'+slug,{
+      method:'DELETE',
+      headers:{...SB_H(),'Prefer':'return=minimal'}
+    });
+    // 2. Hard-delete auth.users if they have a login (requires service role key)
+    if(d.authUserId&&SB_SERVICE_KEY&&SB_SERVICE_KEY!=='PASTE_SERVICE_ROLE_KEY_HERE'){
+      await fetch(SB_URL+'/auth/v1/admin/users/'+d.authUserId,{
+        method:'DELETE',
+        headers:{
+          'apikey':SB_SERVICE_KEY,
+          'Authorization':'Bearer '+SB_SERVICE_KEY
+        }
+      });
+    } else if(d.authUserId){
+      // Service key not set — null out auth_user_id to orphan instead
+      await sbFetch('/rest/v1/distributors?id=eq.'+d.id,{
+        method:'PATCH',
+        headers:{...SB_H(),'Prefer':'return=minimal'},
+        body:JSON.stringify({auth_user_id:null})
+      });
+    }
+    // 3. Delete the distributor row itself
+    await sbFetch('/rest/v1/distributors?id=eq.'+d.id,{
+      method:'DELETE',
+      headers:{...SB_H(),'Prefer':'return=minimal'}
+    });
+    toast(d.name+' deleted');
+    await loadAllData('Refreshing…');
+    goPage('distributors');
+  }catch(e){
+    toast('Delete failed: '+e.message);
+    console.error(e);
+  }
 }
 async function togglePromoteAdmin(slug) {
   const d = state.distributors.find(x=>x.slug===slug);
