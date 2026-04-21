@@ -502,7 +502,12 @@ td.n{font-family:'Geist',sans-serif;font-variant-numeric:tabular-nums}
 .md-chart-legend .dot.coffee{background:var(--accent)}
 .md-chart-legend .dot.sage{background:#3aac77}
 .md-chart-legend .dot.amber{background:#d4a74a}
-.md-timeline{display:flex;align-items:flex-end;gap:2px;height:100px;padding-bottom:4px;border-bottom:1px solid var(--border)}
+.md-timeline-wrap{position:relative}
+.md-timeline{display:flex;align-items:flex-end;gap:2px;height:100px;padding-bottom:4px;border-bottom:1px solid var(--border);position:relative}
+.md-hit-line{position:absolute;top:0;bottom:4px;width:2px;background:#3aac77;z-index:5;pointer-events:none}
+.md-hit-line-label{position:absolute;bottom:-19px;left:50%;transform:translateX(-50%);font-size:9px;font-weight:800;color:#3aac77;letter-spacing:0.12em;padding:1px 5px;background:var(--surface);border-radius:3px;white-space:nowrap}
+.md-axis-weeks{position:relative;height:14px;margin-top:4px;font-family:'Geist',sans-serif;font-size:9px;color:var(--text3);font-weight:600;letter-spacing:0.08em}
+.md-axis-weeks span{position:absolute;transform:translateX(-50%);white-space:nowrap}
 .md-bar{flex:1;background:var(--accent);border-radius:2px 2px 0 0;min-height:2px;transition:background .12s;cursor:pointer;position:relative}
 .md-bar.hit{background:#3aac77}
 .md-bar.today{background:#d4a74a;box-shadow:0 0 0 1px #d4a74a}
@@ -533,7 +538,7 @@ td.n{font-family:'Geist',sans-serif;font-variant-numeric:tabular-nums}
 .gb-wrap{position:relative;padding-bottom:18px}
 .gb{position:relative;height:10px;border-radius:3px;overflow:visible}
 .gb-zone-cur{position:absolute;left:0;top:0;bottom:0;background:var(--surface3);border-radius:3px 0 0 3px;z-index:0;transition:right 0.5s cubic-bezier(0.22,1,0.36,1)}
-.gb-zone-ext{position:absolute;top:0;bottom:0;right:0;background:repeating-linear-gradient(90deg,rgba(196,138,58,0.14) 0px,rgba(196,138,58,0.14) 3px,transparent 3px,transparent 6px);border:1px dashed rgba(196,138,58,0.35);border-left:none;border-radius:0 3px 3px 0;z-index:0;transition:left 0.5s cubic-bezier(0.22,1,0.36,1)}
+.gb-zone-ext{position:absolute;top:0;bottom:0;right:0;background:var(--gb-ext-pattern, repeating-linear-gradient(90deg,rgba(196,138,58,0.14) 0px,rgba(196,138,58,0.14) 3px,transparent 3px,transparent 6px));border:1px dashed var(--gb-ext-border, rgba(196,138,58,0.35));border-left:none;border-radius:0 3px 3px 0;z-index:0;transition:left 0.5s cubic-bezier(0.22,1,0.36,1)}
 .gb[data-mode="solo"] .gb-zone-cur{right:0;border-radius:3px}
 .gb[data-mode="solo"] .gb-zone-ext{display:none}
 .gb-fill-cur{position:absolute;left:0;top:0;bottom:0;border-radius:3px 0 0 3px;z-index:1;transition:width 0.5s cubic-bezier(0.22,1,0.36,1)}
@@ -546,9 +551,9 @@ td.n{font-family:'Geist',sans-serif;font-variant-numeric:tabular-nums}
 .gb-tick-label{position:absolute;top:calc(100% + 9px);font-size:8px;letter-spacing:0.06em;font-weight:700;color:var(--text3);transform:translateX(-50%);white-space:nowrap;transition:left 0.5s cubic-bezier(0.22,1,0.36,1)}
 .gb-tick-label.past{color:var(--text)}
 .gb-tick-label.goal{color:var(--text);font-weight:800}
-.gb-end-cap{position:absolute;right:0;top:calc(100% + 9px);font-size:8px;letter-spacing:0.06em;font-weight:700;color:rgba(196,138,58,0.55);transition:color 0.2s;white-space:nowrap}
-.gb-end-cap.lit{color:#c48a3a}
-.gb-end-cap.hit-next{color:#c48a3a;font-weight:800}
+.gb-end-cap{position:absolute;right:0;top:calc(100% + 9px);font-size:8px;letter-spacing:0.06em;font-weight:700;color:var(--gb-ext-muted, rgba(196,138,58,0.55));transition:color 0.2s;white-space:nowrap}
+.gb-end-cap.lit{color:var(--gb-ext-color, #c48a3a)}
+.gb-end-cap.hit-next{color:var(--gb-ext-color, #c48a3a);font-weight:800}
 /* Mobile: hide the small labels that would collide on narrow bars */
 @media(max-width:640px){
   .gb-tick-label{display:none}
@@ -973,19 +978,21 @@ function majorMilestonesBelow(currentGoalDv){
     .filter(g=>MAJOR_MILESTONES.includes(g.id)&&g.dv<currentGoalDv)
     .sort((a,b)=>a.dv-b.dv);
 }
-// Tier color for the bar — returns a concrete hex by tier id, keyed to
-// levelColor() where possible. Used for both tick color and fill color.
+// Tier color for the bar — pulls from the app's real levelColor() system
+// so the goal bar uses the same team colors as pins, pills, and everywhere else.
+// GT=red, GP=orange, MT=green, MP=teal, PT=gold, AWT=gray.
 function tierBarColor(id){
-  if(id==='awt')return '#86a383';
-  if(id==='get')return '#5ea39a';
-  if(id==='getp')return '#f39519';
-  if(id==='mt')return '#7a5a3a';
-  if(id==='mtp')return '#c48a3a';
-  if(id==='pt')return '#c65d3a';
-  if(id==='pt15k')return '#a4392e';
-  if(id==='pt20k')return '#7a2428';
-  if(id==='pt30k')return '#5e2a4d';
-  return '#7a5a3a';
+  const g=goalById(id);
+  if(!g)return '#7a5a3a';
+  return levelColor(g.label).bg||'#7a5a3a';
+}
+// Convert a hex color to rgba with a given alpha. Used for ghost pattern + muted end-cap.
+function hexToRgba(hex,alpha){
+  const h=(hex||'#000000').replace('#','');
+  const r=parseInt(h.substr(0,2),16);
+  const g=parseInt(h.substr(2,2),16);
+  const b=parseInt(h.substr(4,2),16);
+  return `rgba(${r},${g},${b},${alpha})`;
 }
 
 // ═══════════════════ TEAM-LEVEL COLOR SYSTEM ═══════════════════
@@ -1997,7 +2004,13 @@ function buildGoalBar(r){
   const curZoneStyle=`right:${100-curZoneW}%`;
   const extZoneStyle=`left:${extZoneLeft}%`;
 
-  return `<div class="gb-wrap"><div class="gb" data-mode="${mode}">
+  // Ghost pattern + end cap use the actual next-tier color via CSS vars
+  const extPattern=`repeating-linear-gradient(90deg,${hexToRgba(nextColor,0.18)} 0px,${hexToRgba(nextColor,0.18)} 3px,transparent 3px,transparent 6px)`;
+  const extBorder=hexToRgba(nextColor,0.45);
+  const extMuted=hexToRgba(nextColor,0.55);
+  const gbVars=`--gb-ext-pattern:${extPattern};--gb-ext-border:${extBorder};--gb-ext-color:${nextColor};--gb-ext-muted:${extMuted}`;
+
+  return `<div class="gb-wrap"><div class="gb" data-mode="${mode}" style="${gbVars}">
     <div class="gb-zone-cur" style="${curZoneStyle}"></div>
     <div class="gb-zone-ext" style="${extZoneStyle}"></div>
     <div class="gb-fill-cur${(!hit)?' solo':''}" style="width:${fillCurW}%;background:${curColor}"></div>
@@ -2116,8 +2129,20 @@ function renderMonthDetail(){
           <span><span class="dot amber"></span>Today</span>
         </span>
       </div>
-      <div class="md-timeline">${bars.join('')}</div>
-      <div class="md-axis"><span>${MO[m-1]} 1</span><span>${MO[m-1]} ${Math.round(dimsMonth*0.33)}</span><span>${MO[m-1]} ${Math.round(dimsMonth*0.66)}</span><span>${MO[m-1]} ${dimsMonth}</span></div>
+      <div class="md-timeline-wrap">
+        <div class="md-timeline">${bars.join('')}${hitDay?`<div class="md-hit-line" style="left:${((hitDay.day-0.5)/dimsMonth)*100}%" title="Goal hit on ${MO[m-1]} ${hitDay.day}"><span class="md-hit-line-label">HIT</span></div>`:''}</div>
+      </div>
+      <div class="md-axis-weeks">${(function(){
+        const lbls=[];let w=1;
+        for(let sd=1;sd<=dimsMonth;sd+=7){
+          const ed=Math.min(sd+6,dimsMonth);
+          const cd=(sd+ed)/2;
+          const pct=((cd-0.5)/dimsMonth)*100;
+          lbls.push(`<span style="left:${pct}%">W${w}</span>`);
+          w++;
+        }
+        return lbls.join('');
+      })()}</div>
     </div>
     <div class="card" style="padding:10px 10px 12px">
       <div class="md-day-head">
