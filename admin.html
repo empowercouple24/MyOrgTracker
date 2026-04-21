@@ -141,6 +141,19 @@ body{font-family:'Geist',system-ui,sans-serif;background:var(--paper);color:var(
 .mh-close:hover{color:var(--ink)}
 .mb{padding:22px 24px;background:var(--surface)}
 .mf{padding:14px 24px;background:var(--paper);display:flex;gap:9px;justify-content:flex-end;border-top:1px solid var(--border)}
+/* ── Invite modal: tier picker ── */
+.inv-tier-list{display:flex;flex-direction:column;border:1px solid var(--border);border-radius:10px;overflow:hidden;max-height:230px;overflow-y:auto;background:var(--paper)}
+.inv-tier-item{display:flex;align-items:center;gap:11px;padding:10px 13px;border-bottom:1px solid rgba(61,46,31,0.06);cursor:pointer;transition:.1s}
+.inv-tier-item:last-child{border-bottom:0}
+.inv-tier-item:hover{background:var(--paper2)}
+.inv-tier-item.on{background:var(--blue2);box-shadow:inset 3px 0 0 var(--blue)}
+.inv-tier-item img{width:30px;height:30px;object-fit:contain;flex-shrink:0}
+.inv-tier-item-body{flex:1;min-width:0}
+.inv-tier-item-name{font-family:'EB Garamond',serif;font-size:14px;font-weight:500;color:var(--ink);line-height:1.2}
+.inv-tier-item-ro{font-size:13px;font-weight:600;color:var(--blue);font-variant-numeric:tabular-nums;margin-top:2px}
+.inv-tier-item-meta{font-size:10px;color:var(--ink3);margin-top:1px;letter-spacing:.02em}
+.inv-tier-item-check{font-size:13px;color:var(--blue);opacity:0;margin-left:auto;flex-shrink:0;transition:.1s;font-weight:700}
+.inv-tier-item.on .inv-tier-item-check{opacity:1}
 
 /* ── TABLE ── */
 .tw{overflow-x:auto}
@@ -325,9 +338,8 @@ tr:hover td{background:var(--paper2);transition:background .1s}
         <div class="fg" style="margin-bottom:12px"><label>Email Address</label><input type="email" id="inv-email" placeholder="distributor@example.com"></div>
         <div class="fg" style="margin-bottom:12px">
           <label>Goal Tier</label>
-          <select id="inv-goal" onchange="updateInviteGoalInfo()" style="width:100%"></select>
+          <div class="inv-tier-list" id="inv-tier-list"></div>
         </div>
-        <div id="inv-goal-info" style="background:var(--blue2);border:1px solid rgba(58,92,138,0.2);border-radius:8px;padding:10px 13px;margin-bottom:14px;font-size:12px;color:var(--blue)"></div>
         <div style="background:var(--paper2);border:1px solid var(--border);border-radius:8px;padding:11px 14px;font-size:12px;color:var(--ink3)">
           Their signup link: <span id="inv-url-preview" style="font-family:'DM Mono',monospace;font-size:11px;color:var(--ink2)">—</span>
         </div>
@@ -459,7 +471,11 @@ const GOAL_OPTIONS=[
 ];
 function goalById(id){return GOAL_OPTIONS.find(g=>g.id===id)||GOAL_OPTIONS[4]}
 function dvForGoal(id){return goalById(id).dv}
-function goalOptions(sel){return GOAL_OPTIONS.map(g=>`<option value="${g.id}"${g.id===sel?' selected':''}>${g.label} — ${g.dv.toLocaleString()} Org Volume</option>`).join('')}
+function goalOptions(sel){return GOAL_OPTIONS.map(g=>{
+  const ro=Math.round(g.dv*0.05);
+  const cleanLbl=g.label.replace(/\s*\(.*?\)\s*$/,'').trim();
+  return `<option value="${g.id}"${g.id===sel?' selected':''}>${cleanLbl} — $${ro.toLocaleString()} RO</option>`;
+}).join('')}
 const DV_GOAL = 150000; // default Millionaire Team Plus
 // PIN_MAP kept for backward compat with old records
 const PIN_MAP = {'7.5':113636,'5':75757,'3':45454,'1':15151};
@@ -961,21 +977,48 @@ async function deleteDistEntry(slug,y,m,day) {
 // ══════════════════════════════════════════
 let inviteSlug='';
 
+let inviteGoalId='mtp'; // tracks selected tier in invite modal
+
+function renderInviteTierList(selId){
+  inviteGoalId=selId||'mtp';
+  const list=document.getElementById('inv-tier-list');
+  if(!list)return;
+  list.innerHTML=GOAL_OPTIONS.map(g=>{
+    const ro=Math.round(g.dv*0.05);
+    const dv=Math.round(g.dv/GLOBAL_UPLIFT);
+    const cleanLbl=g.label.replace(/\s*\(.*?\)\s*$/,'').trim();
+    const isSel=g.id===inviteGoalId;
+    return `<div class="inv-tier-item${isSel?' on':''}" onclick="pickInviteTier('${g.id}')">
+      <img src="/pins/${g.id}.png" alt="${cleanLbl}" onerror="this.style.display='none'">
+      <div class="inv-tier-item-body">
+        <div class="inv-tier-item-name">${cleanLbl}</div>
+        <div class="inv-tier-item-ro">$${ro.toLocaleString()} RO</div>
+        <div class="inv-tier-item-meta">${g.dv.toLocaleString()} org volume · ${dv.toLocaleString()} DV</div>
+      </div>
+      <div class="inv-tier-item-check">✓</div>
+    </div>`;
+  }).join('');
+  // Scroll selected item into view
+  const sel=list.querySelector('.on');
+  if(sel)setTimeout(()=>sel.scrollIntoView({block:'nearest'}),0);
+}
+
+function pickInviteTier(id){
+  renderInviteTierList(id);
+}
+
 function openInviteModal(){
   document.getElementById('inv-first').value='';
   document.getElementById('inv-last').value='';
   document.getElementById('inv-email').value='';
-  const gs=document.getElementById('inv-goal');
-  if(gs)gs.innerHTML=goalOptions('mtp');
   document.getElementById('inv-url-preview').textContent='—';
-  document.getElementById('inv-goal-info').innerHTML='';
   document.getElementById('inv-form').style.display='block';
   document.getElementById('inv-success').style.display='none';
   document.getElementById('inv-footer').style.display='flex';
   const btn=document.getElementById('inv-send-btn');
   btn.disabled=false;btn.textContent='Send Invite';
   inviteSlug='';
-  updateInviteGoalInfo();
+  renderInviteTierList('mtp');
   openModal('modal-create');
 }
 function closeInviteModal(){
@@ -990,15 +1033,6 @@ function autoInviteSlug(){
   const prev=document.getElementById('inv-url-preview');
   if(prev)prev.textContent=inviteSlug?window.location.origin+'/signup?slug='+inviteSlug:'—';
 }
-function updateInviteGoalInfo(){
-  const sel=document.getElementById('inv-goal');
-  if(!sel)return;
-  const g=goalById(sel.value);
-  const threshold=Math.round(g.dv/GLOBAL_UPLIFT);
-  const ro=Math.round(g.dv*0.05);
-  const el=document.getElementById('inv-goal-info');
-  if(el)el.innerHTML=`<strong>${g.label}</strong> — $${ro.toLocaleString()} RO · ${g.dv.toLocaleString()} org volume · DV target: <strong>${threshold.toLocaleString()}</strong>`;
-}
 function copyInviteLink(){
   const link=window.location.origin+'/signup?slug='+inviteSlug;
   navigator.clipboard.writeText(link).then(()=>toast('✓ Link copied'));
@@ -1007,21 +1041,24 @@ async function sendInvite(){
   const first=(document.getElementById('inv-first').value||'').trim();
   const last=(document.getElementById('inv-last').value||'').trim();
   const email=(document.getElementById('inv-email').value||'').trim().toLowerCase();
-  const goal=document.getElementById('inv-goal').value;
+  const goal=inviteGoalId;
   if(!first){toast('First name is required');return;}
   if(!email||!email.includes('@')){toast('Valid email is required');return;}
   autoInviteSlug();
   if(!inviteSlug){toast('Please enter a name');return;}
-  // Ensure unique slug
+  // Pre-check slug against both in-memory state and DB to avoid 409
   if(state.distributors.find(d=>d.slug===inviteSlug)){
     inviteSlug=inviteSlug+'-'+Math.random().toString(36).slice(2,6);
   }
+  try{
+    const dbCheck=await sbFetch('/rest/v1/distributors?select=slug&slug=eq.'+inviteSlug);
+    if(dbCheck&&dbCheck.length>0){
+      inviteSlug=inviteSlug+'-'+Math.random().toString(36).slice(2,6);
+    }
+  }catch(e){/* non-critical, proceed */}
   const btn=document.getElementById('inv-send-btn');
   btn.disabled=true;btn.textContent='Sending…';
   try{
-    // 1. Create pending distributor row. If the slug is taken in the DB (23505),
-    //    append a random suffix and retry once. Covers cases where state.distributors
-    //    is stale (e.g. a previous partial-success attempt) so the pre-check missed it.
     const buildPayload=()=>({
       name:first+(last?' '+last:''),slug:inviteSlug,
       email,pin:genPinStr(),
@@ -1039,8 +1076,8 @@ async function sendInvite(){
       });
     }catch(err){
       const msg=(err&&err.message)||'';
-      if(msg.includes('23505')){
-        // Slug already taken in DB — strip any prior suffix, add a fresh one, retry
+      const isConflict=msg.includes('23505')||msg.includes('409')||msg.toLowerCase().includes('conflict')||msg.toLowerCase().includes('duplicate');
+      if(isConflict){
         inviteSlug=inviteSlug.replace(/-[a-z0-9]{4}$/,'')+'-'+Math.random().toString(36).slice(2,6);
         await sbFetch('/rest/v1/distributors',{
           method:'POST',
@@ -1049,15 +1086,15 @@ async function sendInvite(){
         });
       }else throw err;
     }
-    // 2. Send magic link invite
+    // Send magic link invite
     const redirectTo=window.location.origin+'/signup?slug='+inviteSlug;
     const sbInv=sbClient||initSupabase();
-    const {error} = await sbInv.auth.signInWithOtp({
+    const {error}=await sbInv.auth.signInWithOtp({
       email,
       options:{shouldCreateUser:true,emailRedirectTo:redirectTo}
     });
     if(error)throw error;
-    // 3. Show success
+    // Show success
     document.getElementById('inv-form').style.display='none';
     document.getElementById('inv-footer').style.display='none';
     document.getElementById('inv-sent-email').textContent=email;
@@ -1066,7 +1103,6 @@ async function sendInvite(){
     toast('Invite sent to '+email);
   }catch(e){
     btn.disabled=false;btn.textContent='Send Invite';
-    // If email sending fails, distributor row was still created — still show link
     if(inviteSlug&&e.message&&(e.message.includes('rate')||e.message.includes('email'))){
       const redirectTo=window.location.origin+'/signup?slug='+inviteSlug;
       document.getElementById('inv-form').style.display='none';
