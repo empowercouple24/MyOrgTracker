@@ -325,6 +325,17 @@ tr:hover td{background:var(--paper2);transition:background .1s}
 .dd-month-pill.hit{border-color:rgba(45,107,66,.4);color:var(--green,#2d6b42)}
 .dd-month-pill.on.hit{background:var(--green,#2d6b42);border-color:var(--green,#2d6b42);color:#fff}
 
+/* Year-grouped accordion for the month-history panel */
+.dd-year-list{display:flex;flex-direction:column;gap:6px}
+.dd-year-block{display:flex;flex-direction:column;gap:6px}
+.dd-year-btn{width:100%;display:flex;justify-content:space-between;align-items:center;padding:7px 11px;background:var(--paper2);border:1px solid var(--border);border-radius:8px;cursor:pointer;font-family:'Geist',sans-serif;font-size:12px;font-weight:600;color:var(--ink2);transition:.12s;text-align:left}
+.dd-year-btn:hover{background:var(--paper3);border-color:var(--border2)}
+.dd-year-btn.on{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.dd-year-label{font-variant-numeric:tabular-nums;letter-spacing:.02em}
+.dd-year-meta{font-size:10px;font-weight:500;opacity:.65;margin-left:auto;margin-right:8px}
+.dd-year-chev{font-size:10px;opacity:.7}
+.dd-year-months{display:flex;flex-wrap:wrap;gap:5px;padding:0 4px 4px 4px}
+
 .dd-history-pane{padding:16px}
 .dd-account-pane{padding:16px;display:grid;grid-template-columns:1fr 1fr;gap:16px}
 .dd-account-field-l{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink4);font-weight:600;margin-bottom:5px}
@@ -1211,33 +1222,8 @@ function renderDistDetail(d) {
   const bestDay     = bestInc!=null ? mr.find(r=>r.org_increase===bestInc) : null;
   const ro_goal     = Math.round(dg*0.05);
 
-  // Build month pills — show 12 most recent, collapse older ones
-  const PILLS_VISIBLE = 12;
-  const monthPillsHtml = allMonths.slice(0, PILLS_VISIBLE).map(mk=>{
-    const [y,m]=mk.split('-').map(Number);
-    const isCur=(m===cm&&y===cy);
-    const mrs=(d.records||[]).filter(r=>r.month===m&&r.year===y);
-    const lastRec=mrs.sort((a,b)=>b.day-a.day)[0];
-    const mEst=lastRec?Math.round(lastRec.org_volume*GLOBAL_UPLIFT):0;
-    const isHit=lastRec?.hit||mEst>=dg;
-    return `<div class="dd-month-pill${isCur?' on':''}${isHit&&!isCur?' hit':''}" onclick="switchDetailMonth('${d.slug}','${mk}')" data-mk="${mk}">${MO[m-1]} ${y}</div>`;
-  }).join('');
-  const olderPillsHtml = allMonths.slice(PILLS_VISIBLE).map(mk=>{
-    const [y,m]=mk.split('-').map(Number);
-    const isCur=(m===cm&&y===cy);
-    const mrs=(d.records||[]).filter(r=>r.month===m&&r.year===y);
-    const lastRec=mrs.sort((a,b)=>b.day-a.day)[0];
-    const mEst=lastRec?Math.round(lastRec.org_volume*GLOBAL_UPLIFT):0;
-    const isHit=lastRec?.hit||mEst>=dg;
-    return `<div class="dd-month-pill${isCur?' on':''}${isHit&&!isCur?' hit':''}" onclick="switchDetailMonth('${d.slug}','${mk}')" data-mk="${mk}">${MO[m-1]} ${y}</div>`;
-  }).join('');
-  const olderSection = olderPillsHtml ? `
-    <div id="dd-pills-older" style="display:none;flex-wrap:wrap;gap:5px">${olderPillsHtml}</div>
-    <div style="margin-top:6px">
-      <button onclick="toggleOlderPills()" id="dd-pills-toggle" style="font-size:10px;color:var(--ink4);background:none;border:none;cursor:pointer;letter-spacing:.04em;padding:2px 0">
-        ${allMonths.length - PILLS_VISIBLE} older months ▾
-      </button>
-    </div>` : '';
+  // Build year-grouped month history (replaces old flat pill list)
+  const monthHistoryHtml = buildMonthHistoryHtml(d, null);
 
   const c = document.getElementById('dd-content');
   c.innerHTML = `
@@ -1265,42 +1251,8 @@ function renderDistDetail(d) {
       </div>
     </div>
 
-    <!-- GOAL PROGRESS BAR -->
-    <div class="dd-progress">
-      <div class="dd-progress-top">
-        <div class="dd-progress-label">${MO[cm-1]} ${cy} · ${goalLbl} · ${dg.toLocaleString()} org volume goal</div>
-        <div class="dd-progress-nums"><strong>${currentDV!=null?fmt(currentDV):'—'}</strong> DV · ${pct}% of goal</div>
-      </div>
-      ${buildAdminGoalBar(d.pinGoal,currentDV,dg)}
-      <div class="dd-progress-sub">
-        <span>Est. Org Volume: ${estOrgVol!=null?fmt(estOrgVol):'—'} &nbsp;·&nbsp; Est. RO: ${estRO!=null?'$'+fmt(estRO):'—'}</span>
-        <span>${orgVolRem!=null?fmt(orgVolRem)+' org vol remaining':'—'}${neededPerDay!=null?' · '+fmt(neededPerDay)+'/day needed':''}</span>
-      </div>
-    </div>
-
-    <!-- METRIC CARDS -->
-    <div class="dd-metrics">
-      <div class="dd-met">
-        <div class="dd-met-l">Current DV</div>
-        <div class="dd-met-v">${currentDV!=null?fmt(currentDV):'—'}</div>
-        <div class="dd-met-s">${MO[cm-1]} ${cy}</div>
-      </div>
-      <div class="dd-met">
-        <div class="dd-met-l">Est. Org Volume</div>
-        <div class="dd-met-v">${estOrgVol!=null?fmt(estOrgVol):'—'}</div>
-        <div class="dd-met-s">DV × ${GLOBAL_UPLIFT} uplift</div>
-      </div>
-      <div class="dd-met">
-        <div class="dd-met-l">Est. RO</div>
-        <div class="dd-met-v">${estRO!=null?'$'+fmt(estRO):'—'}</div>
-        <div class="dd-met-s">Est. org vol × 5%</div>
-      </div>
-      <div class="dd-met">
-        <div class="dd-met-l">Days Logged</div>
-        <div class="dd-met-v">${mr.length}</div>
-        <div class="dd-met-s">This month</div>
-      </div>
-    </div>
+    <!-- GOAL PROGRESS BAR + METRIC CARDS — re-renders on month switch -->
+    <div id="dd-month-region">${renderDistMonthRegion(d, null)}</div>
 
     <!-- TABBED BODY -->
     <div class="dd-tabbed-body">
@@ -1320,8 +1272,7 @@ function renderDistDetail(d) {
           </div>
           <div>
             <div class="dd-ct">Month History</div>
-            <div class="dd-month-pills" id="dd-month-pills">${monthPillsHtml}</div>
-            ${olderSection}
+            <div id="dd-month-history">${monthHistoryHtml}</div>
           </div>
         </div>
       </div>
@@ -1396,8 +1347,56 @@ function drawDetailChart(d, cm, cy) {
   if (!cv||!mr.length) return;
   detailChart = new Chart(cv,{
     type:'line',
-    data:{labels:mr.map(r=>r.day),datasets:[{data:mr.map(r=>r.org_volume),borderColor:col,backgroundColor:col+'22',fill:true,tension:.35,pointRadius:2,borderWidth:2}]},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{color:'rgba(0,0,0,.04)'},ticks:{font:{size:11}}},y:{grid:{color:'rgba(0,0,0,.04)'},ticks:{font:{size:11},callback:v=>v>=1000?(v/1000).toFixed(0)+'k':v}}}}
+    data:{labels:mr.map(r=>r.day),datasets:[{
+      data:mr.map(r=>r.org_volume),
+      borderColor:col,
+      backgroundColor:col+'22',
+      fill:true,
+      tension:.35,
+      pointRadius:2,
+      pointHoverRadius:5,
+      pointHoverBackgroundColor:col,
+      pointHoverBorderColor:'#fff',
+      pointHoverBorderWidth:2,
+      borderWidth:2
+    }]},
+    options:{
+      responsive:true,
+      maintainAspectRatio:false,
+      // Hover-scrubbing: tooltip activates anywhere along the X axis,
+      // not just when the cursor is directly on a data point.
+      interaction:{mode:'index',intersect:false},
+      plugins:{
+        legend:{display:false},
+        tooltip:{
+          enabled:true,
+          backgroundColor:'rgba(24,24,27,0.93)',
+          titleColor:'#fff',
+          bodyColor:'#fff',
+          titleFont:{size:10,weight:'600',family:"'Geist',sans-serif"},
+          bodyFont:{size:14,family:"'EB Garamond',serif"},
+          padding:{top:8,bottom:8,left:12,right:12},
+          displayColors:false,
+          cornerRadius:6,
+          caretSize:5,
+          callbacks:{
+            title:(items)=>`Day ${items[0].label} · ${MO[cm-1]} ${cy}`,
+            label:(ctx)=>{
+              const v=ctx.parsed.y;
+              const est=Math.round(v*GLOBAL_UPLIFT);
+              return [
+                `${v.toLocaleString()} DV`,
+                `≈ ${est.toLocaleString()} org vol`
+              ];
+            }
+          }
+        }
+      },
+      scales:{
+        x:{grid:{color:'rgba(0,0,0,.04)'},ticks:{font:{size:11}}},
+        y:{grid:{color:'rgba(0,0,0,.04)'},ticks:{font:{size:11},callback:v=>v>=1000?(v/1000).toFixed(0)+'k':v}}
+      }
+    }
   });
 }
 
@@ -1430,13 +1429,15 @@ function toggleOlderPills(){
 }
 
 function switchDetailMonth(slug, mk){
-  // Highlight the clicked pill
-  document.querySelectorAll('#dd-month-pills .dd-month-pill').forEach(p=>{
-    p.classList.toggle('on', p.dataset.mk===mk);
-  });
   const [y,m]=mk.split('-').map(Number);
   const d=state.distributors.find(x=>x.slug===slug);
   if(!d)return;
+  // Re-render goal bar + metric cards for the selected month
+  const region=document.getElementById('dd-month-region');
+  if(region)region.innerHTML=renderDistMonthRegion(d, mk);
+  // Re-render year-grouped month history so the 'on' highlight follows
+  const hist=document.getElementById('dd-month-history');
+  if(hist)hist.innerHTML=buildMonthHistoryHtml(d, mk);
   // Update chart label
   const lbl=document.getElementById('dd-chart-label');
   if(lbl)lbl.textContent=`Volume Growth — ${MO[m-1]} ${y}`;
@@ -1446,6 +1447,153 @@ function switchDetailMonth(slug, mk){
   const sel=document.getElementById('dd-month-filter');
   if(sel)sel.value=mk;
   renderDetailTable(slug, mk);
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// renderDistMonthRegion — returns HTML for the goal-bar block + 4 metric
+// cards for a given (distributor, month). This is the chunk that must
+// update when the user clicks a different month pill. mk=null → current.
+// ─────────────────────────────────────────────────────────────────────
+function renderDistMonthRegion(d, mk){
+  const now=new Date();
+  let y,m;
+  if(mk){[y,m]=mk.split('-').map(Number);}
+  else{m=now.getMonth()+1;y=now.getFullYear();}
+  const isCurrentMonth=(m===now.getMonth()+1&&y===now.getFullYear());
+
+  const mr=(d.records||[]).filter(r=>r.month===m&&r.year===y).sort((a,b)=>a.day-b.day);
+  const last=mr[mr.length-1];
+  const dg=dvForGoal(d.pinGoal);
+  const goalLbl=goalById(d.pinGoal).label.replace(/\s*\(.*?\)\s*$/,'').trim();
+
+  const currentDV   = last ? (last.org_volume||0) : null;
+  const estOrgVol   = currentDV!=null ? Math.round(currentDV*GLOBAL_UPLIFT) : null;
+  const estRO       = estOrgVol!=null ? (estOrgVol*0.05) : null;
+  const orgVolRem   = estOrgVol!=null ? Math.max(0, dg-estOrgVol) : null;
+  const pct         = estOrgVol!=null ? Math.min(100,Math.round(estOrgVol/dg*100)) : 0;
+  const daysInMonth = new Date(y,m,0).getDate();
+  const daysLeft    = isCurrentMonth ? (daysInMonth - (last?last.day:0)) : 0;
+  const neededPerDay= (orgVolRem!=null&&daysLeft>0) ? Math.round(orgVolRem/daysLeft) : null;
+  const daysLoggedSubtext = isCurrentMonth ? 'This month' : `${MO[m-1]} ${y}`;
+
+  return `
+    <!-- GOAL PROGRESS BAR -->
+    <div class="dd-progress">
+      <div class="dd-progress-top">
+        <div class="dd-progress-label">${MO[m-1]} ${y} · ${goalLbl} · ${dg.toLocaleString()} org volume goal</div>
+        <div class="dd-progress-nums"><strong>${currentDV!=null?fmt(currentDV):'—'}</strong> DV · ${pct}% of goal</div>
+      </div>
+      ${buildAdminGoalBar(d.pinGoal,currentDV,dg)}
+      <div class="dd-progress-sub">
+        <span>Est. Org Volume: ${estOrgVol!=null?fmt(estOrgVol):'—'} &nbsp;·&nbsp; Est. RO: ${estRO!=null?'$'+fmt(estRO):'—'}</span>
+        <span>${orgVolRem!=null?fmt(orgVolRem)+' org vol remaining':'—'}${neededPerDay!=null?' · '+fmt(neededPerDay)+'/day needed':''}</span>
+      </div>
+    </div>
+
+    <!-- METRIC CARDS -->
+    <div class="dd-metrics">
+      <div class="dd-met">
+        <div class="dd-met-l">Current DV</div>
+        <div class="dd-met-v">${currentDV!=null?fmt(currentDV):'—'}</div>
+        <div class="dd-met-s">${MO[m-1]} ${y}</div>
+      </div>
+      <div class="dd-met">
+        <div class="dd-met-l">Est. Org Volume</div>
+        <div class="dd-met-v">${estOrgVol!=null?fmt(estOrgVol):'—'}</div>
+        <div class="dd-met-s">DV × ${GLOBAL_UPLIFT} uplift</div>
+      </div>
+      <div class="dd-met">
+        <div class="dd-met-l">Est. RO</div>
+        <div class="dd-met-v">${estRO!=null?'$'+fmt(estRO):'—'}</div>
+        <div class="dd-met-s">Est. org vol × 5%</div>
+      </div>
+      <div class="dd-met">
+        <div class="dd-met-l">Days Logged</div>
+        <div class="dd-met-v">${mr.length}</div>
+        <div class="dd-met-s">${daysLoggedSubtext}</div>
+      </div>
+    </div>
+  `;
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// buildMonthHistoryHtml — year-grouped accordion for the right-side panel.
+// Replaces the old flat list of month pills. Selected year is auto-open.
+// ─────────────────────────────────────────────────────────────────────
+function buildMonthHistoryHtml(d, selectedMk){
+  const allMonths=[...new Set((d.records||[]).map(r=>r.year+'-'+String(r.month).padStart(2,'0')))].sort().reverse();
+  if(!allMonths.length)return '<div style="font-size:11px;color:var(--ink4);font-style:italic;padding:8px 4px">No history yet</div>';
+
+  // Group months by year (descending)
+  const byYear={};
+  allMonths.forEach(mk=>{
+    const y=mk.split('-')[0];
+    if(!byYear[y])byYear[y]=[];
+    byYear[y].push(mk);
+  });
+  const years=Object.keys(byYear).sort().reverse();
+
+  const now=new Date();
+  const fallbackY=String(now.getFullYear());
+  const selectedY=selectedMk?selectedMk.split('-')[0]:fallbackY;
+  const dg=dvForGoal(d.pinGoal);
+
+  return `<div class="dd-year-list">${years.map(y=>{
+    const isOpen=(y===selectedY);
+    const months=byYear[y];
+    const hitCount=months.filter(mk=>{
+      const [yy,mm]=mk.split('-').map(Number);
+      const mrs=(d.records||[]).filter(r=>r.month===mm&&r.year===yy);
+      const lastRec=mrs.sort((a,b)=>b.day-a.day)[0];
+      const mEst=lastRec?Math.round(lastRec.org_volume*GLOBAL_UPLIFT):0;
+      return lastRec?.hit||mEst>=dg;
+    }).length;
+    const monthsHtml=months.map(mk=>{
+      const [yy,mm]=mk.split('-').map(Number);
+      const isCur=selectedMk
+        ? (mk===selectedMk)
+        : (mm===now.getMonth()+1 && yy===now.getFullYear());
+      const mrs=(d.records||[]).filter(r=>r.month===mm&&r.year===yy);
+      const lastRec=mrs.sort((a,b)=>b.day-a.day)[0];
+      const mEst=lastRec?Math.round(lastRec.org_volume*GLOBAL_UPLIFT):0;
+      const isHit=lastRec?.hit||mEst>=dg;
+      return `<div class="dd-month-pill${isCur?' on':''}${isHit&&!isCur?' hit':''}" onclick="switchDetailMonth('${d.slug}','${mk}')" data-mk="${mk}">${MO[mm-1]}</div>`;
+    }).join('');
+    return `<div class="dd-year-block${isOpen?' open':''}" data-y="${y}">
+      <button class="dd-year-btn${isOpen?' on':''}" onclick="toggleYearGroup('${y}','${d.slug}')" data-y="${y}">
+        <span class="dd-year-label">${y}</span>
+        <span class="dd-year-meta">${hitCount}/${months.length} hit</span>
+        <span class="dd-year-chev">${isOpen?'▾':'▸'}</span>
+      </button>
+      <div class="dd-year-months"${isOpen?'':' style="display:none"'}>${monthsHtml}</div>
+    </div>`;
+  }).join('')}</div>`;
+}
+
+function toggleYearGroup(y, slug){
+  const block=document.querySelector(`.dd-year-block[data-y="${y}"]`);
+  if(!block)return;
+  const isOpen=block.classList.contains('open');
+  // Collapse all currently-open year blocks
+  document.querySelectorAll('.dd-year-block.open').forEach(b=>{
+    b.classList.remove('open');
+    const btn=b.querySelector('.dd-year-btn');
+    if(btn)btn.classList.remove('on');
+    const chev=b.querySelector('.dd-year-chev');
+    if(chev)chev.textContent='▸';
+    const months=b.querySelector('.dd-year-months');
+    if(months)months.style.display='none';
+  });
+  // If the clicked year was NOT already open, open it
+  if(!isOpen){
+    block.classList.add('open');
+    const btn=block.querySelector('.dd-year-btn');
+    if(btn)btn.classList.add('on');
+    const chev=block.querySelector('.dd-year-chev');
+    if(chev)chev.textContent='▾';
+    const months=block.querySelector('.dd-year-months');
+    if(months)months.style.display='flex';
+  }
 }
 
 function filterDetailMonth(slug, mk) {
