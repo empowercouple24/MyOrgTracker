@@ -968,7 +968,15 @@ async function sbFetch(path, opts={}) {
     const txt = await r.text().catch(()=>'');
     throw new Error('Supabase error ' + r.status + ': ' + txt.slice(0,120));
   }
-  return r.status === 204 ? null : r.json();
+  // 204 No Content (DELETE) — no body to parse
+  if (r.status === 204) return null;
+  // PostgREST returns 201 Created with EMPTY body for POST/PATCH unless
+  // Prefer: return=representation is set. Read as text first so an empty
+  // body doesn't crash JSON.parse with "Unexpected end of JSON input".
+  const txt = await r.text();
+  if (!txt) return null;
+  try { return JSON.parse(txt); }
+  catch (e) { console.warn('sbFetch: non-JSON response', txt.slice(0,200)); return txt; }
 }
 
 // Paginated fetch — PostgREST caps at 1000 rows per response regardless of
