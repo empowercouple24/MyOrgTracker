@@ -269,9 +269,36 @@ tr:hover td{background:var(--paper2);transition:background .1s}
 .dd-progress-label{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink4);font-weight:600}
 .dd-progress-nums{font-size:12px;color:var(--ink3);font-variant-numeric:tabular-nums;text-align:right}
 .dd-progress-nums strong{font-family:'EB Garamond',serif;font-size:20px;font-weight:500;color:var(--ink);letter-spacing:-0.01em;margin-right:4px}
-.dd-progress-bar-track{height:8px;background:var(--paper3);border-radius:4px;overflow:hidden}
-.dd-progress-bar-fill{height:100%;border-radius:4px;background:var(--ink);transition:.4s ease}
 .dd-progress-sub{display:flex;justify-content:space-between;margin-top:7px;font-size:11px;color:var(--ink4);flex-wrap:wrap;gap:4px}
+
+/* ═══════ Direction A goal bar — hashmarks + compressed ghost extension ═══════
+   Modes:
+   • .gb[data-mode="compressed"] — below current goal; cur zone 90%, ext 10% ghost tail
+   • .gb[data-mode="expanded"]   — past current goal; zones at true proportions
+   • .gb[data-mode="solo"]       — top tier, no next; just one zone */
+.gb-wrap{position:relative;padding-bottom:20px;margin-top:6px}
+.gb{position:relative;height:10px;border-radius:3px;overflow:visible}
+.gb-zone-cur{position:absolute;left:0;top:0;bottom:0;background:var(--paper3);border-radius:3px 0 0 3px;z-index:0;transition:right 0.5s cubic-bezier(0.22,1,0.36,1)}
+.gb-zone-ext{position:absolute;top:0;bottom:0;right:0;background:var(--gb-ext-pattern, repeating-linear-gradient(90deg,rgba(196,138,58,0.14) 0px,rgba(196,138,58,0.14) 3px,transparent 3px,transparent 6px));border:1px dashed var(--gb-ext-border, rgba(196,138,58,0.35));border-left:none;border-radius:0 3px 3px 0;z-index:0;transition:left 0.5s cubic-bezier(0.22,1,0.36,1)}
+.gb[data-mode="solo"] .gb-zone-cur{right:0;border-radius:3px}
+.gb[data-mode="solo"] .gb-zone-ext{display:none}
+.gb-fill-cur{position:absolute;left:0;top:0;bottom:0;border-radius:3px 0 0 3px;z-index:1;transition:width 0.5s cubic-bezier(0.22,1,0.36,1)}
+.gb-fill-cur.solo{border-radius:3px}
+.gb-fill-next{position:absolute;top:0;bottom:0;z-index:1;transition:left 0.5s cubic-bezier(0.22,1,0.36,1),width 0.5s cubic-bezier(0.22,1,0.36,1)}
+.gb-fill-next.reaches-end{border-radius:0 3px 3px 0}
+.gb-tick{position:absolute;top:100%;width:1px;height:5px;margin-top:2px;z-index:3;transition:left 0.5s cubic-bezier(0.22,1,0.36,1)}
+.gb-tick.upcoming{opacity:0.4}
+.gb-tick.goal{width:2px;height:7px;margin-top:1px}
+.gb-tick-label{position:absolute;top:calc(100% + 9px);font-size:8px;letter-spacing:0.06em;font-weight:700;color:var(--ink4);transform:translateX(-50%);white-space:nowrap;transition:left 0.5s cubic-bezier(0.22,1,0.36,1)}
+.gb-tick-label.past{color:var(--ink)}
+.gb-tick-label.goal{color:var(--ink);font-weight:800}
+.gb-end-cap{position:absolute;right:0;top:calc(100% + 9px);font-size:8px;letter-spacing:0.06em;font-weight:700;color:var(--ink4);transition:color 0.2s,opacity 0.2s;white-space:nowrap;opacity:0.6}
+.gb-end-cap.lit{color:var(--ink);opacity:1}
+.gb-end-cap.hit-next{color:var(--ink);font-weight:800;opacity:1}
+@media(max-width:640px){
+  .gb-tick-label{display:none}
+  .gb-end-cap{font-size:7px}
+}
 
 .dd-metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:12px}
 .dd-met{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px}
@@ -668,6 +695,144 @@ function goalOptions(sel){return GOAL_OPTIONS.map(g=>{
   const cleanLbl=g.label.replace(/\s*\(.*?\)\s*$/,'').trim();
   return `<option value="${g.id}"${g.id===sel?' selected':''}>${cleanLbl} — $${ro.toLocaleString()} RO</option>`;
 }).join('')}
+
+// ═══════════════════ DIRECTION A GOAL BAR HELPERS ═══════════════════
+// Ported from tracker.html. Names use "OrgVol" instead of "DV" because admin
+// values are already correctly named in org-volume units. Math is identical.
+function nextTierAbove(id){
+  const idx=GOAL_OPTIONS.findIndex(g=>g.id===id);
+  if(idx<=0)return null;  // 0 = pt30k (top), no next tier
+  return GOAL_OPTIONS[idx-1];
+}
+const MAJOR_MILESTONES=['awt','get','mt','pt'];
+function majorMilestonesBelow(currentGoalOrgVol){
+  return GOAL_OPTIONS
+    .filter(g=>MAJOR_MILESTONES.includes(g.id)&&g.dv<currentGoalOrgVol)
+    .sort((a,b)=>a.dv-b.dv);
+}
+function levelColor(level){
+  if(!level)return{bg:'#e3e3e3',text:'#555'};
+  const l=level.toLowerCase().trim();
+  if(l.startsWith('president'))                         return{bg:'#fde488',text:'#7a5200'};
+  if(l.includes('7500')||l==='mp')                      return{bg:'#84c8d3',text:'#fff'};
+  if(l.startsWith('millionaire')||l==='mt')             return{bg:'#3aac77',text:'#fff'};
+  if(l.startsWith('get team 2500')||l==='gp'||
+     l.startsWith('get plus')||l.includes('(2500)'))    return{bg:'#f39519',text:'#fff'};
+  if(l.startsWith('get team')||l==='gt'||l==='get')     return{bg:'#e02054',text:'#fff'};
+  if(l.startsWith('active world')||l==='awt'||
+     l.startsWith('world team')||l==='wt')              return{bg:'#767678',text:'#fff'};
+  if(l.startsWith('supervisor')||l==='sp')              return{bg:'#64ba44',text:'#fff'};
+  if(l==='pt'||l.startsWith('pt ')||l.startsWith('pt ·')||
+     l==='cc'||l.startsWith('chairman'))                return{bg:'#fde488',text:'#7a5200'};
+  return{bg:'#e3e3e3',text:'#555'};
+}
+function tierBarColor(id){
+  const g=goalById(id);
+  if(!g)return '#7a5a3a';
+  return levelColor(g.label).bg||'#7a5a3a';
+}
+function abbrevLevel(level){
+  if(!level)return'';
+  const l=level.trim();
+  if(/^chairmans/i.test(l))                    return'CC';
+  if(/^presidents team 30k/i.test(l))          return'PT 30K';
+  if(/^presidents team 20k/i.test(l))          return'PT 20K';
+  if(/^presidents team 15k/i.test(l))          return'PT 15K';
+  if(/^presidents team/i.test(l))              return'PT';
+  if(/^millionaire team (plus )?\(?7500/i.test(l)) return'MP';
+  if(/^millionaire/i.test(l))                  return'MT';
+  if(/^get (team )?(plus )?\(?2500/i.test(l))  return'GP';
+  if(/^get team/i.test(l))                     return'GT';
+  if(/^active world/i.test(l))                 return'AWT';
+  if(/^world team/i.test(l))                   return'WT';
+  return l;
+}
+function hexToRgba(hex,alpha){
+  const h=(hex||'#000000').replace('#','');
+  const r=parseInt(h.substr(0,2),16);
+  const g=parseInt(h.substr(2,2),16);
+  const b=parseInt(h.substr(4,2),16);
+  return `rgba(${r},${g},${b},${alpha})`;
+}
+
+function buildAdminGoalBar(pinGoalId,currentDV,orgVolGoal){
+  const curId=pinGoalId||'mtp';
+  const cur=goalById(curId);
+  const curGoalOrgVol=orgVolGoal||cur.dv;
+  const next=nextTierAbove(curId);
+  const estOrgVol=(currentDV||0)*GLOBAL_UPLIFT;
+  const curColor=tierBarColor(curId);
+
+  // ─── SOLO mode: top tier, no next ───
+  if(!next){
+    const pct=Math.min(100,Math.max(0,(estOrgVol/curGoalOrgVol)*100));
+    const milestones=majorMilestonesBelow(curGoalOrgVol);
+    const ticks=milestones.map(ms=>{
+      const pos=Math.min(99,(ms.dv/curGoalOrgVol)*100);
+      const passed=estOrgVol>=ms.dv;
+      return `<div class="gb-tick ${passed?'past':'upcoming'}" style="left:${pos}%;background:${tierBarColor(ms.id)}"></div>
+              <div class="gb-tick-label ${passed?'past':''}" style="left:${pos}%">${abbrevLevel(ms.label)}</div>`;
+    }).join('');
+    return `<div class="gb-wrap"><div class="gb" data-mode="solo">
+      <div class="gb-zone-cur"></div><div class="gb-zone-ext"></div>
+      <div class="gb-fill-cur solo" style="width:${pct}%;background:${curColor}"></div>
+      ${ticks}
+      <div class="gb-tick goal ${estOrgVol>=curGoalOrgVol?'past':'upcoming'}" style="left:100%;background:${curColor}"></div>
+      <div class="gb-tick-label goal ${estOrgVol>=curGoalOrgVol?'past':''}" style="left:97%">${abbrevLevel(cur.label)} ${estOrgVol>=curGoalOrgVol?'✓':''}</div>
+    </div></div>`;
+  }
+
+  // ─── Compressed (below goal) or Expanded (past goal) ───
+  const hit=estOrgVol>=curGoalOrgVol;
+  const mode=hit?'expanded':'compressed';
+  const curZoneW=hit?(curGoalOrgVol/next.dv)*100:90;
+  const extZoneLeft=curZoneW;
+  const nextColor=tierBarColor(next.id);
+
+  let fillCurW,fillNextLeft=null,fillNextW=0,hitNext=false;
+  if(!hit){
+    fillCurW=Math.min(curZoneW,(estOrgVol/curGoalOrgVol)*curZoneW);
+  }else{
+    fillCurW=curZoneW;
+    const extZoneW=100-curZoneW;
+    const extFillPct=Math.min(1,Math.max(0,(estOrgVol-curGoalOrgVol)/(next.dv-curGoalOrgVol)));
+    fillNextW=extFillPct*extZoneW;
+    fillNextLeft=curZoneW;
+    hitNext=estOrgVol>=next.dv;
+  }
+
+  const milestones=majorMilestonesBelow(curGoalOrgVol);
+  const tickMarks=milestones.map(ms=>{
+    const pos=(ms.dv/curGoalOrgVol)*curZoneW;
+    const passed=estOrgVol>=ms.dv;
+    return `<div class="gb-tick ${passed?'past':'upcoming'}" style="left:${pos}%;background:${tierBarColor(ms.id)}"></div>
+            <div class="gb-tick-label ${passed?'past':''}" style="left:${pos}%">${abbrevLevel(ms.label)}</div>`;
+  }).join('');
+
+  const goalTickPos=curZoneW;
+  const goalLabel=hit?`${abbrevLevel(cur.label)} ✓`:`${abbrevLevel(cur.label)} · ${(curGoalOrgVol/1000)|0}K`;
+  const endCapCls=hit?(hitNext?'hit-next':'lit'):'';
+  const endCapText=hitNext?`🎯 ${abbrevLevel(next.label)} ✓`:`${abbrevLevel(next.label)} · ${(next.dv/1000)|0}K`;
+
+  const curZoneStyle=`right:${100-curZoneW}%`;
+  const extZoneStyle=`left:${extZoneLeft}%`;
+
+  const extPattern=`repeating-linear-gradient(90deg,${hexToRgba(nextColor,0.18)} 0px,${hexToRgba(nextColor,0.18)} 3px,transparent 3px,transparent 6px)`;
+  const extBorder=hexToRgba(nextColor,0.45);
+  const extMuted=hexToRgba(nextColor,0.55);
+  const gbVars=`--gb-ext-pattern:${extPattern};--gb-ext-border:${extBorder};--gb-ext-color:${nextColor};--gb-ext-muted:${extMuted}`;
+
+  return `<div class="gb-wrap"><div class="gb" data-mode="${mode}" style="${gbVars}">
+    <div class="gb-zone-cur" style="${curZoneStyle}"></div>
+    <div class="gb-zone-ext" style="${extZoneStyle}"></div>
+    <div class="gb-fill-cur${(!hit)?' solo':''}" style="width:${fillCurW}%;background:${curColor}"></div>
+    ${hit?`<div class="gb-fill-next${hitNext?' reaches-end':''}" style="left:${fillNextLeft}%;width:${fillNextW}%;background:${nextColor}"></div>`:''}
+    ${tickMarks}
+    <div class="gb-tick goal ${hit?'past':'upcoming'}" style="left:${goalTickPos}%;background:${curColor}"></div>
+    <div class="gb-tick-label goal ${hit?'past':''}" style="left:${goalTickPos}%">${goalLabel}</div>
+    <div class="gb-end-cap ${endCapCls}">${endCapText}</div>
+  </div></div>`;
+}
 const DV_GOAL = 150000; // default Millionaire Team Plus
 // PIN_MAP kept for backward compat with old records
 const PIN_MAP = {'7.5':113636,'5':75757,'3':45454,'1':15151};
@@ -1106,7 +1271,7 @@ function renderDistDetail(d) {
         <div class="dd-progress-label">${MO[cm-1]} ${cy} · ${goalLbl} · ${dg.toLocaleString()} org volume goal</div>
         <div class="dd-progress-nums"><strong>${currentDV!=null?fmt(currentDV):'—'}</strong> DV · ${pct}% of goal</div>
       </div>
-      <div class="dd-progress-bar-track"><div class="dd-progress-bar-fill" style="width:${pct}%;background:${col}"></div></div>
+      ${buildAdminGoalBar(d.pinGoal,currentDV,dg)}
       <div class="dd-progress-sub">
         <span>Est. Org Volume: ${estOrgVol!=null?fmt(estOrgVol):'—'} &nbsp;·&nbsp; Est. RO: ${estRO!=null?'$'+fmt(estRO):'—'}</span>
         <span>${orgVolRem!=null?fmt(orgVolRem)+' org vol remaining':'—'}${neededPerDay!=null?' · '+fmt(neededPerDay)+'/day needed':''}</span>
