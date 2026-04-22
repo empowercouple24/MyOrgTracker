@@ -42,6 +42,19 @@ body{font-family:'Geist',system-ui,sans-serif;background:#f4ede1;color:#18181b;m
 .goal-info{background:#fffdf5;border:1px solid rgba(61,46,31,0.1);border-radius:8px;padding:11px 13px;font-size:13px;color:#5d5a52;line-height:1.5;margin-top:6px;display:none}
 .goal-info.on{display:block}
 
+/* Signup tier picker */
+.su-tier-item{display:flex;align-items:center;gap:10px;padding:10px 13px;border-bottom:1px solid rgba(61,46,31,0.07);cursor:pointer;transition:.1s}
+.su-tier-item:last-child{border-bottom:0}
+.su-tier-item:hover{background:rgba(61,46,31,0.03)}
+.su-tier-item.on{background:rgba(61,46,31,0.06)}
+.su-tier-item img{width:28px;height:28px;object-fit:contain;flex-shrink:0}
+.su-tier-item-body{flex:1;min-width:0}
+.su-tier-item-name{font-size:13px;font-weight:500;color:#18181b;line-height:1.2}
+.su-tier-item-ro{font-size:12px;font-weight:600;color:#b88a1f;font-variant-numeric:tabular-nums;margin-top:2px}
+.su-tier-item-meta{font-size:10px;color:#8a8578;margin-top:1px;font-variant-numeric:tabular-nums}
+.su-tier-check{font-size:12px;color:#18181b;font-weight:700;opacity:0;margin-left:auto;flex-shrink:0}
+.su-tier-item.on .su-tier-check{opacity:1}
+
 .btn-primary{width:100%;height:52px;background:#18181b;color:#fafaf8;border:none;border-radius:11px;font-size:15px;font-weight:500;cursor:pointer;font-family:'Geist',sans-serif;transition:.15s;display:flex;align-items:center;justify-content:center;gap:10px;margin-top:6px}
 .btn-primary:hover:not(:disabled){transform:translateY(-1px)}
 .btn-primary:disabled{opacity:0.6;cursor:not-allowed}
@@ -127,8 +140,8 @@ html::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;ba
       </div>
       <div class="field">
         <label>Goal Tier</label>
-        <select id="s-goal" onchange="updateSignupGoalInfo()"></select>
-        <div class="goal-info" id="s-goal-info"></div>
+        <div id="s-goal-picker" style="border:1px solid rgba(61,46,31,0.14);border-radius:10px;overflow:hidden;max-height:220px;overflow-y:auto;background:#fffdf5"></div>
+        <input type="hidden" id="s-goal" value="mtp">
       </div>
 
       <button class="btn-primary" id="setup-next-btn" onclick="goToPassword()">
@@ -240,12 +253,37 @@ window.togglePw = function(id, btn){
     :'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
 };
 
+function renderSignupTierPicker(selId){
+  const hidden=$('s-goal');
+  if(hidden)hidden.value=selId||'mtp';
+  const list=$('s-goal-picker');
+  if(!list)return;
+  list.innerHTML=GOAL_OPTIONS.map(g=>{
+    const ro=Math.round(g.dv*0.05);
+    const dv=Math.round(g.dv/uplift);
+    const cleanLbl=g.label.replace(/\s*\(.*?\)\s*$/,'').trim();
+    const isSel=(selId||'mtp')===g.id;
+    return`<div class="su-tier-item${isSel?' on':''}" onclick="pickSignupTier('${g.id}')">
+      <img src="/pins/${g.id}.png" alt="${cleanLbl}" onerror="this.style.display='none'">
+      <div class="su-tier-item-body">
+        <div class="su-tier-item-name">${cleanLbl}</div>
+        <div class="su-tier-item-ro">$${ro.toLocaleString()} RO</div>
+        <div class="su-tier-item-meta">${g.dv.toLocaleString()} org volume · ${dv.toLocaleString()} DV</div>
+      </div>
+      <div class="su-tier-check">✓</div>
+    </div>`;
+  }).join('');
+  // Scroll selected into view
+  const sel=list.querySelector('.on');
+  if(sel)setTimeout(()=>sel.scrollIntoView({block:'nearest'}),50);
+}
+
+window.pickSignupTier = function(id){
+  renderSignupTierPicker(id);
+};
+
 window.updateSignupGoalInfo = function(){
-  const sel=$('s-goal'); if(!sel)return;
-  const g=goalById(sel.value);
-  const threshold=Math.round(g.dv/uplift);
-  const el=$('s-goal-info');
-  if(el){el.innerHTML=`${g.dv.toLocaleString()} DV goal · You need <strong>${threshold.toLocaleString()}</strong> org vol to hit it`;el.classList.add('on');}
+  // Legacy — no-op, replaced by renderSignupTierPicker
 };
 
 window.goToPassword = function(){
@@ -270,7 +308,7 @@ window.completeSignup = async function(){
 
   const first=$('s-first').value.trim();
   const last=$('s-last').value.trim();
-  const goalId=$('s-goal').value;
+  const goalId=$('s-goal').value || 'mtp';
   const g=goalById(goalId);
 
   try{
@@ -353,10 +391,8 @@ async function init(){
   if(distRecord.first_name)$('s-first').value=distRecord.first_name;
   if(distRecord.last_name)$('s-last').value=distRecord.last_name;
 
-  // Populate goal dropdown
-  const goalSel=$('s-goal');
-  goalSel.innerHTML=GOAL_OPTIONS.map(g=>`<option value="${g.id}"${g.id===distRecord.pin_goal?' selected':''}>${g.label} — ${g.dv.toLocaleString()} DV</option>`).join('');
-  updateSignupGoalInfo();
+  // Render goal tier picker
+  renderSignupTierPicker(distRecord.pin_goal||'mtp');
 
   showPanel('panel-setup');
   $('s-first').focus();
