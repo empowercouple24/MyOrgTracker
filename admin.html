@@ -992,10 +992,10 @@ const colorFor = slug => COLORS[Math.abs(slug.split('').reduce((a,c)=>a+c.charCo
 // ── Supabase Auth (admin.html) ─────────────────────────────────────────
 const SB_URL='https://nclvgzirfzddrbsnzryo.supabase.co';
 const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5jbHZnemlyZnpkZHJic256cnlvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY0Mzc0NTgsImV4cCI6MjA5MjAxMzQ1OH0.y7paxIa6Zd2ubwO8w_YwEHVNiKA5D6L5vHKxz7P6gC0';
-// Service role key — needed only for hard-deleting auth.users.
-// Get from Supabase dashboard → Project Settings → API → service_role (secret).
-// This key bypasses Row Level Security — keep admin.html access-controlled.
-const SB_SERVICE_KEY='PASTE_SERVICE_ROLE_KEY_HERE';
+// Service role key is NOT in this file. Hard-deleting auth.users is delegated
+// to the `delete-user` Supabase Edge Function, which holds the service role key
+// as an env var and verifies the caller is an admin before acting.
+// See supabase/functions/delete-user/index.ts.
 let sbClient = null;
 
 function initSupabase(){
@@ -1871,22 +1871,32 @@ async function deleteDist(slug){
       method:'DELETE',
       headers:{...SB_H(),'Prefer':'return=minimal'}
     });
-    // 2. Hard-delete auth.users if they have a login (requires service role key)
-    if(d.authUserId&&SB_SERVICE_KEY&&SB_SERVICE_KEY!=='PASTE_SERVICE_ROLE_KEY_HERE'){
-      await fetch(SB_URL+'/auth/v1/admin/users/'+d.authUserId,{
-        method:'DELETE',
-        headers:{
-          'apikey':SB_SERVICE_KEY,
-          'Authorization':'Bearer '+SB_SERVICE_KEY
+    // 2. Hard-delete auth.users via the delete-user Edge Function (keeps the
+    //    service role key server-side). Falls back to orphaning auth_user_id
+    //    if the function fails so the distributor row can still be removed.
+    if(d.authUserId){
+      try{
+        const r=await fetch(SB_URL+'/functions/v1/delete-user',{
+          method:'POST',
+          headers:{
+            'Authorization':'Bearer '+adminToken,
+            'Content-Type':'application/json'
+          },
+          body:JSON.stringify({auth_user_id:d.authUserId})
+        });
+        if(!r.ok){
+          const err=await r.json().catch(()=>({error:'HTTP '+r.status}));
+          throw new Error(err.error||('HTTP '+r.status));
         }
-      });
-    } else if(d.authUserId){
-      // Service key not set — null out auth_user_id to orphan instead
-      await sbFetch('/rest/v1/distributors?id=eq.'+d.id,{
-        method:'PATCH',
-        headers:{...SB_H(),'Prefer':'return=minimal'},
-        body:JSON.stringify({auth_user_id:null})
-      });
+      }catch(e){
+        console.warn('Hard delete via Edge Function failed; falling back to orphan:',e.message);
+        toast('Auth row left as orphan — clean up manually in Supabase if needed');
+        await sbFetch('/rest/v1/distributors?id=eq.'+d.id,{
+          method:'PATCH',
+          headers:{...SB_H(),'Prefer':'return=minimal'},
+          body:JSON.stringify({auth_user_id:null})
+        });
+      }
     }
     // 3. Delete the distributor row itself
     await sbFetch('/rest/v1/distributors?id=eq.'+d.id,{
