@@ -213,6 +213,38 @@ tr:hover td{background:var(--paper2);transition:background .1s}
 /* ── SECTION DIVIDER ── */
 .divider{height:1px;background:var(--border);margin:20px 0}
 
+/* ══ CLUBS TAB ══════════════════════════════════════════════════════ */
+.clubs-summary{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
+.clubs-toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;gap:8px}
+.clubs-toolbar-title{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink4);font-weight:600}
+.club-table{width:100%;border-collapse:collapse;font-size:12px}
+.club-table th{text-align:left;font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink4);font-weight:600;padding:8px 10px;border-bottom:1px solid var(--border);background:var(--paper2);white-space:nowrap}
+.club-table th.center{text-align:center}
+.club-table td{padding:9px 10px;border-bottom:1px solid var(--divider);color:var(--ink2);vertical-align:middle}
+.club-table td.center{text-align:center}
+.club-table tr:last-child td{border-bottom:0}
+.club-table tr:hover td{background:rgba(61,46,31,0.015);cursor:pointer}
+.club-name-cell{font-weight:500;color:var(--ink);font-size:13px}
+.club-owner-cell{font-size:11px;color:var(--ink4);margin-top:1px}
+.club-grade-chip{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:5px;font-size:11px;font-weight:700}
+.grade-A{background:rgba(45,107,66,.12);color:#1f6b48}
+.grade-B{background:rgba(58,92,138,.12);color:#2e4a72}
+.grade-C{background:rgba(146,64,14,.1);color:#92400e}
+.grade-D{background:rgba(192,57,43,.1);color:#c0392b}
+.grade-{background:var(--paper3);color:var(--ink4)}
+.club-bool{font-size:13px}
+.club-bool.yes{color:#2d6b42}
+.club-bool.no{color:var(--ink4);opacity:.4}
+.club-pin-pill{display:inline-block;font-size:10px;font-weight:600;padding:2px 7px;border-radius:999px;background:var(--paper3);color:var(--ink3)}
+.contact-pill{font-size:10px;padding:2px 8px;border-radius:999px;white-space:nowrap}
+.contact-Often{background:rgba(45,107,66,.1);color:#1f6b48}
+.contact-Sometimes,.contact-Somewhat,.contact-Mostly{background:rgba(146,64,14,.08);color:#92400e}
+.contact-Rarely,.contact-Radio\.silence,.contact-Radio{background:rgba(192,57,43,.08);color:#c0392b}
+.contact-Growing{background:rgba(58,92,138,.1);color:#2e4a72}
+.contact-{background:var(--paper3);color:var(--ink4)}
+.club-notes-dot{width:7px;height:7px;border-radius:50%;background:var(--amber2);border:1px solid rgba(146,64,14,.25);display:inline-block}
+.club-age-pill{font-size:10px;color:var(--ink4);font-variant-numeric:tabular-nums}
+
 /* ══ DISTRIBUTOR DETAIL — DIRECTION A ══════════════════════════════════ */
 .dd-header{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px 22px;margin-bottom:12px;display:flex;align-items:flex-start;gap:14px;box-shadow:0 1px 3px rgba(61,46,31,0.05)}
 .dd-av{width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px;color:#fff;flex-shrink:0}
@@ -509,6 +541,105 @@ tr:hover td{background:var(--paper2);transition:background .1s}
     <div class="mf">
       <button class="btn bo" onclick="closeModal('modal-log-entry')">Cancel</button>
       <button class="btn bp" onclick="saveLogEntry()">Save Entry</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── MODAL: ADD / EDIT CLUB ────────────── -->
+<div class="modal-bg" id="modal-club">
+  <div class="modal" style="max-width:560px">
+    <div class="mh">
+      <div class="mh-title" id="club-modal-title">Add Club</div>
+      <div class="mh-close" onclick="closeModal('modal-club')">✕</div>
+    </div>
+    <div class="mb" style="max-height:70vh;overflow-y:auto">
+      <input type="hidden" id="club-id">
+      <input type="hidden" id="club-dist-slug">
+      <div class="frow">
+        <div class="fg" style="flex:2"><label>Club Name</label><input type="text" id="club-name" placeholder="e.g. Empower Nutrition"></div>
+      </div>
+      <div class="frow">
+        <div class="fg" style="flex:1"><label>Owner Name</label><input type="text" id="club-owner" placeholder="e.g. Maria Jones"></div>
+        <div class="fg" style="flex:1">
+          <label>Pin Level</label>
+          <select id="club-pin">
+            <option value="">— Select —</option>
+            <option>Presidents Team 30K</option>
+            <option>Presidents Team 20K</option>
+            <option>Presidents Team 15K</option>
+            <option>Presidents Team</option>
+            <option>Millionaire Team Plus</option>
+            <option>Millionaire Team</option>
+            <option>GET Plus 2500</option>
+            <option>GET Team</option>
+            <option>Active World Team</option>
+            <option>World Team</option>
+            <option>Supervisor</option>
+            <option>Distributor</option>
+            <option>TBD</option>
+          </select>
+        </div>
+      </div>
+      <div class="frow">
+        <div class="fg" style="flex:1"><label>Year Started</label><input type="number" id="club-year" placeholder="e.g. 2018" min="2000" max="2099" style="width:120px"></div>
+        <div class="fg" style="flex:1">
+          <label>Social Media Grade</label>
+          <select id="club-grade">
+            <option value="">— Select —</option>
+            <option value="A">A</option>
+            <option value="B">B</option>
+            <option value="C">C</option>
+            <option value="D">D</option>
+          </select>
+        </div>
+      </div>
+      <div class="frow" style="flex-wrap:wrap;gap:14px;margin-top:4px">
+        <label style="display:flex;align-items:center;gap:7px;font-size:13px;cursor:pointer;font-weight:500">
+          <input type="checkbox" id="club-cad" style="width:15px;height:15px"> CAD / Theme Week
+        </label>
+        <label style="display:flex;align-items:center;gap:7px;font-size:13px;cursor:pointer;font-weight:500">
+          <input type="checkbox" id="club-deliveries" style="width:15px;height:15px"> Deliveries
+        </label>
+        <label style="display:flex;align-items:center;gap:7px;font-size:13px;cursor:pointer;font-weight:500">
+          <input type="checkbox" id="club-vip" style="width:15px;height:15px"> Support / VIP Days
+        </label>
+        <label style="display:flex;align-items:center;gap:7px;font-size:13px;cursor:pointer;font-weight:500">
+          <input type="checkbox" id="club-events" style="width:15px;height:15px"> Goes to Events
+        </label>
+      </div>
+      <div class="frow" style="margin-top:8px">
+        <div class="fg" style="flex:1">
+          <label>Coachable by You</label>
+          <select id="club-coachable">
+            <option value="">— Select —</option>
+            <option>Yes</option>
+            <option>Somewhat</option>
+            <option>For the most part</option>
+            <option>No</option>
+            <option>Radio silence</option>
+          </select>
+        </div>
+        <div class="fg" style="flex:1">
+          <label>Contact Frequency</label>
+          <select id="club-contact">
+            <option value="">— Select —</option>
+            <option>Often</option>
+            <option>Sometimes</option>
+            <option>Rarely</option>
+            <option>Radio silence</option>
+            <option>Growing</option>
+          </select>
+        </div>
+      </div>
+      <div class="fg" style="margin-top:8px">
+        <label>Notes</label>
+        <textarea id="club-notes" rows="4" style="width:100%;border:1px solid var(--border);border-radius:10px;padding:10px 12px;font-size:13px;font-family:'Geist',sans-serif;background:var(--paper2);resize:vertical;outline:none" placeholder="Any context, action items, or observations…"></textarea>
+      </div>
+    </div>
+    <div class="mf">
+      <button class="btn br_" id="club-delete-btn" style="display:none;margin-right:auto" onclick="deleteClub()">Delete</button>
+      <button class="btn bo" onclick="closeModal('modal-club')">Cancel</button>
+      <button class="btn bp" onclick="saveClub()">Save Club</button>
     </div>
   </div>
 </div>
@@ -994,6 +1125,7 @@ function renderDistDetail(d) {
       <div class="dd-tabs-bar">
         <div class="dd-tab on" onclick="switchDetailTab('overview','${d.slug}')">Overview</div>
         <div class="dd-tab" onclick="switchDetailTab('history','${d.slug}')">History</div>
+        <div class="dd-tab" onclick="switchDetailTab('clubs','${d.slug}')">Clubs</div>
         <div class="dd-tab" onclick="switchDetailTab('account','${d.slug}')">Account</div>
       </div>
 
@@ -1022,6 +1154,20 @@ function renderDistDetail(d) {
             </select>
           </div>
           <div id="dd-table" class="tw"></div>
+        </div>
+      </div>
+
+      <!-- CLUBS TAB -->
+      <div class="dd-tab-pane" id="dd-tab-clubs">
+        <div style="padding:16px">
+          <div class="clubs-summary" id="dd-clubs-summary"></div>
+          <div class="clubs-toolbar">
+            <div class="clubs-toolbar-title" id="dd-clubs-count">Clubs</div>
+            <button class="btn bp btn-sm" onclick="openClubModal(null,'${d.slug}')">+ Add Club</button>
+          </div>
+          <div style="border:1px solid var(--border);border-radius:10px;overflow:hidden">
+            <div id="dd-clubs-table"></div>
+          </div>
         </div>
       </div>
 
@@ -1086,6 +1232,7 @@ function switchDetailTab(name, slug){
       const d=state.distributors.find(x=>x.slug===slug);
       if(d){const now=new Date();setTimeout(()=>drawDetailChart(d,now.getMonth()+1,now.getFullYear()),50);}
     }
+    if(name==='clubs') loadAndRenderClubs(slug);
   }
 }
 
@@ -2099,6 +2246,153 @@ function initFieldEnhancements(){
 
 
 // Init
+// ══════════════════════════════════════════
+//  CLUBS
+// ══════════════════════════════════════════
+let currentClubSlug = '';
+
+async function loadAndRenderClubs(slug){
+  currentClubSlug = slug;
+  const sumEl = document.getElementById('dd-clubs-summary');
+  const tblEl = document.getElementById('dd-clubs-table');
+  const cntEl = document.getElementById('dd-clubs-count');
+  if(!tblEl) return;
+  tblEl.innerHTML = '<div style="padding:20px;text-align:center;color:var(--ink4);font-size:13px">Loading…</div>';
+  try{
+    const data = await sbFetch('/rest/v1/clubs?distributor_slug=eq.'+encodeURIComponent(slug)+'&order=club_name.asc&select=*');
+    const clubs = data || [];
+    // Summary strip
+    const gradeAB = clubs.filter(c=>c.social_grade==='A'||c.social_grade==='B').length;
+    const cadActive = clubs.filter(c=>c.cad_active).length;
+    const silent = clubs.filter(c=>(c.contact_frequency||'').toLowerCase().includes('silence')).length;
+    if(sumEl) sumEl.innerHTML = `
+      <div class="met"><div class="met-l">Total Clubs</div><div class="met-v">${clubs.length}</div><div class="met-s">in your org</div></div>
+      <div class="met"><div class="met-l">Grade A–B</div><div class="met-v">${gradeAB}</div><div class="met-s">high performers</div></div>
+      <div class="met"><div class="met-l">CAD Active</div><div class="met-v">${cadActive}</div><div class="met-s">doing theme weeks</div></div>
+      <div class="met"><div class="met-l">Radio Silence</div><div class="met-v">${silent}</div><div class="met-s">no recent contact</div></div>`;
+    if(cntEl) cntEl.textContent = clubs.length + ' club' + (clubs.length===1?'':'s');
+    if(!clubs.length){
+      tblEl.innerHTML = '<div style="padding:32px;text-align:center;color:var(--ink4);font-size:13px;font-family:\'EB Garamond\',serif;font-style:italic">No clubs yet — click "+ Add Club" to get started.</div>';
+      return;
+    }
+    const now = new Date().getFullYear();
+    tblEl.innerHTML = `<table class="club-table">
+      <thead><tr>
+        <th>Club Name</th>
+        <th>Owner</th>
+        <th>Pin Level</th>
+        <th class="center">Grade</th>
+        <th class="center">Age</th>
+        <th class="center">CAD</th>
+        <th class="center">Delivery</th>
+        <th class="center">VIP Days</th>
+        <th class="center">Events</th>
+        <th>Contact</th>
+        <th class="center">Notes</th>
+      </tr></thead>
+      <tbody>${clubs.map(c=>{
+        const age = c.year_started ? (now - c.year_started) + 'y' : '—';
+        const grade = c.social_grade || '';
+        const contact = (c.contact_frequency||'').replace(' ','.');
+        const contactLabel = c.contact_frequency || '—';
+        return `<tr onclick="openClubModal('${c.id}','${slug}')">
+          <td><div class="club-name-cell">${c.club_name}</div><div class="club-owner-cell">${c.owner_name||''}</div></td>
+          <td style="font-size:12px;color:var(--ink3)">${c.owner_name||'—'}</td>
+          <td><span class="club-pin-pill">${c.pin_level||'—'}</span></td>
+          <td class="center"><span class="club-grade-chip grade-${grade}">${grade||'—'}</span></td>
+          <td class="center"><span class="club-age-pill">${age}</span></td>
+          <td class="center"><span class="club-bool ${c.cad_active?'yes':'no'}">${c.cad_active?'✓':'✗'}</span></td>
+          <td class="center"><span class="club-bool ${c.deliveries?'yes':'no'}">${c.deliveries?'✓':'✗'}</span></td>
+          <td class="center"><span class="club-bool ${c.vip_days?'yes':'no'}">${c.vip_days?'✓':'✗'}</span></td>
+          <td class="center"><span class="club-bool ${c.goes_to_events?'yes':'no'}">${c.goes_to_events?'✓':'✗'}</span></td>
+          <td><span class="contact-pill contact-${contact}">${contactLabel}</span></td>
+          <td class="center">${c.notes?'<span class="club-notes-dot" title="Has notes"></span>':'<span style="color:var(--ink4);font-size:11px">—</span>'}</td>
+        </tr>`;
+      }).join('')}</tbody>
+    </table>`;
+  }catch(e){
+    tblEl.innerHTML = `<div style="padding:20px;color:var(--red);font-size:13px">Error loading clubs: ${e.message}</div>`;
+  }
+}
+
+function openClubModal(clubId, distSlug){
+  document.getElementById('club-modal-title').textContent = clubId ? 'Edit Club' : 'Add Club';
+  document.getElementById('club-id').value = clubId || '';
+  document.getElementById('club-dist-slug').value = distSlug || currentClubSlug;
+  document.getElementById('club-delete-btn').style.display = clubId ? 'inline-flex' : 'none';
+  // Clear form
+  ['club-name','club-owner','club-year','club-notes'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+  ['club-pin','club-grade','club-coachable','club-contact'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+  ['club-cad','club-deliveries','club-vip','club-events'].forEach(id=>{ const el=document.getElementById(id); if(el) el.checked=false; });
+
+  if(clubId){
+    // Fetch existing club data
+    sbFetch('/rest/v1/clubs?id=eq.'+clubId+'&select=*').then(data=>{
+      const c = data&&data[0];
+      if(!c) return;
+      document.getElementById('club-name').value = c.club_name||'';
+      document.getElementById('club-owner').value = c.owner_name||'';
+      document.getElementById('club-pin').value = c.pin_level||'';
+      document.getElementById('club-year').value = c.year_started||'';
+      document.getElementById('club-grade').value = c.social_grade||'';
+      document.getElementById('club-cad').checked = !!c.cad_active;
+      document.getElementById('club-deliveries').checked = !!c.deliveries;
+      document.getElementById('club-vip').checked = !!c.vip_days;
+      document.getElementById('club-events').checked = !!c.goes_to_events;
+      document.getElementById('club-coachable').value = c.coachable||'';
+      document.getElementById('club-contact').value = c.contact_frequency||'';
+      document.getElementById('club-notes').value = c.notes||'';
+    }).catch(e=>toast('Error: '+e.message));
+  }
+  openModal('modal-club');
+}
+
+async function saveClub(){
+  const clubId = document.getElementById('club-id').value;
+  const distSlug = document.getElementById('club-dist-slug').value;
+  const name = document.getElementById('club-name').value.trim();
+  if(!name){ toast('Club name is required'); return; }
+  const payload = {
+    distributor_slug: distSlug,
+    club_name: name,
+    owner_name: document.getElementById('club-owner').value.trim()||null,
+    pin_level: document.getElementById('club-pin').value||null,
+    year_started: document.getElementById('club-year').value ? +document.getElementById('club-year').value : null,
+    social_grade: document.getElementById('club-grade').value||null,
+    cad_active: document.getElementById('club-cad').checked,
+    deliveries: document.getElementById('club-deliveries').checked,
+    vip_days: document.getElementById('club-vip').checked,
+    goes_to_events: document.getElementById('club-events').checked,
+    coachable: document.getElementById('club-coachable').value||null,
+    contact_frequency: document.getElementById('club-contact').value||null,
+    notes: document.getElementById('club-notes').value.trim()||null,
+    updated_at: new Date().toISOString(),
+  };
+  try{
+    if(clubId){
+      await sbFetch('/rest/v1/clubs?id=eq.'+clubId,{ method:'PATCH', headers:{...SB_H(),'Prefer':'return=minimal'}, body:JSON.stringify(payload) });
+    } else {
+      await sbFetch('/rest/v1/clubs',{ method:'POST', headers:{...SB_H(),'Prefer':'return=minimal'}, body:JSON.stringify(payload) });
+    }
+    closeModal('modal-club');
+    loadAndRenderClubs(distSlug);
+    toast(clubId ? 'Club updated' : 'Club added');
+  }catch(e){ toast('Error: '+e.message); }
+}
+
+async function deleteClub(){
+  const clubId = document.getElementById('club-id').value;
+  const distSlug = document.getElementById('club-dist-slug').value;
+  if(!clubId) return;
+  if(!confirm('Delete this club? This cannot be undone.')) return;
+  try{
+    await sbFetch('/rest/v1/clubs?id=eq.'+clubId,{ method:'DELETE', headers:{...SB_H(),'Prefer':'return=minimal'} });
+    closeModal('modal-club');
+    loadAndRenderClubs(distSlug);
+    toast('Club deleted');
+  }catch(e){ toast('Error: '+e.message); }
+}
+
 document.addEventListener("DOMContentLoaded", checkAdminSession);
 </script>
 </body>
