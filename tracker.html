@@ -1254,7 +1254,7 @@ const MO=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec
 const fmt=n=>{
   if(n==null)return'—';
   const r=Math.round(n*100)/100;
-  return r.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+  return r.toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:2});
 };
 
 // ── Hero input: parse a string like "58,378.00" → 58378, format back with commas ──
