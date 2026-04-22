@@ -834,6 +834,7 @@ html,body{background:var(--bg,#fafaf8);background-attachment:fixed}
   <div class="tab on" onclick="go('entry')">Log Entry</div>
   <div class="tab" onclick="go('dash')">Dashboard</div>
   <div class="tab" onclick="go('data')">Data</div>
+  <div class="tab" onclick="go('clubs')">Clubs</div>
   <div class="tab" onclick="go('settings')">Settings</div>
   <div class="nav-right">
     <span class="nav-logout" onclick="doLogout()">Log out</span>
@@ -982,6 +983,18 @@ html,body{background:var(--bg,#fafaf8);background-attachment:fixed}
   </div>
 </div>
 
+<!-- ── CLUBS ── -->
+<div id="pg-clubs" class="pg">
+  <div class="mstrip" id="clubs-summary-strip" style="margin-bottom:16px"></div>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+    <div class="ct" style="margin:0" id="clubs-count-label">My Clubs</div>
+    <button class="btn bp btn-sm" onclick="openTrackerClubModal(null)">+ Add Club</button>
+  </div>
+  <div class="card" style="padding:0;overflow:hidden">
+    <div id="clubs-table-body"></div>
+  </div>
+</div>
+
 <!-- ── SETTINGS ── -->
 <div id="pg-settings" class="pg">
   <div style="max-width:720px">
@@ -1015,7 +1028,79 @@ html,body{background:var(--bg,#fafaf8);background-attachment:fixed}
 </div>
 
 <!-- ── INACTIVITY WARNING MODAL ── -->
-<div id="inactivity-modal" role="dialog" aria-modal="true" aria-labelledby="inactivity-title">
+<!-- ── CLUB MODAL (tracker) ── -->
+<div id="tracker-club-modal" style="display:none;position:fixed;inset:0;background:rgba(24,24,27,0.55);z-index:900;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(3px)">
+  <div style="background:var(--surface,#fffdf5);border-radius:20px;width:100%;max-width:520px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.18)">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:20px 24px 0">
+      <div style="font-family:'EB Garamond',serif;font-size:20px;font-weight:500;letter-spacing:-0.01em" id="tc-modal-title">Add Club</div>
+      <button onclick="closeTrackerClubModal()" style="background:none;border:none;font-size:18px;cursor:pointer;color:var(--text3,#8a8578);padding:4px 8px">✕</button>
+    </div>
+    <div style="padding:20px 24px;display:grid;gap:12px">
+      <input type="hidden" id="tc-id">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div>
+          <label style="display:block;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--text3,#8a8578);font-weight:600;margin-bottom:5px">Club Name</label>
+          <input id="tc-name" type="text" placeholder="e.g. Empower Nutrition" style="width:100%;height:42px;border:1px solid rgba(61,46,31,0.14);border-radius:9px;padding:0 12px;font-size:14px;font-family:'Geist',sans-serif;background:var(--surface,#fffdf5);outline:none">
+        </div>
+        <div>
+          <label style="display:block;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--text3,#8a8578);font-weight:600;margin-bottom:5px">Owner Name</label>
+          <input id="tc-owner" type="text" placeholder="e.g. Maria Jones" style="width:100%;height:42px;border:1px solid rgba(61,46,31,0.14);border-radius:9px;padding:0 12px;font-size:14px;font-family:'Geist',sans-serif;background:var(--surface,#fffdf5);outline:none">
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+        <div>
+          <label style="display:block;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--text3,#8a8578);font-weight:600;margin-bottom:5px">Pin Level</label>
+          <select id="tc-pin" style="width:100%;height:42px;border:1px solid rgba(61,46,31,0.14);border-radius:9px;padding:0 10px;font-size:13px;font-family:'Geist',sans-serif;background:var(--surface,#fffdf5);-webkit-appearance:none;outline:none">
+            <option value="">— Select —</option>
+            <option>Presidents Team 30K</option><option>Presidents Team 20K</option><option>Presidents Team 15K</option>
+            <option>Presidents Team</option><option>Millionaire Team Plus</option><option>Millionaire Team</option>
+            <option>GET Plus 2500</option><option>GET Team</option><option>Active World Team</option>
+            <option>World Team</option><option>Supervisor</option><option>Distributor</option><option>TBD</option>
+          </select>
+        </div>
+        <div>
+          <label style="display:block;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--text3,#8a8578);font-weight:600;margin-bottom:5px">Year Started</label>
+          <input id="tc-year" type="number" placeholder="2018" min="2000" max="2099" style="width:100%;height:42px;border:1px solid rgba(61,46,31,0.14);border-radius:9px;padding:0 12px;font-size:14px;font-family:'Geist',sans-serif;background:var(--surface,#fffdf5);outline:none">
+        </div>
+        <div>
+          <label style="display:block;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--text3,#8a8578);font-weight:600;margin-bottom:5px">Social Grade</label>
+          <select id="tc-grade" style="width:100%;height:42px;border:1px solid rgba(61,46,31,0.14);border-radius:9px;padding:0 10px;font-size:13px;font-family:'Geist',sans-serif;background:var(--surface,#fffdf5);-webkit-appearance:none;outline:none">
+            <option value="">—</option><option>A</option><option>B</option><option>C</option><option>D</option>
+          </select>
+        </div>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:16px;padding:4px 0">
+        <label style="display:flex;align-items:center;gap:7px;font-size:13px;cursor:pointer"><input type="checkbox" id="tc-cad" style="width:15px;height:15px"> CAD / Theme Week</label>
+        <label style="display:flex;align-items:center;gap:7px;font-size:13px;cursor:pointer"><input type="checkbox" id="tc-deliveries" style="width:15px;height:15px"> Deliveries</label>
+        <label style="display:flex;align-items:center;gap:7px;font-size:13px;cursor:pointer"><input type="checkbox" id="tc-vip" style="width:15px;height:15px"> VIP Days</label>
+        <label style="display:flex;align-items:center;gap:7px;font-size:13px;cursor:pointer"><input type="checkbox" id="tc-events" style="width:15px;height:15px"> Goes to Events</label>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div>
+          <label style="display:block;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--text3,#8a8578);font-weight:600;margin-bottom:5px">Coachable</label>
+          <select id="tc-coachable" style="width:100%;height:42px;border:1px solid rgba(61,46,31,0.14);border-radius:9px;padding:0 10px;font-size:13px;font-family:'Geist',sans-serif;background:var(--surface,#fffdf5);-webkit-appearance:none;outline:none">
+            <option value="">—</option><option>Yes</option><option>Somewhat</option><option>For the most part</option><option>No</option><option>Radio silence</option>
+          </select>
+        </div>
+        <div>
+          <label style="display:block;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--text3,#8a8578);font-weight:600;margin-bottom:5px">Contact Frequency</label>
+          <select id="tc-contact" style="width:100%;height:42px;border:1px solid rgba(61,46,31,0.14);border-radius:9px;padding:0 10px;font-size:13px;font-family:'Geist',sans-serif;background:var(--surface,#fffdf5);-webkit-appearance:none;outline:none">
+            <option value="">—</option><option>Often</option><option>Sometimes</option><option>Rarely</option><option>Radio silence</option><option>Growing</option>
+          </select>
+        </div>
+      </div>
+      <div>
+        <label style="display:block;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--text3,#8a8578);font-weight:600;margin-bottom:5px">Notes</label>
+        <textarea id="tc-notes" rows="3" placeholder="Context, action items, observations…" style="width:100%;border:1px solid rgba(61,46,31,0.14);border-radius:9px;padding:10px 12px;font-size:13px;font-family:'Geist',sans-serif;background:var(--surface,#fffdf5);resize:vertical;outline:none"></textarea>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;padding:0 24px 20px;align-items:center">
+      <button id="tc-delete-btn" onclick="deleteTrackerClub()" style="display:none;margin-right:auto;background:rgba(192,57,43,.08);color:#c0392b;border:1px solid rgba(192,57,43,.2);border-radius:9px;padding:9px 16px;font-size:13px;font-weight:500;cursor:pointer;font-family:'Geist',sans-serif">Delete</button>
+      <button onclick="closeTrackerClubModal()" style="background:none;border:1px solid rgba(61,46,31,0.14);border-radius:9px;padding:9px 18px;font-size:13px;font-weight:500;cursor:pointer;font-family:'Geist',sans-serif">Cancel</button>
+      <button onclick="saveTrackerClub()" style="background:#18181b;color:#fafaf8;border:none;border-radius:9px;padding:9px 22px;font-size:13px;font-weight:500;cursor:pointer;font-family:'Geist',sans-serif">Save Club</button>
+    </div>
+  </div>
+</div>
   <div class="inactivity-card">
     <div class="inactivity-icon">⌛</div>
     <div class="inactivity-title" id="inactivity-title">Still there?</div>
@@ -1862,12 +1947,13 @@ function go(name,evt){
   if(e&&e.currentTarget)e.currentTarget.classList.add('on');
   else{
     const tabs=document.querySelectorAll('.tab');
-    const idx={'entry':0,'dash':1,'data':2,'settings':3}[name];
+    const idx={'entry':0,'dash':1,'data':2,'clubs':3,'settings':4}[name];
     if(idx!==undefined&&tabs[idx])tabs[idx].classList.add('on');
   }
   if(name==='data'){buildFilter();renderTable()}
   if(name==='dash'){buildPills();renderDash()}
   if(name==='settings'){buildAppearanceGrid();updateAppearanceUI(loadTheme()?.color||'paper')}
+  if(name==='clubs'){loadTrackerClubs()}
 }
 
 // ═══════════════════ MONTHS ═══════════════════
@@ -3147,6 +3233,157 @@ function syncAllSB(){
   fetch(sbCfg.url+'/rest/v1/org_volume?on_conflict=entry_date,user_slug',{method:'POST',headers:h,body:JSON.stringify(body)})
     .then(r=>{if(r.ok)toast('✓ Synced '+body.length+' entries');else r.text().then(t=>toast('Sync error '+r.status+': '+t.slice(0,80)))})
     .catch(e=>toast('Sync failed: '+e.message));
+}
+
+// ══════════════════════════════════════════
+//  TRACKER CLUBS
+// ══════════════════════════════════════════
+function getTrackerToken(){
+  const SB_REF=(SB_URL||'').match(/https:\/\/([^.]+)\.supabase\.co/);
+  const tokKey=SB_REF?'sb-'+SB_REF[1]+'-auth-token':null;
+  try{const s=tokKey?JSON.parse(localStorage.getItem(tokKey)||'null'):null;return s&&s.access_token||SB_KEY;}catch(e){return SB_KEY;}
+}
+function sbClubsFetch(path,opts={}){
+  const tok=getTrackerToken();
+  return fetch(SB_URL+path,{headers:{'apikey':SB_KEY,'Authorization':'Bearer '+tok,'Content-Type':'application/json'},...opts})
+    .then(async r=>{if(!r.ok){const t=await r.text().catch(()=>'');throw new Error('Error '+r.status+': '+t.slice(0,120));}return r.status===204?null:r.json();});
+}
+
+async function loadTrackerClubs(){
+  const sumEl=document.getElementById('clubs-summary-strip');
+  const tblEl=document.getElementById('clubs-table-body');
+  const cntEl=document.getElementById('clubs-count-label');
+  if(!tblEl)return;
+  tblEl.innerHTML='<div style="padding:24px;text-align:center;color:var(--text3,#8a8578);font-size:13px">Loading…</div>';
+  try{
+    const clubs=await sbClubsFetch('/rest/v1/clubs?distributor_slug=eq.'+encodeURIComponent(userSlug)+'&order=club_name.asc&select=*')||[];
+    // Summary
+    const gradeAB=clubs.filter(c=>c.social_grade==='A'||c.social_grade==='B').length;
+    const cad=clubs.filter(c=>c.cad_active).length;
+    const silent=clubs.filter(c=>(c.contact_frequency||'').toLowerCase().includes('silence')).length;
+    if(sumEl)sumEl.innerHTML=`
+      <div class="met"><div class="met-l">Total Clubs</div><div class="met-v">${clubs.length}</div><div class="met-s">in your org</div></div>
+      <div class="met"><div class="met-l">Grade A–B</div><div class="met-v">${gradeAB}</div><div class="met-s">high performers</div></div>
+      <div class="met"><div class="met-l">CAD Active</div><div class="met-v">${cad}</div><div class="met-s">doing theme weeks</div></div>
+      <div class="met"><div class="met-l">Radio Silence</div><div class="met-v">${silent}</div><div class="met-s">no recent contact</div></div>`;
+    if(cntEl)cntEl.textContent=clubs.length+' club'+(clubs.length===1?'':'s');
+    if(!clubs.length){
+      tblEl.innerHTML='<div style="padding:40px;text-align:center;font-family:\'EB Garamond\',serif;font-style:italic;font-size:15px;color:var(--text3,#8a8578)">No clubs yet — click "+ Add Club" to get started.</div>';
+      return;
+    }
+    const now=new Date().getFullYear();
+    const gradeColor={A:'rgba(45,107,66,.12);color:#1f6b48',B:'rgba(58,92,138,.12);color:#2e4a72',C:'rgba(146,64,14,.1);color:#92400e',D:'rgba(192,57,43,.1);color:#c0392b'};
+    tblEl.innerHTML=`<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12px">
+      <thead><tr style="background:var(--surface2,#f4f2ed)">
+        <th style="text-align:left;padding:9px 12px;font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--text3,#8a8578);font-weight:600;border-bottom:1px solid rgba(61,46,31,0.1)">Club</th>
+        <th style="text-align:left;padding:9px 10px;font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--text3,#8a8578);font-weight:600;border-bottom:1px solid rgba(61,46,31,0.1)">Pin Level</th>
+        <th style="text-align:center;padding:9px 10px;font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--text3,#8a8578);font-weight:600;border-bottom:1px solid rgba(61,46,31,0.1)">Grade</th>
+        <th style="text-align:center;padding:9px 10px;font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--text3,#8a8578);font-weight:600;border-bottom:1px solid rgba(61,46,31,0.1)">Age</th>
+        <th style="text-align:center;padding:9px 10px;font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--text3,#8a8578);font-weight:600;border-bottom:1px solid rgba(61,46,31,0.1)">CAD</th>
+        <th style="text-align:center;padding:9px 10px;font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--text3,#8a8578);font-weight:600;border-bottom:1px solid rgba(61,46,31,0.1)">Delivery</th>
+        <th style="text-align:center;padding:9px 10px;font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--text3,#8a8578);font-weight:600;border-bottom:1px solid rgba(61,46,31,0.1)">VIP</th>
+        <th style="text-align:center;padding:9px 10px;font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--text3,#8a8578);font-weight:600;border-bottom:1px solid rgba(61,46,31,0.1)">Events</th>
+        <th style="text-align:left;padding:9px 10px;font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--text3,#8a8578);font-weight:600;border-bottom:1px solid rgba(61,46,31,0.1)">Contact</th>
+        <th style="text-align:center;padding:9px 10px;font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--text3,#8a8578);font-weight:600;border-bottom:1px solid rgba(61,46,31,0.1)">Notes</th>
+      </tr></thead>
+      <tbody>${clubs.map(c=>{
+        const age=c.year_started?(now-c.year_started)+'y':'—';
+        const gc=gradeColor[c.social_grade]||'rgba(61,46,31,0.07);color:var(--text3)';
+        const bool=v=>`<span style="font-size:13px;color:${v?'#2d6b42':'rgba(61,46,31,0.25)'}">${v?'✓':'✗'}</span>`;
+        const contactColors={'Often':'rgba(45,107,66,.1);color:#1f6b48','Sometimes':'rgba(146,64,14,.08);color:#92400e','Rarely':'rgba(192,57,43,.08);color:#c0392b','Radio silence':'rgba(192,57,43,.08);color:#c0392b','Growing':'rgba(58,92,138,.1);color:#2e4a72'};
+        const cc=contactColors[c.contact_frequency]||'rgba(61,46,31,0.07);color:var(--text3)';
+        return`<tr onclick="openTrackerClubModal('${c.id}')" style="cursor:pointer;border-bottom:1px solid rgba(61,46,31,0.06)">
+          <td style="padding:10px 12px"><div style="font-weight:500;font-size:13px;color:var(--ink,#18181b)">${c.club_name}</div><div style="font-size:11px;color:var(--text3,#8a8578);margin-top:1px">${c.owner_name||''}</div></td>
+          <td style="padding:10px;font-size:11px;color:var(--text2,#5d4820)">${c.pin_level||'—'}</td>
+          <td style="padding:10px;text-align:center"><span style="display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:5px;font-size:11px;font-weight:700;background:${gc}">${c.social_grade||'—'}</span></td>
+          <td style="padding:10px;text-align:center;font-size:11px;color:var(--text3,#8a8578)">${age}</td>
+          <td style="padding:10px;text-align:center">${bool(c.cad_active)}</td>
+          <td style="padding:10px;text-align:center">${bool(c.deliveries)}</td>
+          <td style="padding:10px;text-align:center">${bool(c.vip_days)}</td>
+          <td style="padding:10px;text-align:center">${bool(c.goes_to_events)}</td>
+          <td style="padding:10px"><span style="font-size:10px;padding:2px 8px;border-radius:999px;background:${cc};white-space:nowrap">${c.contact_frequency||'—'}</span></td>
+          <td style="padding:10px;text-align:center">${c.notes?'<span style="font-size:14px" title="Has notes">📝</span>':'<span style="color:rgba(61,46,31,0.25);font-size:11px">—</span>'}</td>
+        </tr>`;
+      }).join('')}</tbody>
+    </table></div>`;
+  }catch(e){
+    tblEl.innerHTML=`<div style="padding:20px;color:#c0392b;font-size:13px">Error: ${e.message}</div>`;
+  }
+}
+
+function openTrackerClubModal(clubId){
+  const m=document.getElementById('tracker-club-modal');
+  if(!m)return;
+  document.getElementById('tc-modal-title').textContent=clubId?'Edit Club':'Add Club';
+  document.getElementById('tc-id').value=clubId||'';
+  document.getElementById('tc-delete-btn').style.display=clubId?'inline-block':'none';
+  ['tc-name','tc-owner','tc-year','tc-notes'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  ['tc-pin','tc-grade','tc-coachable','tc-contact'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  ['tc-cad','tc-deliveries','tc-vip','tc-events'].forEach(id=>{const el=document.getElementById(id);if(el)el.checked=false;});
+  if(clubId){
+    sbClubsFetch('/rest/v1/clubs?id=eq.'+clubId+'&select=*').then(data=>{
+      const c=data&&data[0];if(!c)return;
+      document.getElementById('tc-name').value=c.club_name||'';
+      document.getElementById('tc-owner').value=c.owner_name||'';
+      document.getElementById('tc-pin').value=c.pin_level||'';
+      document.getElementById('tc-year').value=c.year_started||'';
+      document.getElementById('tc-grade').value=c.social_grade||'';
+      document.getElementById('tc-cad').checked=!!c.cad_active;
+      document.getElementById('tc-deliveries').checked=!!c.deliveries;
+      document.getElementById('tc-vip').checked=!!c.vip_days;
+      document.getElementById('tc-events').checked=!!c.goes_to_events;
+      document.getElementById('tc-coachable').value=c.coachable||'';
+      document.getElementById('tc-contact').value=c.contact_frequency||'';
+      document.getElementById('tc-notes').value=c.notes||'';
+    }).catch(e=>toast('Error: '+e.message));
+  }
+  m.style.display='flex';
+}
+function closeTrackerClubModal(){
+  const m=document.getElementById('tracker-club-modal');
+  if(m)m.style.display='none';
+}
+async function saveTrackerClub(){
+  const clubId=document.getElementById('tc-id').value;
+  const name=document.getElementById('tc-name').value.trim();
+  if(!name){toast('Club name is required');return;}
+  const payload={
+    distributor_slug:userSlug,
+    club_name:name,
+    owner_name:document.getElementById('tc-owner').value.trim()||null,
+    pin_level:document.getElementById('tc-pin').value||null,
+    year_started:document.getElementById('tc-year').value?+document.getElementById('tc-year').value:null,
+    social_grade:document.getElementById('tc-grade').value||null,
+    cad_active:document.getElementById('tc-cad').checked,
+    deliveries:document.getElementById('tc-deliveries').checked,
+    vip_days:document.getElementById('tc-vip').checked,
+    goes_to_events:document.getElementById('tc-events').checked,
+    coachable:document.getElementById('tc-coachable').value||null,
+    contact_frequency:document.getElementById('tc-contact').value||null,
+    notes:document.getElementById('tc-notes').value.trim()||null,
+    updated_at:new Date().toISOString(),
+  };
+  try{
+    if(clubId){
+      await sbClubsFetch('/rest/v1/clubs?id=eq.'+clubId,{method:'PATCH',body:JSON.stringify(payload)});
+    }else{
+      await sbClubsFetch('/rest/v1/clubs',{method:'POST',body:JSON.stringify(payload)});
+    }
+    closeTrackerClubModal();
+    loadTrackerClubs();
+    toast(clubId?'Club updated':'Club added');
+  }catch(e){toast('Error: '+e.message);}
+}
+async function deleteTrackerClub(){
+  const clubId=document.getElementById('tc-id').value;
+  if(!clubId)return;
+  if(!confirm('Delete this club?'))return;
+  try{
+    await sbClubsFetch('/rest/v1/clubs?id=eq.'+clubId,{method:'DELETE'});
+    closeTrackerClubModal();
+    loadTrackerClubs();
+    toast('Club deleted');
+  }catch(e){toast('Error: '+e.message);}
 }
 
 function toast(msg,ms=2800){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('on');setTimeout(()=>t.classList.remove('on'),ms)}
