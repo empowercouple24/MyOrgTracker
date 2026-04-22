@@ -329,9 +329,10 @@ async function init(){
     if(r.ok){const d=await r.json();if(d[0]?.value)uplift=+d[0].value;}
   }catch(e){}
 
-  // Look up distributor by email — no slug needed in the URL
+  // Look up distributor by email — use the authenticated session token so RLS allows it
   try{
-    const r=await fetch(SB_URL+'/rest/v1/distributors?email=eq.'+encodeURIComponent(email)+'&select=*',{headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}});
+    const token = session.access_token;
+    const r=await fetch(SB_URL+'/rest/v1/distributors?email=eq.'+encodeURIComponent(email)+'&select=*',{headers:{'apikey':SB_KEY,'Authorization':'Bearer '+token}});
     if(!r.ok)throw new Error('Could not load invite');
     const data=await r.json();
     if(!data[0])throw new Error('No distributor record found for '+email+'. Ask your admin to check the invite was sent to this address.');
