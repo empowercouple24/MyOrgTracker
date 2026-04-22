@@ -1046,8 +1046,9 @@ function renderDistDetail(d) {
   const bestDay     = bestInc!=null ? mr.find(r=>r.org_increase===bestInc) : null;
   const ro_goal     = Math.round(dg*0.05);
 
-  // Build month pills grouped loosely by year — sorted newest first
-  const monthPillsHtml = allMonths.map(mk=>{
+  // Build month pills — show 12 most recent, collapse older ones
+  const PILLS_VISIBLE = 12;
+  const monthPillsHtml = allMonths.slice(0, PILLS_VISIBLE).map(mk=>{
     const [y,m]=mk.split('-').map(Number);
     const isCur=(m===cm&&y===cy);
     const mrs=(d.records||[]).filter(r=>r.month===m&&r.year===y);
@@ -1056,6 +1057,22 @@ function renderDistDetail(d) {
     const isHit=lastRec?.hit||mEst>=dg;
     return `<div class="dd-month-pill${isCur?' on':''}${isHit&&!isCur?' hit':''}" onclick="switchDetailMonth('${d.slug}','${mk}')" data-mk="${mk}">${MO[m-1]} ${y}</div>`;
   }).join('');
+  const olderPillsHtml = allMonths.slice(PILLS_VISIBLE).map(mk=>{
+    const [y,m]=mk.split('-').map(Number);
+    const isCur=(m===cm&&y===cy);
+    const mrs=(d.records||[]).filter(r=>r.month===m&&r.year===y);
+    const lastRec=mrs.sort((a,b)=>b.day-a.day)[0];
+    const mEst=lastRec?Math.round(lastRec.org_volume*GLOBAL_UPLIFT):0;
+    const isHit=lastRec?.hit||mEst>=dg;
+    return `<div class="dd-month-pill${isCur?' on':''}${isHit&&!isCur?' hit':''}" onclick="switchDetailMonth('${d.slug}','${mk}')" data-mk="${mk}">${MO[m-1]} ${y}</div>`;
+  }).join('');
+  const olderSection = olderPillsHtml ? `
+    <div id="dd-pills-older" style="display:none;flex-wrap:wrap;gap:5px">${olderPillsHtml}</div>
+    <div style="margin-top:6px">
+      <button onclick="toggleOlderPills()" id="dd-pills-toggle" style="font-size:10px;color:var(--ink4);background:none;border:none;cursor:pointer;letter-spacing:.04em;padding:2px 0">
+        ${allMonths.length - PILLS_VISIBLE} older months ▾
+      </button>
+    </div>` : '';
 
   const c = document.getElementById('dd-content');
   c.innerHTML = `
@@ -1139,6 +1156,7 @@ function renderDistDetail(d) {
           <div>
             <div class="dd-ct">Month History</div>
             <div class="dd-month-pills" id="dd-month-pills">${monthPillsHtml}</div>
+            ${olderSection}
           </div>
         </div>
       </div>
@@ -1234,6 +1252,17 @@ function switchDetailTab(name, slug){
     }
     if(name==='clubs') loadAndRenderClubs(slug);
   }
+}
+
+function toggleOlderPills(){
+  const older=document.getElementById('dd-pills-older');
+  const btn=document.getElementById('dd-pills-toggle');
+  if(!older||!btn)return;
+  const isShown=older.style.display!=='none';
+  older.style.display=isShown?'none':'flex';
+  btn.textContent=isShown
+    ? btn.textContent.replace('▴','▾')
+    : btn.textContent.replace('▾','▴');
 }
 
 function switchDetailMonth(slug, mk){
