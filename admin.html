@@ -342,7 +342,61 @@ tr:hover td{background:var(--paper2);transition:background .1s}
 .dd-account-field-v{font-size:13px;color:var(--ink2);word-break:break-all}
 .dd-tabbed-body{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:0}
 
-@media(max-width:700px){.mstrip{grid-template-columns:1fr 1fr}.dgrid{grid-template-columns:1fr}.dv-actions{flex-wrap:wrap;gap:6px}.pg{padding:16px}.ph{flex-direction:column;gap:10px}}
+@media(max-width:760px){
+  /* ── Top navigation ── */
+  .topnav{height:auto;min-height:54px;padding:8px 14px;flex-wrap:wrap;gap:6px 8px;align-items:center}
+  .tn-logo{font-size:16px;margin-right:0}
+  .tn-badge{font-size:8px;padding:2px 6px;margin-right:4px}
+  .tn-tab{height:38px;padding:0 10px;font-size:12px}
+  .tn-right{margin-left:auto;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+  .tn-user{display:none} /* hide name to save space */
+  .tn-logout{padding:4px 8px;font-size:11px}
+  .tn-mytrack{padding:4px 8px;font-size:11px}
+
+  /* ── Page chrome ── */
+  .pg{padding:16px 14px}
+  .ph{flex-direction:column;align-items:stretch;gap:10px}
+
+  /* ── Metric strips: 4-col → 2-col ── */
+  .mstrip{grid-template-columns:repeat(2,1fr)}
+  .dd-metrics{grid-template-columns:repeat(2,1fr);gap:8px}
+  .clubs-summary{grid-template-columns:repeat(2,1fr);gap:8px}
+  .dd-met{padding:11px 13px}
+  .dd-met-v{font-size:22px}
+
+  /* ── Distributor cards grid → single column ── */
+  .dgrid{grid-template-columns:1fr}
+
+  /* ── Distributor detail header: stack avatar / info / action buttons ── */
+  .dd-header{flex-direction:column;align-items:stretch;padding:14px 16px;gap:12px}
+  .dd-actions{justify-content:flex-start}
+  .dd-name{font-size:18px}
+
+  /* ── Overview tab two-column layout → stack chart over month history ── */
+  .dd-bottom{grid-template-columns:1fr;padding:14px 12px;gap:14px}
+
+  /* ── Account tab two-column layout → stack ── */
+  .dd-account-pane{grid-template-columns:1fr;padding:14px 12px;gap:12px}
+
+  /* ── History pane padding ── */
+  .dd-history-pane{padding:14px 12px}
+
+  /* ── Goal-bar tick labels are already hidden at 640px; ensure end-cap stays readable ── */
+  .gb-end-cap{font-size:7px}
+  .gb-tick-label{display:none}
+
+  /* ── Tabs row inside detail ── */
+  .dd-tab{padding:10px 14px;font-size:12px}
+}
+
+@media(max-width:420px){
+  /* Extra-narrow phones — push metric strips to single column */
+  .mstrip{grid-template-columns:1fr}
+  .dd-metrics{grid-template-columns:repeat(2,1fr)}  /* keep 2-col for these — values are small */
+  .clubs-summary{grid-template-columns:repeat(2,1fr)}
+  .tn-tab{padding:0 8px;font-size:11px}
+  .tn-logo{font-size:15px}
+}
 
 
 /* ── LOADING OVERLAY ── */
@@ -1332,7 +1386,7 @@ function renderDistDetail(d) {
             <div class="clubs-toolbar-title" id="dd-clubs-count">Clubs</div>
           </div>
           <div style="border:1px solid var(--border);border-radius:10px;overflow:hidden">
-            <div id="dd-clubs-table"></div>
+            <div id="dd-clubs-table" style="overflow-x:auto;-webkit-overflow-scrolling:touch"></div>
           </div>
         </div>
       </div>
