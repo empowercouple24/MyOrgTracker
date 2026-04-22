@@ -1209,10 +1209,10 @@ function autoInviteSlug(){
   const full=(f+' '+l).trim();
   inviteSlug=full.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
   const prev=document.getElementById('inv-url-preview');
-  if(prev)prev.textContent=inviteSlug?window.location.origin+'/signup?slug='+inviteSlug:'—';
+  if(prev)prev.textContent=inviteSlug?window.location.origin+'/signup':'—';
 }
 function copyInviteLink(){
-  const link=window.location.origin+'/signup?slug='+inviteSlug;
+  const link=window.location.origin+'/signup';
   navigator.clipboard.writeText(link).then(()=>toast('✓ Link copied'));
 }
 async function sendInvite(){
@@ -1265,7 +1265,7 @@ async function sendInvite(){
       }else throw err;
     }
     // Send magic link invite
-    const redirectTo=window.location.origin+'/signup?slug='+inviteSlug;
+    const redirectTo=window.location.origin+'/signup';
     const sbInv=sbClient||initSupabase();
     const {error}=await sbInv.auth.signInWithOtp({
       email,
@@ -1282,7 +1282,7 @@ async function sendInvite(){
   }catch(e){
     btn.disabled=false;btn.textContent='Send Invite';
     if(inviteSlug&&e.message&&(e.message.includes('rate')||e.message.includes('email'))){
-      const redirectTo=window.location.origin+'/signup?slug='+inviteSlug;
+      const redirectTo=window.location.origin+'/signup';
       document.getElementById('inv-form').style.display='none';
       document.getElementById('inv-footer').style.display='none';
       document.getElementById('inv-sent-email').textContent=email+' (email may be rate-limited)';
@@ -1441,7 +1441,7 @@ async function sendLoginLink(){
       })
     });
     // 2. Send the magic link
-    const redirectTo = window.location.origin + '/signup?slug=' + slug;
+    const redirectTo = window.location.origin + '/signup';
     const sbInv = sbClient || initSupabase();
     const { error } = await sbInv.auth.signInWithOtp({
       email,

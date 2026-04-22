@@ -221,7 +221,6 @@ function goalById(id){return GOAL_OPTIONS.find(g=>g.id===id)||GOAL_OPTIONS[4]}
 
 const $ = id => document.getElementById(id);
 const params = new URLSearchParams(window.location.search);
-const slug = params.get('slug');
 
 let distRecord = null;
 let uplift = 1.32;
@@ -285,10 +284,10 @@ window.completeSignup = async function(){
     await sb.from('profiles').update({
       display_name: first+' '+last,
       role: 'distributor',
-      slug: slug
+      slug: distRecord.slug
     }).eq('id', user.id);
 
-    // Activate the distributor row
+    // Activate the distributor row — look up by slug (stored on distRecord)
     await sb.from('distributors').update({
       first_name: first,
       last_name: last,
@@ -298,7 +297,7 @@ window.completeSignup = async function(){
       is_active: true,
       status: 'active',
       auth_user_id: user.id
-    }).eq('slug', slug);
+    }).eq('slug', distRecord.slug);
 
     // Success
     $('tracker-link').href='/tracker';
@@ -311,27 +310,18 @@ window.completeSignup = async function(){
 
 // ─── Init ────────────────────────────────────────────────────────────────
 async function init(){
-  if(!slug){ showPanel('panel-error'); $('error-msg').textContent='No invite slug found in this link. Ask your admin to resend.'; return; }
-
-  // Magic link in PKCE flow lands as ?code=...; detectSessionInUrl will exchange it.
-  // If a code is present in the URL but the SDK hasn't processed it yet (race), give it a
-  // moment, then fall back to an explicit exchange so we never miss it.
-  const urlHasCode = params.has('code');
-  if(urlHasCode){
-    await new Promise(r=>setTimeout(r,300));
-    const { data:{ session: s1 } } = await sb.auth.getSession();
-    if(!s1){
-      try{ await sb.auth.exchangeCodeForSession(window.location.href); }catch(e){}
-    }
-    // Clean ?code=... out of the URL bar so a refresh doesn't re-trigger it
-    const cleanUrl = window.location.pathname + '?slug=' + encodeURIComponent(slug);
-    history.replaceState(null,'',cleanUrl);
-  } else {
-    // Implicit-flow style (#access_token=...) or already-signed-in case
-    await new Promise(r=>setTimeout(r,400));
-  }
+  // Wait briefly for Supabase to process the magic link token from the URL hash
+  await new Promise(r=>setTimeout(r,500));
 
   const { data:{ session } } = await sb.auth.getSession();
+
+  if(!session){
+    showPanel('panel-error');
+    $('error-msg').textContent='Session not found. The invite link may have expired — ask your admin to resend it.';
+    return;
+  }
+
+  const email = session.user.email;
 
   // Load platform influence factor
   try{
@@ -339,12 +329,12 @@ async function init(){
     if(r.ok){const d=await r.json();if(d[0]?.value)uplift=+d[0].value;}
   }catch(e){}
 
-  // Fetch the distributor record
+  // Look up distributor by email — no slug needed in the URL
   try{
-    const r=await fetch(SB_URL+'/rest/v1/distributors?slug=eq.'+encodeURIComponent(slug)+'&select=*',{headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}});
+    const r=await fetch(SB_URL+'/rest/v1/distributors?email=eq.'+encodeURIComponent(email)+'&select=*',{headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}});
     if(!r.ok)throw new Error('Could not load invite');
     const data=await r.json();
-    if(!data[0])throw new Error('Invite not found');
+    if(!data[0])throw new Error('No distributor record found for '+email+'. Ask your admin to check the invite was sent to this address.');
     distRecord=data[0];
   }catch(e){
     showPanel('panel-error');
@@ -352,9 +342,7 @@ async function init(){
     return;
   }
 
-  // If already linked to an auth user, send to tracker (they're done with signup).
-  // Note: this gates on auth_user_id, NOT status. A distributor can be marked "active"
-  // (created/activated by an admin) but never have completed login setup yet.
+  // If already linked to an auth user, send to tracker
   if(distRecord.auth_user_id){
     window.location.href='/tracker';
     return;
