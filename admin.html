@@ -715,6 +715,39 @@ function nextTierAbove(id){
   if(idx<=0)return null;  // 0 = pt30k (top), no next tier
   return GOAL_OPTIONS[idx-1];
 }
+// Find the next tier ABOVE the user's current goal that they haven't yet hit.
+// Different from nextTierAbove (which is just immediate next regardless of progress).
+// Used to show "next stretch goal" copy when the current goal is already met.
+function nextUnmetTier(currentTierId, estOrgVol){
+  const idx=GOAL_OPTIONS.findIndex(g=>g.id===currentTierId);
+  if(idx<=0)return null;
+  for(let i=idx-1;i>=0;i--){
+    if(GOAL_OPTIONS[i].dv>estOrgVol)return GOAL_OPTIONS[i];
+  }
+  return null;
+}
+// Returns the formatted "Next: TIER · NK — X to go · Y/day for N days" string,
+// or a top-tier celebration string, or null if not yet at the current goal.
+// `isCurrent` toggles the /day pacing (only meaningful for the live month).
+function nextTierLine(currentTierId, estOrgVol, isCurrent, daysLeft){
+  if(estOrgVol==null)return null;
+  const idx=GOAL_OPTIONS.findIndex(g=>g.id===currentTierId);
+  if(idx<0)return null;
+  const cur=GOAL_OPTIONS[idx];
+  if(estOrgVol<cur.dv)return null;  // caller handles below-goal copy
+  const next=nextUnmetTier(currentTierId,estOrgVol);
+  if(!next){
+    return `🎉 Top tier reached — ${fmt(estOrgVol-cur.dv)} org vol over goal`;
+  }
+  const gap=next.dv-estOrgVol;
+  const tierName=next.label.replace(/\s*\(.*?\)\s*$/,'').trim();
+  const tierK=(next.dv/1000)|0;
+  if(isCurrent && daysLeft>0){
+    const perDay=Math.ceil(gap/daysLeft);
+    return `🎯 Next: ${tierName} · ${tierK}K — ${fmt(gap)} to go · ${fmt(perDay)}/day for ${daysLeft} ${daysLeft===1?'day':'days'}`;
+  }
+  return `🎯 Next: ${tierName} · ${tierK}K — ${fmt(gap)} to go`;
+}
 const MAJOR_MILESTONES=['awt','get','mt','pt'];
 function majorMilestonesBelow(currentGoalOrgVol){
   return GOAL_OPTIONS
@@ -1476,6 +1509,19 @@ function renderDistMonthRegion(d, mk){
   const neededPerDay= (orgVolRem!=null&&daysLeft>0) ? Math.round(orgVolRem/daysLeft) : null;
   const daysLoggedSubtext = isCurrentMonth ? 'This month' : `${MO[m-1]} ${y}`;
 
+  // Compute the second sub-line under the goal bar — adapts to context:
+  //   below goal      → "X org vol remaining · Y/day needed"
+  //   hit + next tier → "🎯 Next: TIER · NK — X to go · Y/day for N days"
+  //   hit + top tier  → "🎉 Top tier reached — X over goal"
+  let progressLine2;
+  if(estOrgVol==null){
+    progressLine2='—';
+  } else if(estOrgVol<dg){
+    progressLine2=`${fmt(orgVolRem)} org vol remaining${neededPerDay!=null?' · '+fmt(neededPerDay)+'/day needed':''}`;
+  } else {
+    progressLine2=nextTierLine(d.pinGoal,estOrgVol,isCurrentMonth,daysLeft)||'—';
+  }
+
   return `
     <!-- GOAL PROGRESS BAR -->
     <div class="dd-progress">
@@ -1486,7 +1532,7 @@ function renderDistMonthRegion(d, mk){
       ${buildAdminGoalBar(d.pinGoal,currentDV,dg)}
       <div class="dd-progress-sub">
         <span>Est. Org Volume: ${estOrgVol!=null?fmt(estOrgVol):'—'} &nbsp;·&nbsp; Est. RO: ${estRO!=null?'$'+fmt(estRO):'—'}</span>
-        <span>${orgVolRem!=null?fmt(orgVolRem)+' org vol remaining':'—'}${neededPerDay!=null?' · '+fmt(neededPerDay)+'/day needed':''}</span>
+        <span>${progressLine2}</span>
       </div>
     </div>
 

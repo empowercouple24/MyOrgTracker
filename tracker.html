@@ -1139,6 +1139,37 @@ function nextTierAbove(id){
   if(idx<=0)return null;  // 0 = pt30k (top), so no next tier
   return GOAL_OPTIONS[idx-1];
 }
+// Find the next tier ABOVE the user's current goal that they haven't yet hit.
+// Different from nextTierAbove (which is just immediate next regardless of progress).
+function nextUnmetTier(currentTierId, estOrgVol){
+  const idx=GOAL_OPTIONS.findIndex(g=>g.id===currentTierId);
+  if(idx<=0)return null;
+  for(let i=idx-1;i>=0;i--){
+    if(GOAL_OPTIONS[i].dv>estOrgVol)return GOAL_OPTIONS[i];
+  }
+  return null;
+}
+// Returns the formatted "Next: TIER · NK — X to go · Y/day for N days" string,
+// or a top-tier celebration string, or null if not yet at the current goal.
+function nextTierLine(currentTierId, estOrgVol, isCurrent, daysLeft){
+  if(estOrgVol==null)return null;
+  const idx=GOAL_OPTIONS.findIndex(g=>g.id===currentTierId);
+  if(idx<0)return null;
+  const cur=GOAL_OPTIONS[idx];
+  if(estOrgVol<cur.dv)return null;
+  const next=nextUnmetTier(currentTierId,estOrgVol);
+  if(!next){
+    return `🎉 Top tier reached — ${fmt(estOrgVol-cur.dv)} org vol over goal`;
+  }
+  const gap=next.dv-estOrgVol;
+  const tierName=next.label.replace(/\s*\(.*?\)\s*$/,'').trim();
+  const tierK=(next.dv/1000)|0;
+  if(isCurrent && daysLeft>0){
+    const perDay=Math.ceil(gap/daysLeft);
+    return `🎯 Next: ${tierName} · ${tierK}K — ${fmt(gap)} to go · ${fmt(perDay)}/day for ${daysLeft} ${daysLeft===1?'day':'days'}`;
+  }
+  return `🎯 Next: ${tierName} · ${tierK}K — ${fmt(gap)} to go`;
+}
 // Major milestones only — filter to tier ids awt, get, mt, pt. Plus tiers skipped.
 // Returns milestones whose DV is STRICTLY LESS THAN the given currentGoalDv.
 const MAJOR_MILESTONES=['awt','get','mt','pt'];
@@ -2738,7 +2769,11 @@ function renderLockedGoal(){
     paceClass='ahead';paceLabel=isHistorical?'Goal Hit (snapshot)':'Goal Hit';
     calloutClass='ahead';
     calloutText=`Goal reached — ${fmt(currentDV-goalDV)} org vol over target`;
-    calloutSub=`${daysLeft} day${daysLeft===1?'':'s'} remaining in month`;
+    // When goal is hit, the "N days remaining" sub is dead space.
+    // Surface the next stretch goal instead — what they need + per-day pace.
+    // Estimated org volume = currentDV (this branch already treats currentDV as org vol units).
+    const nextLine=nextTierLine(g.id,currentDV,!isHistorical,daysLeft);
+    calloutSub=nextLine||`${daysLeft} day${daysLeft===1?'':'s'} remaining in month`;
   }else if(currentDV>=expectedDV*0.98){
     paceClass='ahead';paceLabel=isHistorical?'On Pace (snapshot)':'On Pace';
     calloutClass='ahead';
