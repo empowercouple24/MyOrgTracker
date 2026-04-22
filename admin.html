@@ -223,7 +223,7 @@ tr:hover td{background:var(--paper2);transition:background .1s}
 .club-table td{padding:9px 10px;border-bottom:1px solid var(--divider);color:var(--ink2);vertical-align:middle}
 .club-table td.center{text-align:center}
 .club-table tr:last-child td{border-bottom:0}
-.club-table tr:hover td{background:rgba(61,46,31,0.015);cursor:pointer}
+.club-table tr:hover td{background:rgba(61,46,31,0.015)}
 .club-name-cell{font-weight:500;color:var(--ink);font-size:13px}
 .club-owner-cell{font-size:11px;color:var(--ink4);margin-top:1px}
 .club-grade-chip{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:5px;font-size:11px;font-weight:700}
@@ -1346,7 +1346,6 @@ function renderDistDetail(d) {
           <div class="clubs-summary" id="dd-clubs-summary"></div>
           <div class="clubs-toolbar">
             <div class="clubs-toolbar-title" id="dd-clubs-count">Clubs</div>
-            <button class="btn bp btn-sm" onclick="openClubModal(null,'${d.slug}')">+ Add Club</button>
           </div>
           <div style="border:1px solid var(--border);border-radius:10px;overflow:hidden">
             <div id="dd-clubs-table"></div>
@@ -2476,7 +2475,7 @@ async function loadAndRenderClubs(slug){
       <div class="met"><div class="met-l">Radio Silence</div><div class="met-v">${silent}</div><div class="met-s">no recent contact</div></div>`;
     if(cntEl) cntEl.textContent = clubs.length + ' club' + (clubs.length===1?'':'s');
     if(!clubs.length){
-      tblEl.innerHTML = '<div style="padding:32px;text-align:center;color:var(--ink4);font-size:13px;font-family:\'EB Garamond\',serif;font-style:italic">No clubs yet — click "+ Add Club" to get started.</div>';
+      tblEl.innerHTML = '<div style="padding:32px;text-align:center;color:var(--ink4);font-size:13px;font-family:\'EB Garamond\',serif;font-style:italic">No clubs logged yet — this distributor can add their own from the tracker.</div>';
       return;
     }
     const now = new Date().getFullYear();
@@ -2499,7 +2498,7 @@ async function loadAndRenderClubs(slug){
         const grade = c.social_grade || '';
         const contact = (c.contact_frequency||'').replace(' ','.');
         const contactLabel = c.contact_frequency || '—';
-        return `<tr onclick="openClubModal('${c.id}','${slug}')">
+        return `<tr>
           <td><div class="club-name-cell">${c.club_name}</div><div class="club-owner-cell">${c.owner_name||''}</div></td>
           <td style="font-size:12px;color:var(--ink3)">${c.owner_name||'—'}</td>
           <td><span class="club-pin-pill">${c.pin_level||'—'}</span></td>
