@@ -185,7 +185,7 @@ Deno.serve(async (req) => {
     // Construct admin URL from the SUPABASE_URL? No — use env or hardcode.
     // For now use a generic placeholder; the email body links to /admin which
     // resolves correctly on whatever domain the user has deployed to.
-    const ADMIN_URL = Deno.env.get('ADMIN_URL') ?? 'https://my-org-tracker-plum.vercel.app/admin'
+    const ADMIN_URL = Deno.env.get('ADMIN_URL') ?? 'https://myorgtracker.com/admin'
     const html = buildHtml(enrollment, ADMIN_URL)
     const subject = `[myOrgTracker] New enrollment request — ${enrollment.first_name} ${enrollment.last_name}`
 
