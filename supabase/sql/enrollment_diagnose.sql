@@ -28,7 +28,7 @@ ORDER BY grantee, privilege_type;
 
 -- 3. Is RLS actually enabled?
 SELECT '=== RLS STATUS ===' AS section;
-SELECT schemaname, tablename, rowsecurity AS rls_enabled, forcerowsecurity AS rls_forced
+SELECT schemaname, tablename, rowsecurity AS rls_enabled
 FROM pg_tables
 WHERE schemaname = 'public' AND tablename = 'enrollment_requests';
 

@@ -105,7 +105,7 @@ function buildHtml(req: any, adminUrl: string): string {
           </table>
           <table cellpadding="0" cellspacing="0" border="0" style="margin-top:22px">
             <tr><td>
-              <a href="${adminUrl}" style="display:inline-block;background:#18181b;color:#fafaf8;text-decoration:none;border-radius:10px;padding:11px 22px;font-size:14px;font-weight:500">Open admin queue →</a>
+              <a href="${adminUrl}" style="display:inline-block;background:#18181b;color:#fafaf8;text-decoration:none;border-radius:10px;padding:11px 22px;font-size:14px;font-weight:500">Review this request →</a>
             </td></tr>
           </table>
           <p style="margin:18px 0 0;font-size:11px;color:#a89f8d;line-height:1.55">
@@ -186,7 +186,11 @@ Deno.serve(async (req) => {
     // For now use a generic placeholder; the email body links to /admin which
     // resolves correctly on whatever domain the user has deployed to.
     const ADMIN_URL = Deno.env.get('ADMIN_URL') ?? 'https://myorgtracker.com/admin'
-    const html = buildHtml(enrollment, ADMIN_URL)
+    // Deep-link directly to the enrollment card. admin.html reads this hash
+    // on load, switches to the Enrollments tab, and scrolls to + highlights
+    // the matching card.
+    const adminDeepLink = `${ADMIN_URL}#enrollment=${enrollment.id}`
+    const html = buildHtml(enrollment, adminDeepLink)
     const subject = `[myOrgTracker] New enrollment request — ${enrollment.first_name} ${enrollment.last_name}`
 
     // Send to each admin (Brevo doesn't BCC well; one send per recipient is simplest)

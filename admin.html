@@ -431,6 +431,14 @@ tr:hover td{background:var(--paper2);transition:background .1s}
 .enroll-empty{padding:48px 20px;text-align:center;color:var(--ink4);font-family:'EB Garamond',serif;font-style:italic;font-size:15px}
 .enroll-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px 18px;margin-bottom:10px;box-shadow:0 1px 2px rgba(61,46,31,0.04);transition:.12s}
 .enroll-card:hover{box-shadow:0 1px 2px rgba(61,46,31,0.04),0 6px 18px rgba(61,46,31,0.06)}
+.enroll-card-highlight{animation:enroll-pulse 2.4s ease-out;border-color:#d4a14d;box-shadow:0 0 0 3px rgba(212,161,77,0.18),0 6px 22px rgba(61,46,31,0.10)}
+@keyframes enroll-pulse{
+  0%   {box-shadow:0 0 0 0 rgba(212,161,77,0.55),0 6px 22px rgba(61,46,31,0.10);transform:scale(1)}
+  18%  {box-shadow:0 0 0 14px rgba(212,161,77,0.0),0 6px 22px rgba(61,46,31,0.10);transform:scale(1.012)}
+  35%  {box-shadow:0 0 0 0 rgba(212,161,77,0.45),0 6px 22px rgba(61,46,31,0.10);transform:scale(1)}
+  60%  {box-shadow:0 0 0 14px rgba(212,161,77,0.0),0 6px 22px rgba(61,46,31,0.10)}
+  100% {box-shadow:0 1px 2px rgba(61,46,31,0.04)}
+}
 .enroll-card-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:10px}
 .enroll-card-name{font-family:'EB Garamond',serif;font-size:18px;font-weight:500;letter-spacing:-0.01em;color:var(--ink);line-height:1.15}
 .enroll-card-meta{font-size:11px;color:var(--ink4);margin-top:3px;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
@@ -1197,6 +1205,9 @@ async function checkAdminSession(){
     initFieldEnhancements();
     await Promise.all([loadAllData('Loading dashboard…'), loadPlatformSettings()]);
     goPage('overview');
+    // Deep-link from notification email: #enrollment=<uuid> opens that
+    // enrollment in the Enrollments tab and briefly highlights its card.
+    handleDeepLink().catch(e => console.warn('Deep-link handler failed:', e));
   }catch(e){
     console.error('Auth check failed:', e);
     document.getElementById('auth-msg').textContent = 'Error — redirecting…';
@@ -2504,6 +2515,57 @@ async function _maybeFinalizeEnrollmentInvite(){
   if (document.getElementById('pg-enrollments')?.classList.contains('on')){
     renderEnrollments().catch(()=>{});
   }
+}
+
+// ══════════════════════════════════════════
+//  DEEP LINK HANDLER
+// ══════════════════════════════════════════
+// Reads window.location.hash for `#enrollment=<uuid>` (set by the notification
+// email's CTA). If found, navigates to the Enrollments tab, switches to the
+// correct status filter (in case the row was already invited/declined/archived),
+// scrolls to the matching card, and pulses it briefly.
+async function handleDeepLink(){
+  const hash = window.location.hash || '';
+  const m = hash.match(/^#enrollment=([0-9a-f-]{8,})$/i);
+  if (!m) return;
+  const enrollId = m[1];
+
+  // Look up the enrollment row to find its current status — so we open the
+  // right filter tab even if it's no longer pending.
+  let row;
+  try {
+    const rows = await sbFetch('/rest/v1/enrollment_requests?select=id,status&id=eq.' + enrollId);
+    row = (rows && rows[0]) || null;
+  } catch (e) {
+    console.warn('Deep-link lookup failed:', e);
+    return;
+  }
+  if (!row) {
+    toast('That enrollment request was not found (it may have been deleted)');
+    // Clear the hash so refreshes don't keep retrying
+    history.replaceState(null, '', window.location.pathname);
+    return;
+  }
+
+  // Switch to Enrollments page, set the right filter, then re-render
+  goPage('enrollments');
+  setEnrollFilter(row.status || 'pending');
+  // setEnrollFilter calls renderEnrollments — wait for the cards to land in DOM.
+  // renderEnrollments is async so we poll a tick or two until our card appears.
+  let tries = 0;
+  const tryHighlight = () => {
+    const card = document.querySelector('.enroll-card[data-id="' + enrollId + '"]');
+    if (card) {
+      card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      card.classList.add('enroll-card-highlight');
+      setTimeout(() => card.classList.remove('enroll-card-highlight'), 2400);
+      // Clean the hash so a subsequent refresh doesn't re-trigger
+      history.replaceState(null, '', window.location.pathname);
+      return;
+    }
+    if (tries++ < 20) setTimeout(tryHighlight, 100); // up to ~2s of waiting
+  };
+  setTimeout(tryHighlight, 150);
 }
 
 // ══════════════════════════════════════════
