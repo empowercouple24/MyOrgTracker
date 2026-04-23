@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#f4ede1">
+<title>myOrgTracker · Request to Join</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%2318181b'/%3E%3Ctext x='16' y='23' text-anchor='middle' font-family='EB Garamond,serif' font-weight='600' font-size='20' fill='%23fbbf24' letter-spacing='-.03em'%3EO%3C/text%3E%3C/svg%3E">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html{background:#f4ede1;-webkit-tap-highlight-color:transparent}
+body{font-family:'Geist',system-ui,sans-serif;background:#f4ede1;color:#18181b;min-height:100vh;min-height:100dvh;line-height:1.5;font-size:15px;-webkit-font-smoothing:antialiased;display:flex;flex-direction:column;padding:0 20px;padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}
+
+.page{flex:1;display:flex;flex-direction:column;max-width:520px;margin:0 auto;width:100%;padding:48px 0 32px}
+
+.wm{font-family:'EB Garamond',serif;line-height:0.95;letter-spacing:-0.015em;color:#18181b;display:inline-flex;align-items:baseline;text-decoration:none}
+.wm .my{font-style:italic;font-weight:400}
+.wm .org{font-weight:600}
+.wm .tracker{font-weight:400;color:#7a7568;margin-left:0.04em}
+.topbar{display:flex;align-items:center;justify-content:center;margin-bottom:36px}
+.topbar .wm{font-size:22px}
+
+.hero{margin-bottom:24px;text-align:center}
+.hero h1{font-family:'EB Garamond',serif;font-size:clamp(28px,7vw,34px);font-weight:400;letter-spacing:-0.01em;line-height:1.12;color:#18181b;margin-bottom:10px}
+.hero h1 em{font-style:italic}
+.hero p{font-size:14.5px;color:#5d5a52;line-height:1.55;max-width:420px;margin:0 auto}
+
+.card{background:#fbf6ec;border-radius:20px;padding:26px 24px;box-shadow:0 1px 2px rgba(61,46,31,0.04),0 10px 28px rgba(61,46,31,0.06);border:1px solid rgba(61,46,31,0.06)}
+
+.fld{margin-bottom:14px}
+.fld label{display:block;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#7a7568;font-weight:500;margin-bottom:6px}
+.fld label .req{color:#b84a5e;margin-left:2px}
+.fld input,.fld select,.fld textarea{width:100%;background:#f4ede1;border:1px solid rgba(61,46,31,0.12);border-radius:10px;padding:11px 13px;font-size:15px;font-family:'Geist',sans-serif;color:#18181b;outline:none;transition:border-color .12s,background .12s;-webkit-appearance:none}
+.fld input:focus,.fld select:focus,.fld textarea:focus{border-color:#18181b;background:#fbf6ec}
+.fld textarea{resize:vertical;min-height:80px;line-height:1.5}
+.fld select{cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8' fill='none'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%237a7568' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;background-size:11px;padding-right:36px}
+
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:440px){.row{grid-template-columns:1fr}}
+
+.submit{width:100%;height:50px;background:#18181b;color:#fafaf8;border:none;border-radius:11px;font-family:'Geist',sans-serif;font-size:15px;font-weight:500;cursor:pointer;letter-spacing:.005em;transition:.12s;margin-top:10px}
+.submit:hover{background:#3d3a34}
+.submit:disabled{opacity:.55;cursor:not-allowed}
+
+.fineprint{margin-top:14px;font-size:11.5px;color:#a89f8d;text-align:center;line-height:1.55}
+.fineprint a{color:#5d5a52;text-decoration:underline}
+
+.success{display:none;text-align:center;padding:24px 8px}
+.success.on{display:block}
+.success .icon{font-size:42px;margin-bottom:14px}
+.success h2{font-family:'EB Garamond',serif;font-size:24px;font-weight:400;letter-spacing:-0.01em;margin-bottom:10px;color:#18181b}
+.success h2 em{font-style:italic}
+.success p{font-size:14px;color:#5d5a52;line-height:1.6;max-width:380px;margin:0 auto 6px}
+
+.err{display:none;background:rgba(184,74,94,.08);border:1px solid rgba(184,74,94,.25);color:#8a3a4a;border-radius:10px;padding:11px 14px;font-size:13px;margin-bottom:14px;line-height:1.5}
+.err.on{display:block}
+
+.footer-link{margin-top:24px;text-align:center;font-size:12.5px;color:#7a7568}
+.footer-link a{color:#18181b;text-decoration:underline;font-weight:500}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="topbar">
+    <a href="/" class="wm"><span class="my">my</span><span class="org">Org</span><span class="tracker">Tracker</span></a>
+  </div>
+
+  <div class="hero">
+    <h1><em>Request to join.</em></h1>
+    <p>Tell us a bit about yourself. We'll review your request and reach out with next steps.</p>
+  </div>
+
+  <div class="card" id="form-card">
+
+    <div class="err" id="err"></div>
+
+    <div class="row">
+      <div class="fld">
+        <label>First Name <span class="req">*</span></label>
+        <input type="text" id="f-first" autocomplete="given-name" maxlength="80">
+      </div>
+      <div class="fld">
+        <label>Last Name <span class="req">*</span></label>
+        <input type="text" id="f-last" autocomplete="family-name" maxlength="80">
+      </div>
+    </div>
+
+    <div class="fld">
+      <label>Email <span class="req">*</span></label>
+      <input type="email" id="f-email" autocomplete="email" maxlength="200" placeholder="you@example.com">
+    </div>
+
+    <div class="fld">
+      <label>Sponsor Name <span style="color:#a89f8d;font-weight:400">(optional)</span></label>
+      <input type="text" id="f-sponsor" maxlength="120" placeholder="Who introduced you to Herbalife?">
+    </div>
+
+    <div class="fld">
+      <label>Where Did You Hear About Us <span class="req">*</span></label>
+      <select id="f-heard">
+        <option value="">— Select —</option>
+        <option>Facebook</option>
+        <option>Instagram</option>
+        <option>TikTok</option>
+        <option>Friend or Referral</option>
+        <option>Event</option>
+        <option>Search engine</option>
+        <option>Other</option>
+      </select>
+    </div>
+
+    <div class="fld">
+      <label>Distributor Status <span class="req">*</span></label>
+      <select id="f-pin">
+        <option value="">— Select —</option>
+        <option value="not_yet">I'm not yet a Herbalife distributor</option>
+        <option value="just_signed">Just signed up — no pin yet</option>
+        <option value="awt">Active World Team (AWT)</option>
+        <option value="get">GET Team</option>
+        <option value="getp">GET Plus 2500</option>
+        <option value="mt">Millionaire Team</option>
+        <option value="mtp">Millionaire Team Plus 7500</option>
+        <option value="pt">Presidents Team</option>
+        <option value="pt15k">Presidents Team 15K</option>
+        <option value="pt20k">Presidents Team 20K</option>
+        <option value="pt30k">Presidents Team 30K</option>
+      </select>
+    </div>
+
+    <div class="fld">
+      <label>Goals or Anything Else You'd Like Us to Know <span style="color:#a89f8d;font-weight:400">(optional)</span></label>
+      <textarea id="f-message" maxlength="1000" placeholder="What are you hoping to achieve? Anything you'd like to share?"></textarea>
+    </div>
+
+    <button type="button" class="submit" id="submit-btn" onclick="submitRequest()">Submit Request</button>
+
+    <div class="fineprint">
+      We'll only use your information to follow up on this request. By submitting, you agree to be contacted by myOrgTracker.
+    </div>
+  </div>
+
+  <div class="card success" id="success-card">
+    <div class="icon">✓</div>
+    <h2><em>Request received.</em></h2>
+    <p>Thank you, <strong id="success-name">there</strong>. We've got your request and will be in touch soon at <strong id="success-email"></strong>.</p>
+    <p style="margin-top:16px;font-size:12.5px;color:#7a7568">In the meantime, keep crushing it.</p>
+  </div>
+
+  <div class="footer-link">
+    Already a member? <a href="/">Sign in</a>
+  </div>
+
+</div>
+
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script>
+const SB_URL = 'https://nclvgzirfzddrbsnzryo.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5jbHZnemlyZnpkZHJic256cnlvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY0Mzc0NTgsImV4cCI6MjA5MjAxMzQ1OH0.y7paxIa6Zd2ubwO8w_YwEHVNiKA5D6L5vHKxz7P6gC0';
+
+function showErr(msg){
+  const e = document.getElementById('err');
+  e.textContent = msg;
+  e.classList.add('on');
+  e.scrollIntoView({behavior:'smooth', block:'center'});
+}
+function clearErr(){
+  const e = document.getElementById('err');
+  e.classList.remove('on');
+  e.textContent = '';
+}
+
+async function submitRequest(){
+  clearErr();
+  const first   = document.getElementById('f-first').value.trim();
+  const last    = document.getElementById('f-last').value.trim();
+  const email   = document.getElementById('f-email').value.trim().toLowerCase();
+  const sponsor = document.getElementById('f-sponsor').value.trim();
+  const heard   = document.getElementById('f-heard').value;
+  const pin     = document.getElementById('f-pin').value;
+  const message = document.getElementById('f-message').value.trim();
+
+  // Client-side validation (server policy enforces too)
+  if(!first)   return showErr('First name is required.');
+  if(!last)    return showErr('Last name is required.');
+  if(!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return showErr('Please enter a valid email address.');
+  if(!heard)   return showErr('Please tell us where you heard about us.');
+  if(!pin)     return showErr('Please select your distributor status.');
+
+  const btn = document.getElementById('submit-btn');
+  btn.disabled = true;
+  btn.textContent = 'Submitting…';
+
+  try {
+    const res = await fetch(SB_URL + '/rest/v1/enrollment_requests', {
+      method: 'POST',
+      headers: {
+        'apikey': SB_KEY,
+        'Authorization': 'Bearer ' + SB_KEY,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=representation'
+      },
+      body: JSON.stringify({
+        first_name:   first,
+        last_name:    last,
+        email:        email,
+        sponsor_name: sponsor || null,
+        heard_from:   heard,
+        pin_status:   pin,
+        message:      message || null,
+        status:       'pending'
+      })
+    });
+
+    if(!res.ok){
+      const txt = await res.text().catch(()=>'');
+      throw new Error('Server returned ' + res.status + (txt ? ': ' + txt.slice(0,140) : ''));
+    }
+
+    // Insert succeeded — grab the row id and fire the admin notification.
+    // We do this fire-and-forget: if it fails the request is still safely
+    // in the DB and admins will see it on their next admin-page load.
+    let requestId = null;
+    try {
+      const rows = await res.json();
+      if (Array.isArray(rows) && rows[0]) requestId = rows[0].id;
+    } catch (e) { /* non-fatal */ }
+    if (requestId) {
+      fetch(SB_URL + '/functions/v1/notify-enrollment', {
+        method: 'POST',
+        headers: {
+          'apikey': SB_KEY,
+          'Authorization': 'Bearer ' + SB_KEY,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ request_id: requestId })
+      }).catch(e => console.warn('notify-enrollment failed (non-fatal):', e));
+    }
+
+    // Success — swap form for confirmation card
+    document.getElementById('success-name').textContent  = first;
+    document.getElementById('success-email').textContent = email;
+    document.getElementById('form-card').style.display   = 'none';
+    document.getElementById('success-card').classList.add('on');
+    window.scrollTo({top:0, behavior:'smooth'});
+  } catch (e) {
+    btn.disabled = false;
+    btn.textContent = 'Submit Request';
+    // Friendly fallback message — full error in console for debugging
+    console.error('Enrollment submit failed:', e);
+    showErr('Something went wrong submitting your request. Please try again, or email us directly.');
+  }
+}
+
+// Submit on Enter in any input (except textarea)
+document.querySelectorAll('input, select').forEach(el => {
+  el.addEventListener('keydown', e => {
+    if(e.key === 'Enter') {
+      e.preventDefault();
+      submitRequest();
+    }
+  });
+});
+</script>
+</body>
+</html>

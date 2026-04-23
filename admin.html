@@ -58,6 +58,7 @@ body{font-family:'Geist',system-ui,sans-serif;background:var(--paper);color:var(
 .tn-logo .org{font-weight:600}
 .tn-logo .tracker{font-weight:400;color:var(--ink3);margin-left:0.04em}
 .tn-badge{font-size:9px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;background:var(--ink);color:var(--paper);padding:3px 8px;border-radius:20px;margin-right:auto;font-family:'DM Mono',monospace}
+.tn-enroll-badge{display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;padding:0 6px;margin-left:6px;background:#b84a5e;color:#fff;border-radius:10px;font-size:10px;font-weight:700;font-family:'Geist',sans-serif;letter-spacing:0;line-height:1;font-variant-numeric:tabular-nums}
 .tn-tab{height:54px;padding:0 13px;display:flex;align-items:center;font-size:13px;font-weight:500;color:var(--ink3);cursor:pointer;border-bottom:2px solid transparent;transition:.12s;white-space:nowrap;user-select:none;font-family:'Geist',sans-serif}
 .tn-tab:hover{color:var(--ink)}
 .tn-tab.on{color:var(--ink);border-bottom-color:var(--ink)}
@@ -419,6 +420,37 @@ tr:hover td{background:var(--paper2);transition:background .1s}
 .gh-check.update{background:#fef3c7;color:#92400e;cursor:pointer;font-weight:600;animation:gh-pulse 2s ease-in-out infinite}
 .gh-check.rate,.gh-check.error{opacity:0;pointer-events:none}
 @keyframes gh-pulse{0%,100%{opacity:1}50%{opacity:.7}}
+
+/* ── Enrollment requests page ── */
+.enroll-filter{display:flex;gap:4px;background:var(--paper2);padding:4px;border-radius:10px;flex-wrap:wrap}
+.enroll-tab{background:transparent;border:none;padding:6px 12px;font-family:'Geist',sans-serif;font-size:12px;font-weight:500;color:var(--ink3);cursor:pointer;border-radius:7px;transition:.12s;display:inline-flex;align-items:center;gap:6px}
+.enroll-tab:hover{color:var(--ink)}
+.enroll-tab.on{background:var(--surface);color:var(--ink);box-shadow:0 1px 2px rgba(61,46,31,0.08);font-weight:600}
+.enroll-tab span{font-size:10px;font-weight:600;background:rgba(61,46,31,0.08);padding:1px 6px;border-radius:8px;font-variant-numeric:tabular-nums;color:var(--ink3)}
+.enroll-tab.on span{background:var(--ink);color:var(--paper)}
+.enroll-empty{padding:48px 20px;text-align:center;color:var(--ink4);font-family:'EB Garamond',serif;font-style:italic;font-size:15px}
+.enroll-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px 18px;margin-bottom:10px;box-shadow:0 1px 2px rgba(61,46,31,0.04);transition:.12s}
+.enroll-card:hover{box-shadow:0 1px 2px rgba(61,46,31,0.04),0 6px 18px rgba(61,46,31,0.06)}
+.enroll-card-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:10px}
+.enroll-card-name{font-family:'EB Garamond',serif;font-size:18px;font-weight:500;letter-spacing:-0.01em;color:var(--ink);line-height:1.15}
+.enroll-card-meta{font-size:11px;color:var(--ink4);margin-top:3px;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.enroll-card-when{font-family:'DM Mono',monospace;font-size:10px;color:var(--ink4);letter-spacing:0.04em;white-space:nowrap;flex-shrink:0}
+.enroll-card-grid{display:grid;grid-template-columns:130px 1fr;gap:6px 14px;font-size:13px;color:var(--ink2);margin-bottom:12px}
+.enroll-card-grid dt{color:var(--ink4);font-size:11px;letter-spacing:.06em;text-transform:uppercase;font-weight:500;padding-top:2px}
+.enroll-card-grid dd{margin:0;color:var(--ink2);word-break:break-word}
+.enroll-card-grid dd a{color:var(--ink);text-decoration:underline}
+.enroll-msg{background:var(--paper2);border-radius:8px;padding:10px 12px;font-size:13px;color:var(--ink2);line-height:1.5;white-space:pre-wrap;margin:6px 0 12px}
+.enroll-actions{display:flex;gap:8px;flex-wrap:wrap;padding-top:12px;border-top:1px solid var(--border)}
+.enroll-status-pill{display:inline-block;font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;padding:3px 8px;border-radius:20px;font-family:'DM Mono',monospace;flex-shrink:0}
+.enroll-status-pill.pending{background:#fef3c7;color:#92400e}
+.enroll-status-pill.invited{background:rgba(45,107,66,.12);color:#1f6b48}
+.enroll-status-pill.declined{background:rgba(184,74,94,.12);color:#8a3a4a}
+.enroll-status-pill.archived{background:rgba(61,46,31,0.08);color:var(--ink3)}
+@media(max-width:760px){
+  .enroll-card-grid{grid-template-columns:1fr;gap:2px 0;margin-bottom:10px}
+  .enroll-card-grid dt{margin-top:8px}
+  .enroll-card-head{flex-direction:column;align-items:flex-start;gap:6px}
+}
 </style>
 </head>
 <body>
@@ -444,6 +476,7 @@ tr:hover td{background:var(--paper2);transition:background .1s}
   <div class="tn-badge">ADMIN</div>
   <div class="tn-tab on" onclick="goPage('overview')">Overview</div>
   <div class="tn-tab" onclick="goPage('distributors')">Distributors</div>
+  <div class="tn-tab" onclick="goPage('enrollments')">Enrollments <span id="tn-enroll-badge" class="tn-enroll-badge" style="display:none">0</span></div>
   <div class="tn-tab" onclick="goPage('settings')">Settings</div>
   <div class="tn-right">
     <button class="btn bo btn-sm" onclick="loadAllData('Refreshing…').then(()=>{renderOverview();toast('✓ Refreshed')})" title="Refresh data" style="padding:0 10px;height:28px;font-size:11px">↻ Refresh</button>
@@ -490,6 +523,23 @@ tr:hover td{background:var(--paper2);transition:background .1s}
 <div id="pg-dist-detail" class="pg">
   <button class="btn bo" style="margin-bottom:16px" onclick="goPage('distributors')">← Back to Distributors</button>
   <div id="dd-content"></div>
+</div>
+
+<!-- ─── ENROLLMENT REQUESTS ────────────────── -->
+<div id="pg-enrollments" class="pg">
+  <div class="ph">
+    <div>
+      <div class="ph-title">Enrollment Requests</div>
+      <div class="ph-sub">People who submitted the public /join form</div>
+    </div>
+    <div class="enroll-filter">
+      <button class="enroll-tab on" data-status="pending"  onclick="setEnrollFilter('pending')">Pending <span id="enroll-count-pending">0</span></button>
+      <button class="enroll-tab"    data-status="invited"  onclick="setEnrollFilter('invited')">Invited <span id="enroll-count-invited">0</span></button>
+      <button class="enroll-tab"    data-status="declined" onclick="setEnrollFilter('declined')">Declined <span id="enroll-count-declined">0</span></button>
+      <button class="enroll-tab"    data-status="archived" onclick="setEnrollFilter('archived')">Archived <span id="enroll-count-archived">0</span></button>
+    </div>
+  </div>
+  <div id="enroll-list"></div>
 </div>
 
 <!-- ─── SETTINGS ──────────────────────────── -->
@@ -1078,6 +1128,8 @@ async function loadAllData(msg='Loading…') {
     state.adminIds = adminIds;
     state.distributors = (dists || []).map(row => distFromRow(row, entries || [], adminIds));
     hideLoading();
+    // Fire-and-forget: refresh the pending-enrollment badge in the topnav
+    refreshEnrollmentBadge().catch(e => console.warn('badge refresh failed:', e));
   } catch(e) {
     hideLoading();
     toast('Failed to load data: ' + e.message);
@@ -1175,10 +1227,11 @@ function goPage(name) {
   document.querySelectorAll('.pg').forEach(p=>p.classList.remove('on'));
   document.querySelectorAll('.tn-tab').forEach(t=>t.classList.remove('on'));
   document.getElementById('pg-'+name).classList.add('on');
-  const tabMap = {overview:0,distributors:1,settings:2};
+  const tabMap = {overview:0,distributors:1,enrollments:2,settings:3};
   if (tabMap[name]!=null) document.querySelectorAll('.tn-tab')[tabMap[name]].classList.add('on');
   if (name==='overview') renderOverview();
   if (name==='distributors') renderDistGrid();
+  if (name==='enrollments') renderEnrollments();
   if (name==='settings') renderSettings();
 }
 
@@ -1797,6 +1850,9 @@ function openInviteModal(){
 }
 function closeInviteModal(){
   closeModal('modal-create');
+  // If this invite came from converting an enrollment request, mark that row 'invited'.
+  // Fire-and-forget — failure to update the enrollment row shouldn't block the UI.
+  _maybeFinalizeEnrollmentInvite().catch(()=>{});
   if(inviteSlug){loadAllData('Refreshing…').then(()=>{renderDistGrid();renderOverview();});}
 }
 function autoInviteSlug(){
@@ -2203,6 +2259,251 @@ async function togglePromoteAdmin(slug) {
 function copyUrl(slug) {
   const url = window.location.origin + '/tracker?user=' + slug;
   navigator.clipboard.writeText(url).then(()=>toast('URL copied to clipboard'));
+}
+
+// ══════════════════════════════════════════
+//  ENROLLMENT REQUESTS
+// ══════════════════════════════════════════
+// Public visitors submit a request via /join. This block manages the admin
+// queue: list/filter, convert to invite, mark declined, archive.
+//
+// State:
+//   enrollState.filter — current visible status tab
+//   enrollState.rows   — last-fetched list for the current filter
+//   enrollState.counts — { pending, invited, declined, archived } counts
+let enrollState = { filter: 'pending', rows: [], counts: {} };
+
+const ENROLL_PIN_LABELS = {
+  not_yet:     "Not yet a Herbalife distributor",
+  just_signed: "Just signed up — no pin yet",
+  awt:         "Active World Team (AWT)",
+  get:         "GET Team",
+  getp:        "GET Plus 2500",
+  mt:          "Millionaire Team",
+  mtp:         "Millionaire Team Plus 7500",
+  pt:          "Presidents Team",
+  pt15k:       "Presidents Team 15K",
+  pt20k:       "Presidents Team 20K",
+  pt30k:       "Presidents Team 30K",
+};
+// Map enrollment pin_status → admin GOAL_OPTIONS id for prefilling the invite goal tier.
+// "not_yet" / "just_signed" map to a sensible starter (mtp = Millionaire Team Plus default).
+const ENROLL_PIN_TO_GOAL = {
+  not_yet:     'mtp',
+  just_signed: 'mtp',
+  awt:         'awt',
+  get:         'get',
+  getp:        'getp',
+  mt:          'mt',
+  mtp:         'mtp',
+  pt:          'pt',
+  pt15k:       'pt15k',
+  pt20k:       'pt20k',
+  pt30k:       'pt30k',
+};
+
+async function refreshEnrollmentBadge(){
+  // Just the pending count; updates the red dot in the topnav.
+  try {
+    const rows = await sbFetch('/rest/v1/enrollment_requests?select=id&status=eq.pending');
+    const n = (rows || []).length;
+    const badge = document.getElementById('tn-enroll-badge');
+    if (!badge) return;
+    if (n > 0) {
+      badge.textContent = n > 99 ? '99+' : String(n);
+      badge.style.display = 'inline-flex';
+    } else {
+      badge.style.display = 'none';
+    }
+  } catch (e) {
+    // Likely the table doesn't exist yet (RLS migration not run).
+    // Hide the badge silently — nothing to nag the admin about.
+    const badge = document.getElementById('tn-enroll-badge');
+    if (badge) badge.style.display = 'none';
+  }
+}
+
+async function refreshEnrollmentCounts(){
+  // Per-tab counts shown next to each filter pill.
+  try {
+    const rows = await sbFetch('/rest/v1/enrollment_requests?select=status');
+    const counts = { pending:0, invited:0, declined:0, archived:0 };
+    (rows || []).forEach(r => { if (counts[r.status] != null) counts[r.status]++; });
+    enrollState.counts = counts;
+    ['pending','invited','declined','archived'].forEach(s => {
+      const el = document.getElementById('enroll-count-'+s);
+      if (el) el.textContent = counts[s] || 0;
+    });
+  } catch (e) {
+    console.warn('refreshEnrollmentCounts failed:', e);
+  }
+}
+
+function setEnrollFilter(status){
+  enrollState.filter = status;
+  document.querySelectorAll('.enroll-tab').forEach(t => {
+    t.classList.toggle('on', t.dataset.status === status);
+  });
+  renderEnrollments();
+}
+
+async function renderEnrollments(){
+  const list = document.getElementById('enroll-list');
+  if (!list) return;
+  list.innerHTML = '<div class="enroll-empty">Loading…</div>';
+  await refreshEnrollmentCounts();
+  let rows;
+  try {
+    rows = await sbFetch(
+      '/rest/v1/enrollment_requests?select=*&status=eq.' +
+      encodeURIComponent(enrollState.filter) +
+      '&order=created_at.desc'
+    );
+  } catch (e) {
+    // Friendly hint if the table isn't there yet
+    const isMissing = /relation .* does not exist|404/i.test(e.message);
+    list.innerHTML = `<div class="enroll-empty" style="color:var(--red)">
+      ${isMissing
+        ? 'enrollment_requests table not found. Run <code>supabase/sql/enrollment_requests.sql</code> in the Supabase SQL editor first.'
+        : 'Error loading: ' + e.message}
+    </div>`;
+    return;
+  }
+  enrollState.rows = rows || [];
+  if (!enrollState.rows.length){
+    const labels = {
+      pending:  'No pending requests right now.',
+      invited:  'No requests have been converted to invites yet.',
+      declined: 'No declined requests.',
+      archived: 'No archived requests.',
+    };
+    list.innerHTML = `<div class="enroll-empty">${labels[enrollState.filter] || 'No requests.'}</div>`;
+    return;
+  }
+  list.innerHTML = enrollState.rows.map(renderEnrollCard).join('');
+}
+
+function renderEnrollCard(r){
+  const pinLabel  = ENROLL_PIN_LABELS[r.pin_status] || r.pin_status;
+  const sponsor   = r.sponsor_name ? escapeHtmlAdmin(r.sponsor_name) : '<span style="color:var(--ink4)">—</span>';
+  const message   = r.message ? `<div class="enroll-msg">${escapeHtmlAdmin(r.message)}</div>` : '';
+  const when      = new Date(r.created_at);
+  const whenStr   = when.toLocaleString('en-US', { dateStyle:'medium', timeStyle:'short' });
+  const status    = r.status || 'pending';
+  // Action buttons differ by status
+  let actionsHtml = '';
+  if (status === 'pending'){
+    actionsHtml = `
+      <button class="btn bp btn-sm" onclick="convertEnrollToInvite('${r.id}')">✉ Convert to invite</button>
+      <button class="btn bo btn-sm" onclick="markEnrollStatus('${r.id}','declined')">Decline</button>
+      <button class="btn bo btn-sm" onclick="markEnrollStatus('${r.id}','archived')" style="margin-left:auto">Archive</button>`;
+  } else if (status === 'invited'){
+    actionsHtml = `
+      <span style="font-size:11px;color:var(--ink4);align-self:center">Invite was sent — manage the distributor on the Distributors tab.</span>
+      <button class="btn bo btn-sm" onclick="markEnrollStatus('${r.id}','archived')" style="margin-left:auto">Archive</button>`;
+  } else if (status === 'declined'){
+    actionsHtml = `
+      <button class="btn bp btn-sm" onclick="convertEnrollToInvite('${r.id}')">✉ Reconsider — invite</button>
+      <button class="btn bo btn-sm" onclick="markEnrollStatus('${r.id}','archived')" style="margin-left:auto">Archive</button>`;
+  } else if (status === 'archived'){
+    actionsHtml = `
+      <button class="btn bo btn-sm" onclick="markEnrollStatus('${r.id}','pending')">Restore to pending</button>`;
+  }
+  return `
+    <div class="enroll-card" data-id="${r.id}">
+      <div class="enroll-card-head">
+        <div>
+          <div class="enroll-card-name">${escapeHtmlAdmin(r.first_name)} ${escapeHtmlAdmin(r.last_name)}</div>
+          <div class="enroll-card-meta">
+            <span class="enroll-status-pill ${status}">${status}</span>
+            <a href="mailto:${encodeURIComponent(r.email)}" style="color:var(--ink2)">${escapeHtmlAdmin(r.email)}</a>
+          </div>
+        </div>
+        <div class="enroll-card-when">${whenStr}</div>
+      </div>
+      <dl class="enroll-card-grid">
+        <dt>Sponsor</dt><dd>${sponsor}</dd>
+        <dt>Heard from</dt><dd>${escapeHtmlAdmin(r.heard_from)}</dd>
+        <dt>Distributor status</dt><dd>${escapeHtmlAdmin(pinLabel)}</dd>
+      </dl>
+      ${message}
+      <div class="enroll-actions">${actionsHtml}</div>
+    </div>`;
+}
+
+function escapeHtmlAdmin(s){
+  return String(s == null ? '' : s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+async function markEnrollStatus(id, newStatus){
+  try {
+    await sbFetch('/rest/v1/enrollment_requests?id=eq.' + id, {
+      method: 'PATCH',
+      headers: { ...SB_H(), 'Prefer': 'return=minimal' },
+      body: JSON.stringify({
+        status:      newStatus,
+        reviewed_at: new Date().toISOString(),
+        reviewed_by: currentUser?.id || null,
+      })
+    });
+    toast('Marked ' + newStatus);
+    await renderEnrollments();
+    await refreshEnrollmentBadge();
+  } catch (e) {
+    toast('Update failed: ' + e.message);
+  }
+}
+
+function convertEnrollToInvite(id){
+  // Prefill the existing Invite Distributor modal with this row's data, then
+  // hand off to the user — they confirm + click Send Invite as usual. We mark
+  // the row 'invited' once they actually trigger the send (handled below).
+  const row = enrollState.rows.find(x => x.id === id);
+  if (!row){ toast('Request not found in current list'); return; }
+  openInviteModal();
+  document.getElementById('inv-first').value = row.first_name || '';
+  document.getElementById('inv-last').value  = row.last_name  || '';
+  document.getElementById('inv-email').value = row.email      || '';
+  if (typeof autoInviteSlug === 'function') autoInviteSlug();
+  // Pick a goal tier matching their declared pin status (defaults to mtp)
+  const goalId = ENROLL_PIN_TO_GOAL[row.pin_status] || 'mtp';
+  if (typeof renderInviteTierList === 'function') renderInviteTierList(goalId);
+  // Tag the modal with the enrollment id so we can mark it invited on success
+  const modal = document.getElementById('modal-create');
+  if (modal) modal.dataset.fromEnrollment = id;
+}
+
+// Hook into the existing invite-success path so converting marks the row 'invited'.
+// Ran on every modal close — only fires the status update if the modal carried
+// an enrollment id AND the invite actually went through (inviteSlug is set).
+async function _maybeFinalizeEnrollmentInvite(){
+  const modal = document.getElementById('modal-create');
+  if (!modal) return;
+  const enrollId = modal.dataset.fromEnrollment;
+  if (!enrollId) return;
+  // Only mark as invited if sendInvite() ran and set inviteSlug (which is
+  // cleared on cancel). Same signal openInviteModal/closeInviteModal already use.
+  if (typeof inviteSlug !== 'undefined' && inviteSlug){
+    try {
+      await sbFetch('/rest/v1/enrollment_requests?id=eq.' + enrollId, {
+        method: 'PATCH',
+        headers: { ...SB_H(), 'Prefer': 'return=minimal' },
+        body: JSON.stringify({
+          status:      'invited',
+          reviewed_at: new Date().toISOString(),
+          reviewed_by: currentUser?.id || null,
+        })
+      });
+    } catch (e) { console.warn('Could not mark enrollment as invited:', e); }
+  }
+  delete modal.dataset.fromEnrollment;
+  // Refresh badge + enrollments page if currently visible
+  refreshEnrollmentBadge().catch(()=>{});
+  if (document.getElementById('pg-enrollments')?.classList.contains('on')){
+    renderEnrollments().catch(()=>{});
+  }
 }
 
 // ══════════════════════════════════════════
