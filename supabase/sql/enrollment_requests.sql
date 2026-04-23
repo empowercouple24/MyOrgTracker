@@ -41,16 +41,22 @@ CREATE INDEX IF NOT EXISTS enrollment_requests_status_created_idx
 -- Enable RLS
 ALTER TABLE public.enrollment_requests ENABLE ROW LEVEL SECURITY;
 
+-- Grant table-level access. RLS still gates what each role can do via policies
+-- below, but PostgREST needs these table-level grants before it'll even attempt
+-- the operation (otherwise: 401 Unauthorized before the policy is checked).
+GRANT INSERT ON public.enrollment_requests TO anon, authenticated;
+GRANT SELECT, UPDATE, DELETE ON public.enrollment_requests TO authenticated;
+GRANT USAGE ON SCHEMA public TO anon, authenticated;
+
 -- Drop prior policies (safe re-run)
 DROP POLICY IF EXISTS "Anyone can submit enrollment request" ON public.enrollment_requests;
 DROP POLICY IF EXISTS "Admins read all enrollment requests" ON public.enrollment_requests;
 DROP POLICY IF EXISTS "Admins update enrollment requests"   ON public.enrollment_requests;
 DROP POLICY IF EXISTS "Admins delete enrollment requests"   ON public.enrollment_requests;
 
--- 1. Public INSERT — anyone, including unauthenticated visitors, can submit
---    Note: TO public covers both 'anon' and 'authenticated' roles.
+-- 1. Public INSERT — anon visitors AND authenticated users can submit
 CREATE POLICY "Anyone can submit enrollment request" ON public.enrollment_requests
-  FOR INSERT TO public
+  FOR INSERT TO anon, authenticated
   WITH CHECK (
     -- Force status to 'pending' on submission so users can't pre-mark themselves invited
     status = 'pending'
