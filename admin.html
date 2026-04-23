@@ -59,10 +59,20 @@ body{font-family:'Geist',system-ui,sans-serif;background:var(--paper);color:var(
 .tn-logo .tracker{font-weight:400;color:var(--ink3);margin-left:0.04em}
 .tn-badge{font-size:9px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;background:var(--ink);color:var(--paper);padding:3px 8px;border-radius:20px;margin-right:auto;font-family:'DM Mono',monospace}
 .tn-enroll-badge{display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;padding:0 6px;margin-left:6px;background:#b84a5e;color:#fff;border-radius:10px;font-size:10px;font-weight:700;font-family:'Geist',sans-serif;letter-spacing:0;line-height:1;font-variant-numeric:tabular-nums}
+
+/* ── Kebab menu (mobile only — hidden on desktop, revealed at <=480px) ── */
+.tn-kebab{display:none;background:transparent;border:1px solid var(--border2);border-radius:8px;cursor:pointer;width:36px;height:36px;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:0;flex-shrink:0}
+.tn-kebab:hover,.tn-kebab[aria-expanded="true"]{background:var(--paper3);border-color:var(--ink3)}
+.tn-kebab-dot{width:3px;height:3px;border-radius:50%;background:var(--ink2);display:block}
+.tn-menu{display:none;position:absolute;top:calc(100% + 4px);right:0;background:var(--surface);border:1px solid var(--border);border-radius:10px;box-shadow:0 8px 24px rgba(61,46,31,0.12);min-width:160px;padding:4px;z-index:200;flex-direction:column}
+.tn-menu.on{display:flex}
+.tn-menu-item{background:transparent;border:none;padding:10px 14px;font-family:'Geist',sans-serif;font-size:13px;color:var(--ink);text-align:left;cursor:pointer;border-radius:6px;text-decoration:none;display:block;transition:.12s}
+.tn-menu-item:hover{background:var(--paper3)}
+.tn-menu-logout{color:var(--ink2);border-top:1px solid var(--border);margin-top:4px;padding-top:12px;border-radius:0 0 6px 6px}
 .tn-tab{height:54px;padding:0 13px;display:flex;align-items:center;font-size:13px;font-weight:500;color:var(--ink3);cursor:pointer;border-bottom:2px solid transparent;transition:.12s;white-space:nowrap;user-select:none;font-family:'Geist',sans-serif}
 .tn-tab:hover{color:var(--ink)}
 .tn-tab.on{color:var(--ink);border-bottom-color:var(--ink)}
-.tn-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.tn-right{margin-left:auto;display:flex;align-items:center;gap:10px;position:relative}
 .tn-user{font-size:11px;color:var(--ink3);font-family:'DM Mono',monospace;letter-spacing:0.06em}
 .tn-logout{font-size:12px;color:var(--ink3);cursor:pointer;padding:5px 10px;border:1px solid var(--border2);border-radius:7px;transition:.12s;font-weight:500;background:transparent}
 .tn-logout:hover{color:var(--ink);border-color:var(--ink);background:var(--paper3)}
@@ -351,8 +361,10 @@ tr:hover td{background:var(--paper2);transition:background .1s}
   .tn-tab{height:38px;padding:0 10px;font-size:12px}
   .tn-right{margin-left:auto;gap:6px;flex-wrap:wrap;justify-content:flex-end}
   .tn-user{display:none} /* hide name to save space */
-  .tn-logout{padding:4px 8px;font-size:11px}
-  .tn-mytrack{padding:4px 8px;font-size:11px}
+  /* Tighter row-2 action buttons */
+  .tn-action{padding:3px 8px !important;font-size:11px !important;height:26px !important;line-height:1}
+  .tn-logout.tn-action{padding:3px 8px;font-size:11px}
+  .tn-mytrack.tn-action{padding:3px 8px;font-size:11px}
 
   /* ── Page chrome ── */
   .pg{padding:16px 14px}
@@ -388,6 +400,13 @@ tr:hover td{background:var(--paper2);transition:background .1s}
 
   /* ── Tabs row inside detail ── */
   .dd-tab{padding:10px 14px;font-size:12px}
+}
+
+@media(max-width:480px){
+  /* ── Tiny phones: collapse row-2 actions into a kebab menu ── */
+  .tn-action{display:none !important}
+  .tn-kebab{display:inline-flex}
+  .tn-right{gap:4px}
 }
 
 @media(max-width:420px){
@@ -511,11 +530,20 @@ tr:hover td{background:var(--paper2);transition:background .1s}
   <div class="tn-tab" onclick="goPage('enrollments')">Enrollments <span id="tn-enroll-badge" class="tn-enroll-badge" style="display:none">0</span></div>
   <div class="tn-tab" onclick="goPage('settings')">Settings</div>
   <div class="tn-right">
-    <button class="btn bo btn-sm" onclick="loadAllData('Refreshing…').then(()=>{renderOverview();toast('✓ Refreshed')})" title="Refresh data" style="padding:0 10px;height:28px;font-size:11px">↻ Refresh</button>
-    <a id="tn-mytracker" href="/tracker" class="tn-mytrack" style="display:none">My Tracker →</a>
+    <button class="btn bo btn-sm tn-action" onclick="loadAllData('Refreshing…').then(()=>{renderOverview();toast('✓ Refreshed')})" title="Refresh data" style="padding:0 10px;height:28px;font-size:11px">↻ Refresh</button>
+    <a id="tn-mytracker" href="/tracker" class="tn-mytrack tn-action" style="display:none">My Tracker →</a>
     <div id="gh-check" class="gh-check checking" style="display:none">···</div>
     <span class="tn-user" id="admin-user-label"></span>
-    <span class="tn-logout" onclick="adminLogout()">Log out</span>
+    <span class="tn-logout tn-action" onclick="adminLogout()">Log out</span>
+    <!-- Kebab menu — only shown on tiny phones (<=480px); duplicates the actions above -->
+    <button type="button" class="tn-kebab" id="tn-kebab" onclick="toggleTopnavMenu(event)" aria-label="Menu" aria-expanded="false">
+      <span class="tn-kebab-dot"></span><span class="tn-kebab-dot"></span><span class="tn-kebab-dot"></span>
+    </button>
+    <div class="tn-menu" id="tn-menu" role="menu">
+      <button type="button" class="tn-menu-item" onclick="closeTopnavMenu();loadAllData('Refreshing…').then(()=>{renderOverview();toast('✓ Refreshed')})">↻ Refresh</button>
+      <a id="tn-menu-mytracker" href="/tracker" class="tn-menu-item" style="display:none" onclick="closeTopnavMenu()">My Tracker →</a>
+      <button type="button" class="tn-menu-item tn-menu-logout" onclick="closeTopnavMenu();adminLogout()">Log out</button>
+    </div>
   </div>
 </nav>
 
@@ -1225,6 +1253,8 @@ async function checkAdminSession(){
     if(currentUser.slug){
       const mt = document.getElementById('tn-mytracker');
       if(mt) mt.style.display = 'inline-flex';
+      const mtMenu = document.getElementById('tn-menu-mytracker');
+      if(mtMenu) mtMenu.style.display = 'block';
     }
     initFieldEnhancements();
     await Promise.all([loadAllData('Loading dashboard…'), loadPlatformSettings()]);
@@ -1261,6 +1291,31 @@ async function adminLogout(){
   try{if(sbClient)await sbClient.auth.signOut();}catch(e){}
   window.location.href = '/';
 }
+
+// ══════════════════════════════════════════
+//  TOPNAV KEBAB MENU (mobile only)
+// ══════════════════════════════════════════
+function toggleTopnavMenu(ev){
+  if (ev) ev.stopPropagation();
+  const menu = document.getElementById('tn-menu');
+  const btn = document.getElementById('tn-kebab');
+  if (!menu || !btn) return;
+  const open = menu.classList.toggle('on');
+  btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+}
+function closeTopnavMenu(){
+  const menu = document.getElementById('tn-menu');
+  const btn = document.getElementById('tn-kebab');
+  if (menu) menu.classList.remove('on');
+  if (btn) btn.setAttribute('aria-expanded', 'false');
+}
+// Dismiss when clicking outside the menu
+document.addEventListener('click', (e) => {
+  const menu = document.getElementById('tn-menu');
+  if (!menu || !menu.classList.contains('on')) return;
+  if (e.target.closest('#tn-menu') || e.target.closest('#tn-kebab')) return;
+  closeTopnavMenu();
+});
 
 // doAdminLogin kept as no-op for backward compat (PIN screen is gone)
 function doAdminLogin(){}
