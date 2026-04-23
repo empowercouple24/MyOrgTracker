@@ -270,7 +270,7 @@ async function handleLogin(email,password){
   }
   if(profile.role==='admin'){
     showOk('Signing you in…');
-    window.location.href = '/admin';
+    window.location.href = '/admin' + pendingAdminHash();
     return;
   }
   // distributor path
@@ -282,6 +282,20 @@ async function handleLogin(email,password){
   }
   showOk('Signing you in…');
   window.location.href = '/tracker';
+}
+
+// If admin.html bounced an unauthed user back to '/' and stashed a deep-link
+// hash (e.g. '#enrollment=<uuid>' from a notification email), pull it back so
+// the post-login redirect lands the admin directly on that enrollment.
+// Returns either a leading '#...' fragment or '' if nothing pending.
+function pendingAdminHash(){
+  try {
+    const h = sessionStorage.getItem('adminPendingHash') || '';
+    if (h) sessionStorage.removeItem('adminPendingHash');
+    return h;
+  } catch (e) {
+    return '';
+  }
 }
 
 async function handleForgot(email){
@@ -304,7 +318,7 @@ async function handleForgot(email){
   if(!session) return;
   const { data: profile } = await sb.from('profiles').select('role, slug').eq('id', session.user.id).single();
   if(!profile) return;
-  if(profile.role==='admin'){ window.location.href='/admin'; return }
+  if(profile.role==='admin'){ window.location.href='/admin' + pendingAdminHash(); return }
   if(profile.slug){ window.location.href='/tracker'; return }
   // distributor with no slug — stay on landing page with a message
   showErr('Your distributor profile isn\'t fully set up. Please contact your admin.');

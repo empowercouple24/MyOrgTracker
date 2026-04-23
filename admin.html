@@ -1178,7 +1178,7 @@ async function checkAdminSession(){
     const sb = initSupabase();
     const { data:{ session } } = await sb.auth.getSession();
     if(!session){
-      window.location.href = '/';
+      _redirectToSignIn();
       return;
     }
     const { data: profile, error } = await sb
@@ -1188,7 +1188,7 @@ async function checkAdminSession(){
       .single();
     if(error || !profile || profile.role !== 'admin'){
       await sb.auth.signOut();
-      window.location.href = '/';
+      _redirectToSignIn();
       return;
     }
     // Admin verified — store JWT for RLS-authenticated requests
@@ -1211,8 +1211,19 @@ async function checkAdminSession(){
   }catch(e){
     console.error('Auth check failed:', e);
     document.getElementById('auth-msg').textContent = 'Error — redirecting…';
-    setTimeout(()=>window.location.href='/',1500);
+    setTimeout(()=>_redirectToSignIn(),1500);
   }
+}
+
+// Helper: stash any deep-link hash before bouncing to the sign-in page so
+// index.html can restore it after a successful login. We store it in
+// sessionStorage (cleared when the tab closes) under a fixed key.
+function _redirectToSignIn(){
+  try {
+    const hash = window.location.hash || '';
+    if (hash) sessionStorage.setItem('adminPendingHash', hash);
+  } catch (e) { /* private mode etc — non-fatal */ }
+  window.location.href = '/';
 }
 
 // Keep adminToken fresh on token refresh
