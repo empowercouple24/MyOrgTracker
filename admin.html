@@ -1140,6 +1140,8 @@ function distFromRow(row, entries, adminIds) {
     status: row.status || (row.is_active ? 'active' : 'pending'),
     authUserId: row.auth_user_id || null,
     createdAt: row.created_at,
+    timezone: row.timezone || null,
+    reminderOptOut: !!row.reminder_opt_out,
     influence_factor: row.influence_factor || 1.32,
     records: (entries || []).filter(e => e.user_slug === row.slug).map(e => ({
       year: e.year_num, month: e.month_num, day: e.day_num,
@@ -1654,6 +1656,13 @@ function renderDistDetail(d) {
           <div>
             <div class="dd-account-field-l">Total Records</div>
             <div class="dd-account-field-v">${(d.records||[]).length.toLocaleString()} entries · ${allMonths.length} months</div>
+          </div>
+          <div>
+            <div class="dd-account-field-l">Daily Reminder Email</div>
+            <div class="dd-account-field-v">${d.reminderOptOut?'Off':'On'} <span style="font-size:11px;color:var(--ink4);margin-left:6px">at 11:00 AM ${d.timezone||'(timezone not set)'}</span></div>
+            <div style="margin-top:6px">
+              <button class="dd-btn" onclick="toggleDistReminder('${d.slug}')" style="font-size:12px;padding:5px 11px">${d.reminderOptOut?'Turn on':'Turn off'}</button>
+            </div>
           </div>
         </div>
       </div>
@@ -2331,6 +2340,22 @@ async function toggleActive(slug) {
     await loadAllData('Refreshing…');
     renderDistGrid();
     toast(d.name + ' ' + (newActive ? 'activated' : 'deactivated'));
+  } catch(e) { toast('Error: ' + e.message); }
+}
+
+async function toggleDistReminder(slug) {
+  const d = state.distributors.find(x=>x.slug===slug);
+  if (!d) return;
+  const newOptOut = !d.reminderOptOut;
+  try {
+    await sbFetch('/rest/v1/distributors?id=eq.'+d.id, {
+      method:'PATCH',
+      headers:{...SB_H(),'Prefer':'return=minimal'},
+      body: JSON.stringify({reminder_opt_out: newOptOut})
+    });
+    d.reminderOptOut = newOptOut;
+    renderDistDetail(d);
+    toast(d.name + ': daily reminder ' + (newOptOut ? 'turned off' : 'turned on'));
   } catch(e) { toast('Error: ' + e.message); }
 }
 

@@ -1040,6 +1040,20 @@ html,body{background:var(--bg,#fafaf8);background-attachment:fixed}
       <div class="goal-math-card" id="goal-math-card"></div>
     </div>
 
+    <div class="card" style="margin-bottom:16px" id="reminders-card">
+      <div class="ct">Reminders</div>
+      <p style="font-size:13px;color:var(--text2);margin-bottom:14px;line-height:1.6">Get a daily email at 11:00 AM local time if yesterday&rsquo;s number hasn&rsquo;t been logged yet. Keeps you from breaking your streak.</p>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:var(--surface2,rgba(61,46,31,0.03));border-radius:10px;border:1px solid var(--border)">
+        <div>
+          <div style="font-size:14px;font-weight:500;color:var(--text1)">Daily check-in email</div>
+          <div style="font-size:12px;color:var(--text3);margin-top:2px" id="rem-tz-display">Detecting your timezone&hellip;</div>
+        </div>
+        <button id="rem-toggle" onclick="toggleReminderOptOut()" role="switch" aria-checked="true" aria-label="Daily check-in email" style="position:relative;width:46px;height:26px;border-radius:13px;border:none;background:#18181b;cursor:pointer;transition:background .18s ease;padding:0;flex-shrink:0">
+          <span id="rem-knob" style="position:absolute;top:3px;left:23px;width:20px;height:20px;border-radius:50%;background:#fafaf8;transition:left .18s ease;box-shadow:0 1px 2px rgba(0,0,0,0.15)"></span>
+        </button>
+      </div>
+    </div>
+
     <div class="card appearance">
       <div class="app-head">
         <div class="ct" style="margin:0">Appearance</div>
@@ -1430,7 +1444,8 @@ async function fetchDistributorFromDB(slug){
     // Map Supabase row to internal format
     if(!data[0])return null;
     const d=data[0];
-    return {id:d.id,name:d.name,slug:d.slug,pin:d.pin,pinGoal:d.pin_goal,requirePin:d.require_pin,active:d.is_active};
+    return {id:d.id,name:d.name,slug:d.slug,pin:d.pin,pinGoal:d.pin_goal,requirePin:d.require_pin,active:d.is_active,
+      timezone:d.timezone||null,reminderOptOut:!!d.reminder_opt_out,firstName:d.first_name||'',email:d.email||''};
   }catch{return null;}
 }
 
@@ -1531,6 +1546,64 @@ function setSetting(key,value){
 }
 function getSetting(key,fallback){
   return (key in userSettings)?userSettings[key]:fallback;
+}
+
+// ═══════════════════ REMINDER SETTINGS (distributors.timezone / reminder_opt_out) ═══════════════════
+// Unlike UI preferences (theme, etc.) which live in profiles.settings jsonb,
+// the reminder fields live on the distributors row so the server-side cron
+// can query them in a single SELECT. Tracker writes to distributors using
+// the same anon-key pattern as the goal picker (see saveGoalSetting).
+function detectBrowserTimezone(){
+  try{return Intl.DateTimeFormat().resolvedOptions().timeZone||null}catch(e){return null}
+}
+async function syncTimezone(){
+  if(!currentDist||!userSlug)return;
+  const tz=detectBrowserTimezone();
+  if(!tz)return;
+  if(currentDist.timezone===tz)return;  // already in sync
+  try{
+    await fetch(SB_URL+'/rest/v1/distributors?slug=eq.'+encodeURIComponent(userSlug),{
+      method:'PATCH',
+      headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},
+      body:JSON.stringify({timezone:tz})
+    });
+    currentDist.timezone=tz;
+    // If Settings page is visible, refresh the display
+    renderRemindersCard();
+  }catch(e){console.warn('tz sync failed',e)}
+}
+function renderRemindersCard(){
+  if(!currentDist)return;
+  const tzEl=document.getElementById('rem-tz-display');
+  const btn=document.getElementById('rem-toggle');
+  const knob=document.getElementById('rem-knob');
+  if(!tzEl||!btn||!knob)return;
+  const tz=currentDist.timezone||detectBrowserTimezone()||'—';
+  const on=!currentDist.reminderOptOut;
+  tzEl.textContent=on?('On · timezone '+tz):('Off · timezone '+tz);
+  btn.setAttribute('aria-checked',on?'true':'false');
+  btn.style.background=on?'#18181b':'rgba(61,46,31,0.18)';
+  knob.style.left=on?'23px':'3px';
+}
+async function toggleReminderOptOut(){
+  if(!currentDist||!userSlug)return;
+  const newOptOut=!currentDist.reminderOptOut;  // if currently on, opt out; if currently off, opt back in
+  const btn=document.getElementById('rem-toggle');
+  if(btn)btn.disabled=true;
+  try{
+    await fetch(SB_URL+'/rest/v1/distributors?slug=eq.'+encodeURIComponent(userSlug),{
+      method:'PATCH',
+      headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},
+      body:JSON.stringify({reminder_opt_out:newOptOut})
+    });
+    currentDist.reminderOptOut=newOptOut;
+    renderRemindersCard();
+    if(typeof toast==='function')toast(newOptOut?'Daily reminders turned off':'Daily reminders turned on');
+  }catch(e){
+    if(typeof toast==='function')toast('Could not update: '+e.message);
+  }finally{
+    if(btn)btn.disabled=false;
+  }
 }
 
 function loadTheme(){
@@ -1888,6 +1961,10 @@ async function initAuth(){
     return;
   }
   currentDist=dist;
+  // Silent timezone sync: if the browser's tz differs from what we've stored
+  // for this distributor, PATCH the row. Fire-and-forget — if the network
+  // hiccups we'll retry next load.
+  try{syncTimezone()}catch(e){}
   await loadPlatformInfluence();
   // The ONE genuine "Account Inactive" case: admin explicitly deactivated them
   if(!dist.active){document.getElementById('inactive-screen').classList.add('on');return;}
@@ -2016,7 +2093,7 @@ function go(name,evt){
   }
   if(name==='data'){buildFilter();renderTable()}
   if(name==='dash'){buildPills();renderDash()}
-  if(name==='settings'){buildAppearanceGrid();updateAppearanceUI(loadTheme()?.color||'paper')}
+  if(name==='settings'){buildAppearanceGrid();updateAppearanceUI(loadTheme()?.color||'paper');renderRemindersCard()}
   if(name==='clubs'){loadTrackerClubs()}
 }
 
