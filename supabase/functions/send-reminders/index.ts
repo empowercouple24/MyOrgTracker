@@ -198,7 +198,7 @@ function buildReminderHtml(ctx: ReminderContext): string {
           </h1>
 
           <p style="margin:0 0 20px;font-size:15px;color:#3d3a34;line-height:1.55">
-            No entry for today yet. Here&rsquo;s where things stand.
+            No entry for yesterday yet. Here&rsquo;s where things stand.
           </p>
 
           <table width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:separate;border-spacing:8px">
@@ -316,23 +316,26 @@ Deno.serve(async (req) => {
     // 4. Pull most recent entry for context metrics
     const { data: latestRows } = await sb
       .from('org_volume')
-      .select('entry_date, org_volume, est_org_dv, uplift_per_day')
+      .select('entry_date, org_volume')
       .eq('user_slug', slug)
       .order('entry_date', { ascending: false })
       .limit(1)
     const latest = latestRows?.[0]
 
+    // NOTE on column naming: the `org_volume` DB column actually stores the
+    // DV value (the number the distributor types from Bizworks), and
+    // `est_org_dv` stores DV × 1.32 (the Est Org Volume). This is inverted
+    // from what the column names suggest — legacy from an older terminology
+    // convention. Current terminology: DV = Bizworks input, Org Volume = tier
+    // threshold, DV Target = Org Volume ÷ 1.32.
     const orgVolumeThreshold = Number(d.dv_goal) || 0
     const dvTargetNum = orgVolumeThreshold > 0 ? Math.round(orgVolumeThreshold / UPLIFT) : 0
-    const lastDVNum = latest ? Math.round(Number(latest.est_org_dv) || Number(latest.org_volume) * UPLIFT) : 0
+    const lastDVNum = latest ? Math.round(Number(latest.org_volume)) : 0
     const lastLoggedSub = latest ? daysAgoLabel(String(latest.entry_date), local) : 'Never logged'
 
     const dl = daysLeftInMonth(local)
-    const lastOV = latest ? Number(latest.org_volume) * UPLIFT : 0
-    const gap = Math.max(0, dvTargetNum - Math.round(lastOV))
-    const neededPerDayNum = latest && Number(latest.uplift_per_day) > 0
-      ? Math.round(Number(latest.uplift_per_day))
-      : (dl > 0 ? Math.round(gap / dl) : gap)
+    const gap = Math.max(0, dvTargetNum - lastDVNum)
+    const neededPerDayNum = dl > 0 ? Math.round(gap / dl) : gap
 
     const firstName = (d.first_name as string) || (d.name as string || '').split(/\s+/)[0] || 'there'
     const pinGoal = (d.pin_goal as string) || ''
