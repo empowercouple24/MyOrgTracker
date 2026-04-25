@@ -846,8 +846,11 @@ html,body{background:var(--bg,#fafaf8);background-attachment:fixed}
   margin-bottom:14px;gap:12px;
 }
 .tier-progress{
-  display:flex;justify-content:space-between;align-items:baseline;
-  margin-bottom:6px;
+  display:flex;justify-content:space-between;align-items:baseline;gap:10px;
+  margin-bottom:8px;
+}
+.tier-pct-inline{
+  display:inline-flex;align-items:baseline;gap:10px;flex-wrap:wrap;
 }
 .tier-current{
   font-family:'EB Garamond',Georgia,serif;
@@ -861,7 +864,7 @@ html,body{background:var(--bg,#fafaf8);background-attachment:fixed}
 .tier-bar,.tier-bar > i,.tier-c-bar,.tier-c-bar > i{display:none}
 .tier-pct-label{
   font-size:10px;letter-spacing:0.08em;text-transform:uppercase;
-  color:var(--tier-text-muted);font-weight:500;margin-top:6px;
+  color:var(--tier-text-muted);font-weight:500;
 }
 .tier-grid{
   display:grid;grid-template-columns:repeat(3,1fr);gap:10px;
@@ -962,7 +965,10 @@ html,body{background:var(--bg,#fafaf8);background-attachment:fixed}
 
 /* Tighten the entry hero margin so we hug the nav above */
 #pg-entry{padding-top:0}
-#pg-entry .entry-hero{margin-bottom:8px}
+#pg-entry .entry-hero{margin:12px auto 8px;}
+#pg-entry .tier-card.expansive{padding:12px 14px}
+#pg-entry .tier-card .tier-head{margin-bottom:10px}
+#pg-entry .tier-card .tier-grid{padding-top:8px;margin-top:10px}
 
 </style>
 </head>
@@ -3666,10 +3672,12 @@ function renderEntryGoalCards(latest){
           <img class="tier-pin-lg" src="pins/${curGoal.id}.png" alt="${cleanLabel(curGoal.label)} pin">
         </div>
         <div class="tier-progress">
-          <div class="tier-current">${fmtDvInt(dv)}</div>
+          <div class="tier-pct-inline">
+            <span class="tier-current">${fmtDvInt(dv)}</span>
+            <span class="tier-pct-label">${pct}% there</span>
+          </div>
           <div class="tier-target">→ ${fmtDvInt(curDvTarget)} DV</div>
         </div>
-        <div class="tier-pct-label">${pct}% there</div>
         <div class="tier-grid">
           <div class="tier-mm"><div class="tier-mm-v">${fmtDvInt(toGo)}</div><div class="tier-mm-l">to go</div></div>
           <div class="tier-mm"><div class="tier-mm-v">${daysRemaining}</div><div class="tier-mm-l">days left</div></div>
@@ -3724,10 +3732,12 @@ function renderEntryGoalCards(latest){
             <img class="tier-pin-lg" src="pins/${nextGoal.id}.png" alt="${cleanLabel(nextGoal.label)} pin">
           </div>
           <div class="tier-progress">
-            <div class="tier-current">${fmtDvInt(dv)}</div>
+            <div class="tier-pct-inline">
+              <span class="tier-current">${fmtDvInt(dv)}</span>
+              <span class="tier-pct-label">${pct}% from ${fromLabel}</span>
+            </div>
             <div class="tier-target">→ ${fmtDvInt(nextDvTarget)} DV</div>
           </div>
-          <div class="tier-pct-label">${pct}% from ${fromLabel}</div>
           <div class="tier-grid">
             <div class="tier-mm"><div class="tier-mm-v">${fmtDvInt(toGo)}</div><div class="tier-mm-l">to go</div></div>
             <div class="tier-mm"><div class="tier-mm-v">${daysRemaining}</div><div class="tier-mm-l">days left</div></div>
