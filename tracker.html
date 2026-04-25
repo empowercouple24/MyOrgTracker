@@ -3228,11 +3228,13 @@ function syncVolumeFromSelectedDate(){
 }
 
 function buildDateChips(){
-  const host=document.getElementById('date-chips');
-  if(!host)return;
   const now=new Date();
   const ty=now.getFullYear(),tm=now.getMonth()+1,td=now.getDate();
+  // Bootstrap picker on first call regardless of whether the chip strip element exists.
+  // (v4 redesign removed the chip strip but still needs setPickerDate(today) to initialize.)
   if(datePickerYear===null){setPickerDate(ty,tm,td)}
+  const host=document.getElementById('date-chips');
+  if(!host)return;
   const anchor=new Date(ty,tm-1,td);
   const chips=[];
   for(let offset=-3;offset<=14;offset++){
@@ -3959,13 +3961,13 @@ async function deleteTrackerClub(){
 }
 
 function toast(msg,ms=2800){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('on');setTimeout(()=>t.classList.remove('on'),ms)}
-function renderAll(){recomputeHistoryStart();buildPills();renderDash();buildFilter();renderDataTab();renderLockedGoal();if(document.getElementById('date-chips')){buildDateChips();applyDateModes();updateSaveButton();if(typeof updateEntryView==='function')updateEntryView()}}
+function renderAll(){recomputeHistoryStart();buildPills();renderDash();buildFilter();renderDataTab();renderLockedGoal();if(document.getElementById('ev')){buildDateChips();applyDateModes();updateSaveButton();if(typeof updateEntryView==='function')updateEntryView()}}
 
 // Airline date picker now owns date state; em/ed/ey are hidden inputs populated by setPickerDate()
 // (Year dropdown deprecated — picker covers ±18-day window with full-month popover for arbitrary dates.)
 // buildDateChips() defaults to today on first call. clearEntry() and saveEntry() still read em/ed/ey.
 // Build chips after auth + records load via renderAll() → page open. Defer until DOM ready:
-document.addEventListener('DOMContentLoaded',()=>{ if(document.getElementById('date-chips')) buildDateChips(); });
+document.addEventListener('DOMContentLoaded',()=>{ if(document.getElementById('ev')) buildDateChips(); });
 // Supabase credentials baked in — Settings config removed
 // Top-level catch. If initAuth throws something unexpected, log it and bounce
 // to login rather than showing "Account Inactive" (which is misleading — the
